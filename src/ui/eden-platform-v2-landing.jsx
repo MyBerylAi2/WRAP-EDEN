@@ -77,98 +77,78 @@ const StatusBadge = ({ text, type }) => (
 // subsurface scattering, natural imperfections.
 // SHORT STEM — leaves are the star of the show.
 // ═══════════════════════════════════════════
-function LivingClover({ phase, growthProgress, breezeAngle }) {
-  // phase: "dormant" | "sprouting" | "struggling" | "bursting" | "bloomed" | "growing"
-  // growthProgress: 0→1 continuous (leaves expand wider + slightly taller)
-  // breezeAngle: gentle rotation offset
-
-  const sprouted = phase !== "dormant";
+function LivingClover({ phase, growthProgress, breezeAngle, totalScale }) {
   const bloomed = ["bloomed","growing"].includes(phase);
   const bursting = phase === "bursting";
 
-  // Stem barely grows — stays short. All growth goes to leaves.
+  // Stem reveal: grows upward from base
   const stemReveal = phase === "dormant" ? 0 : phase === "sprouting" ? 0.4 : phase === "struggling" ? 0.7 : 1;
+  // Leaves only appear after burst
   const leafReveal = !bloomed && !bursting ? 0 : 1;
 
-  // LEAF GROWTH: Initial bloom is 66% larger (1.66x base), then grows further
-  // growthProgress drives additional expansion on top of the 1.66 base
-  // WIDTH is doubled from previous (+100%): was 1.2 max extra, now 2.4
-  const baseScale = 1.66; // 66% larger initial bloom
-  const leafWidthScale = baseScale + (growthProgress * 2.4);
-  const leafHeightScale = baseScale + (growthProgress * 0.7);
+  // SVG dimensions — compact, self-contained plant
+  // NO SCALING HERE — scaling is done by the parent container div
+  const vbW = 120;
+  const vbH = 120;
+  const cx = 60;
+  const stemBase = 118;
+  const stemTop = 88;
+  const hub = stemTop - 2;
 
-  // SVG canvas — extra wide to accommodate 100% wider leaf expansion
-  const vbW = 360;
-  const vbH = 220;
-  const cx = 180; // center x
-  const stemBase = 215; // very bottom — this is where it meets the top of the E
-  const stemTop = 175; // SHORT stem — only 40 units tall
-  const leafCenter = stemTop - 3; // leaf hub just above stem
+  // Single leaf path — plump heart shape, origin at hub (0,0)
+  const leaf = "M0,0 C2,-10 10,-26 20,-32 C28,-36 34,-30 32,-20 C30,-10 18,-2 0,0 Z";
 
   return (
     <svg
       width={vbW} height={vbH} viewBox={`0 0 ${vbW} ${vbH}`}
       style={{
         overflow: "visible",
+        /* NO transform scale here — parent div handles all scaling */
+        /* Only breeze rotation, pivoting from stem base so the whole plant sways as one */
         transform: `rotate(${breezeAngle}deg)`,
         transformOrigin: `${cx}px ${stemBase}px`,
-        transition: "transform 2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        transition: "transform 2s ease-in-out",
         filter: bloomed
           ? "drop-shadow(0 0 18px rgba(0,230,118,.35)) drop-shadow(0 0 40px rgba(76,175,80,.12))"
           : "none",
       }}
     >
       <defs>
-        {/* ═══ PHOTOREALISTIC LEAF GRADIENTS ═══ */}
-        <radialGradient id="leafBody" cx="35%" cy="30%" r="65%">
+        <radialGradient id="lf" cx="35%" cy="30%" r="65%">
           <stop offset="0%" stopColor="#4CAF50" stopOpacity=".95"/>
           <stop offset="18%" stopColor="#43A047"/>
           <stop offset="40%" stopColor="#2E7D32"/>
           <stop offset="65%" stopColor="#1B5E20"/>
-          <stop offset="85%" stopColor="#145214"/>
           <stop offset="100%" stopColor="#0D3B0D"/>
         </radialGradient>
-        <radialGradient id="leafSSS" cx="40%" cy="25%" r="55%">
+        <radialGradient id="ls" cx="40%" cy="25%" r="55%">
           <stop offset="0%" stopColor="#81C784" stopOpacity=".45"/>
           <stop offset="25%" stopColor="#66BB6A" stopOpacity=".25"/>
-          <stop offset="50%" stopColor="#4CAF50" stopOpacity=".12"/>
           <stop offset="100%" stopColor="#1B5E20" stopOpacity="0"/>
         </radialGradient>
-        <radialGradient id="leafEdge" cx="70%" cy="20%" r="60%">
-          <stop offset="0%" stopColor="#A5D6A7" stopOpacity=".2"/>
-          <stop offset="40%" stopColor="#69F0AE" stopOpacity=".08"/>
-          <stop offset="100%" stopColor="transparent" stopOpacity="0"/>
-        </radialGradient>
-        <linearGradient id="veinMain" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="vn" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#C8E6C9" stopOpacity=".55"/>
-          <stop offset="50%" stopColor="#A5D6A7" stopOpacity=".35"/>
           <stop offset="100%" stopColor="#66BB6A" stopOpacity=".15"/>
         </linearGradient>
-        <linearGradient id="stemFill" x1="50%" y1="100%" x2="50%" y2="0%">
+        <linearGradient id="st" x1="50%" y1="100%" x2="50%" y2="0%">
           <stop offset="0%" stopColor="#1B5E20"/>
-          <stop offset="30%" stopColor="#2E7D32"/>
-          <stop offset="60%" stopColor="#388E3C"/>
+          <stop offset="40%" stopColor="#2E7D32"/>
           <stop offset="100%" stopColor="#43A047"/>
         </linearGradient>
-        <radialGradient id="dewDrop" cx="30%" cy="25%" r="50%">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity=".85"/>
-          <stop offset="30%" stopColor="#E8F5E9" stopOpacity=".5"/>
-          <stop offset="70%" stopColor="#C8E6C9" stopOpacity=".2"/>
+        <radialGradient id="dw" cx="30%" cy="25%" r="50%">
+          <stop offset="0%" stopColor="#fff" stopOpacity=".85"/>
+          <stop offset="40%" stopColor="#E8F5E9" stopOpacity=".4"/>
           <stop offset="100%" stopColor="#A5D6A7" stopOpacity=".05"/>
         </radialGradient>
-        <radialGradient id="dewCaustic" cx="65%" cy="70%" r="40%">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity=".4"/>
-          <stop offset="100%" stopColor="transparent" stopOpacity="0"/>
-        </radialGradient>
-        <filter id="leafGlow" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur"/>
-          <feFlood floodColor="#00E676" floodOpacity=".3" result="color"/>
-          <feComposite in="color" in2="blur" operator="in" result="shadow"/>
-          <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
+        <filter id="lg" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="b"/>
+          <feFlood floodColor="#00E676" floodOpacity=".25" result="c"/>
+          <feComposite in="c" in2="b" operator="in" result="s"/>
+          <feMerge><feMergeNode in="s"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
       </defs>
 
-      {/* ═══ STEM — grows STRAIGHT UP from top of the E ═══ */}
+      {/* STEM — grows up, WELDED to leaves above */}
       <g style={{
         transform: `scaleY(${stemReveal})`,
         transformOrigin: `${cx}px ${stemBase}px`,
@@ -176,121 +156,62 @@ function LivingClover({ phase, growthProgress, breezeAngle }) {
           ? "transform 2s cubic-bezier(0.2,0,0.8,0.2)"
           : "transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
       }}>
-        {/* Main stem — straight up with very slight natural wobble */}
-        <path d={`M${cx},${stemBase} C${cx},${stemBase-10} ${cx-0.5},${stemBase-20} ${cx-0.3},${stemTop+8} C${cx},${stemTop+4} ${cx},${stemTop} ${cx},${stemTop}`}
-          stroke="url(#stemFill)" strokeWidth="4.5" fill="none" strokeLinecap="round"/>
-        {/* Stem highlight — moisture shine */}
-        <path d={`M${cx+1},${stemBase-3} C${cx+1},${stemBase-12} ${cx+0.5},${stemBase-22} ${cx+0.7},${stemTop+10}`}
-          stroke="rgba(165,214,167,.35)" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
-        {/* Single small node */}
-        <ellipse cx={cx} cy={stemBase-18} rx="2.8" ry="2" fill="#388E3C" opacity=".5"/>
+        <path d={`M${cx},${stemBase} C${cx},${stemBase-8} ${cx-0.5},${stemBase-18} ${cx},${stemTop}`}
+          stroke="url(#st)" strokeWidth="4" fill="none" strokeLinecap="round"/>
+        <path d={`M${cx+0.8},${stemBase-2} C${cx+0.8},${stemBase-10} ${cx+0.3},${stemBase-18} ${cx+0.5},${stemTop+4}`}
+          stroke="rgba(165,214,167,.3)" strokeWidth="1" fill="none" strokeLinecap="round"/>
+        <ellipse cx={cx} cy={stemBase-14} rx="2.2" ry="1.5" fill="#388E3C" opacity=".4"/>
       </g>
 
-      {/* ═══ FOUR LEAVES — proper 90° spacing, all visible ═══ */}
-      <g filter="url(#leafGlow)" style={{
+      {/* FOUR LEAVES — ALL WELDED to stem at hub point — NEVER DETACH */}
+      <g filter="url(#lg)" style={{
+        opacity: leafReveal,
         transform: `scale(${leafReveal})`,
-        transformOrigin: `${cx}px ${leafCenter}px`,
+        transformOrigin: `${cx}px ${hub}px`,
         transition: bursting
           ? "transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)"
           : "transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
-        opacity: leafReveal,
       }}>
-        {/* Growth wrapper — scales leaves wider and taller over time */}
-        <g style={{
-          transform: `translate(${cx}px, ${leafCenter}px) scale(${leafWidthScale}, ${leafHeightScale}) translate(${-cx}px, ${-leafCenter}px)`,
-          transformOrigin: `${cx}px ${leafCenter}px`,
-          transition: "transform 1.5s cubic-bezier(0.34,1.56,0.64,1)",
-        }}>
-
-          {/* ── LEAF 1: TOP (12 o'clock) ── */}
-          <g transform={`rotate(0, ${cx}, ${leafCenter})`}>
-            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
-                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
-                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
-              fill="url(#leafBody)" stroke="#145214" strokeWidth=".3"/>
-            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
-                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
-                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
-              fill="url(#leafSSS)"/>
-            <path d={`M${cx+25},${leafCenter-41} C${cx+27},${leafCenter-43} ${cx+30},${leafCenter-44} ${cx+32},${leafCenter-42}`}
-              stroke="#0D3B0D" strokeWidth=".7" fill="none"/>
-            <path d={`M${cx},${leafCenter} C${cx+5},${leafCenter-12} ${cx+14},${leafCenter-24} ${cx+27},${leafCenter-38}`}
-              stroke="url(#veinMain)" strokeWidth=".9" fill="none"/>
-            <path d={`M${cx+8},${leafCenter-16} C${cx+15},${leafCenter-22} ${cx+24},${leafCenter-26} ${cx+32},${leafCenter-28}`}
-              stroke="url(#veinMain)" strokeWidth=".4" fill="none"/>
-            <path d={`M${cx+5},${leafCenter-10} C${cx+12},${leafCenter-14} ${cx+20},${leafCenter-17} ${cx+30},${leafCenter-19}`}
-              stroke="url(#veinMain)" strokeWidth=".35" fill="none"/>
-            <ellipse cx={cx+22} cy={leafCenter-22} rx="2.5" ry="3" fill="url(#dewDrop)" opacity=".7"/>
-            <ellipse cx={cx+22.8} cy={leafCenter-23.5} rx=".8" ry=".6" fill="white" opacity=".8"/>
-          </g>
-
-          {/* ── LEAF 2: RIGHT (3 o'clock) ── */}
-          <g transform={`rotate(90, ${cx}, ${leafCenter})`}>
-            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
-                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
-                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
-              fill="url(#leafBody)" stroke="#145214" strokeWidth=".3"/>
-            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
-                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
-                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
-              fill="url(#leafSSS)"/>
-            <path d={`M${cx+25},${leafCenter-41} C${cx+27},${leafCenter-43} ${cx+30},${leafCenter-44} ${cx+32},${leafCenter-42}`}
-              stroke="#0D3B0D" strokeWidth=".7" fill="none"/>
-            <path d={`M${cx},${leafCenter} C${cx+5},${leafCenter-12} ${cx+14},${leafCenter-24} ${cx+27},${leafCenter-38}`}
-              stroke="url(#veinMain)" strokeWidth=".9" fill="none"/>
-            <path d={`M${cx+8},${leafCenter-16} C${cx+15},${leafCenter-22} ${cx+24},${leafCenter-26} ${cx+32},${leafCenter-28}`}
-              stroke="url(#veinMain)" strokeWidth=".4" fill="none"/>
-            <ellipse cx={cx+26} cy={leafCenter-28} rx="2" ry="2.5" fill="url(#dewDrop)" opacity=".55"/>
-            <ellipse cx={cx+26.5} cy={leafCenter-29} rx=".6" ry=".5" fill="white" opacity=".7"/>
-          </g>
-
-          {/* ── LEAF 3: BOTTOM (6 o'clock) ── */}
-          <g transform={`rotate(180, ${cx}, ${leafCenter})`}>
-            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
-                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
-                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
-              fill="url(#leafBody)" stroke="#145214" strokeWidth=".3"/>
-            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
-                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
-                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
-              fill="url(#leafSSS)"/>
-            <path d={`M${cx+25},${leafCenter-41} C${cx+27},${leafCenter-43} ${cx+30},${leafCenter-44} ${cx+32},${leafCenter-42}`}
-              stroke="#0D3B0D" strokeWidth=".7" fill="none"/>
-            <path d={`M${cx},${leafCenter} C${cx+5},${leafCenter-12} ${cx+14},${leafCenter-24} ${cx+27},${leafCenter-38}`}
-              stroke="url(#veinMain)" strokeWidth=".9" fill="none"/>
-            <path d={`M${cx+8},${leafCenter-16} C${cx+15},${leafCenter-22} ${cx+24},${leafCenter-26} ${cx+32},${leafCenter-28}`}
-              stroke="url(#veinMain)" strokeWidth=".4" fill="none"/>
-            <ellipse cx={cx+18} cy={leafCenter-20} rx="2.2" ry="2.8" fill="url(#dewDrop)" opacity=".5"/>
-            <ellipse cx={cx+18.6} cy={leafCenter-21.2} rx=".7" ry=".5" fill="white" opacity=".7"/>
-          </g>
-
-          {/* ── LEAF 4: LEFT (9 o'clock) ── */}
-          <g transform={`rotate(270, ${cx}, ${leafCenter})`}>
-            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
-                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
-                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
-              fill="url(#leafBody)" stroke="#145214" strokeWidth=".3"/>
-            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
-                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
-                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
-              fill="url(#leafSSS)"/>
-            <path d={`M${cx+25},${leafCenter-41} C${cx+27},${leafCenter-43} ${cx+30},${leafCenter-44} ${cx+32},${leafCenter-42}`}
-              stroke="#0D3B0D" strokeWidth=".7" fill="none"/>
-            <path d={`M${cx},${leafCenter} C${cx+5},${leafCenter-12} ${cx+14},${leafCenter-24} ${cx+27},${leafCenter-38}`}
-              stroke="url(#veinMain)" strokeWidth=".9" fill="none"/>
-            <path d={`M${cx+8},${leafCenter-16} C${cx+15},${leafCenter-22} ${cx+24},${leafCenter-26} ${cx+32},${leafCenter-28}`}
-              stroke="url(#veinMain)" strokeWidth=".4" fill="none"/>
-            <ellipse cx={cx+20} cy={leafCenter-24} rx="2.3" ry="2.7" fill="url(#dewDrop)" opacity=".6"/>
-            <ellipse cx={cx+20.7} cy={leafCenter-25.2} rx=".7" ry=".5" fill="white" opacity=".75"/>
-          </g>
-
+        {/* LEAF 1: TOP */}
+        <g transform={`translate(${cx},${hub})`}>
+          <path d={leaf} fill="url(#lf)" stroke="#145214" strokeWidth=".3"/>
+          <path d={leaf} fill="url(#ls)"/>
+          <path d="M0,0 C3,-8 10,-20 21,-30" stroke="url(#vn)" strokeWidth=".8" fill="none"/>
+          <path d="M5,-10 C10,-16 18,-20 25,-22" stroke="url(#vn)" strokeWidth=".35" fill="none"/>
+          <ellipse cx="14" cy="-18" rx="2" ry="2.5" fill="url(#dw)" opacity=".65"/>
+          <ellipse cx="14.6" cy="-19.2" rx=".7" ry=".5" fill="white" opacity=".8"/>
         </g>
-
-        {/* Center hub — where all four leaves meet */}
-        <circle cx={cx} cy={leafCenter} r="4.5" fill="#2E7D32" stroke="#1B5E20" strokeWidth=".5"/>
-        <circle cx={cx} cy={leafCenter} r="2.8" fill="#388E3C"/>
-        <circle cx={cx-0.8} cy={leafCenter-0.8} r="1.1" fill="rgba(165,214,167,.4)"/>
-        <circle cx={cx+1} cy={leafCenter-1} r=".9" fill="url(#dewDrop)" opacity=".5"/>
+        {/* LEAF 2: RIGHT */}
+        <g transform={`translate(${cx},${hub}) rotate(90)`}>
+          <path d={leaf} fill="url(#lf)" stroke="#145214" strokeWidth=".3"/>
+          <path d={leaf} fill="url(#ls)"/>
+          <path d="M0,0 C3,-8 10,-20 21,-30" stroke="url(#vn)" strokeWidth=".8" fill="none"/>
+          <path d="M5,-10 C10,-16 18,-20 25,-22" stroke="url(#vn)" strokeWidth=".35" fill="none"/>
+          <ellipse cx="18" cy="-22" rx="1.8" ry="2.2" fill="url(#dw)" opacity=".5"/>
+          <ellipse cx="18.5" cy="-23" rx=".6" ry=".45" fill="white" opacity=".7"/>
+        </g>
+        {/* LEAF 3: BOTTOM */}
+        <g transform={`translate(${cx},${hub}) rotate(180)`}>
+          <path d={leaf} fill="url(#lf)" stroke="#145214" strokeWidth=".3"/>
+          <path d={leaf} fill="url(#ls)"/>
+          <path d="M0,0 C3,-8 10,-20 21,-30" stroke="url(#vn)" strokeWidth=".8" fill="none"/>
+          <path d="M5,-10 C10,-16 18,-20 25,-22" stroke="url(#vn)" strokeWidth=".35" fill="none"/>
+          <ellipse cx="12" cy="-16" rx="1.6" ry="2" fill="url(#dw)" opacity=".45"/>
+          <ellipse cx="12.5" cy="-17" rx=".5" ry=".4" fill="white" opacity=".65"/>
+        </g>
+        {/* LEAF 4: LEFT */}
+        <g transform={`translate(${cx},${hub}) rotate(270)`}>
+          <path d={leaf} fill="url(#lf)" stroke="#145214" strokeWidth=".3"/>
+          <path d={leaf} fill="url(#ls)"/>
+          <path d="M0,0 C3,-8 10,-20 21,-30" stroke="url(#vn)" strokeWidth=".8" fill="none"/>
+          <path d="M5,-10 C10,-16 18,-20 25,-22" stroke="url(#vn)" strokeWidth=".35" fill="none"/>
+          <ellipse cx="16" cy="-20" rx="2" ry="2.4" fill="url(#dw)" opacity=".55"/>
+          <ellipse cx="16.6" cy="-21" rx=".6" ry=".5" fill="white" opacity=".7"/>
+        </g>
+        {/* Center hub — welded junction */}
+        <circle cx={cx} cy={hub} r="3.5" fill="#2E7D32" stroke="#1B5E20" strokeWidth=".5"/>
+        <circle cx={cx} cy={hub} r="2" fill="#388E3C"/>
+        <circle cx={cx-0.6} cy={hub-0.6} r=".8" fill="rgba(165,214,167,.35)"/>
       </g>
     </svg>
   );
@@ -354,8 +275,8 @@ export default function Eden() {
         }
 
         .clover-container {
-          animation: gentle-breeze 8s ease-in-out infinite;
-          transform-origin: center bottom;
+          /* No CSS animation here — all transforms handled inline via React state */
+          /* This prevents transform conflicts that caused leaf detachment */
         }
       `}</style>
       {page === "landing" ? <LandingPage mounted={mounted} onEnter={() => setPage("app")} /> : <AppShell />}
@@ -498,15 +419,22 @@ function LandingPage({ mounted, onEnter }) {
             lineHeight: 1,
           }}>EDEN</h1>
 
-          {/* ═══ LIVING CLOVER — stem grows from TOP of center E in EDEN ═══ */}
-          {/* With 179px font + 44 letter-spacing, the center E top is approx at the text top */}
+          {/* ═══ LIVING CLOVER — WELDED to top of center E, grows upward ═══ */}
+          {/* Container handles ALL growth scaling from bottom-center (where stem meets E) */}
+          {/* The SVG inside only handles breeze rotation — NO scaling on SVG */}
           <div className="clover-container" style={{
             position: "absolute",
-            top: "-180px",
+            top: "-120px",
             left: "50%",
-            marginLeft: "-105px", /* Centered over the E (second letter) in EDEN */
+            marginLeft: "-60px",
+            width: 120,
+            height: 120,
             zIndex: 10,
             pointerEvents: "none",
+            /* ALL SCALING HAPPENS HERE — from the bottom center where stem meets the E */
+            transform: `scale(${1.0 + (["bloomed","growing"].includes(cloverPhase) || cloverPhase === "bursting" ? 0.66 : 0) + (growthProgress * 1.0)})`,
+            transformOrigin: "center bottom",
+            transition: "transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
           }}>
             <LivingClover
               phase={cloverPhase}

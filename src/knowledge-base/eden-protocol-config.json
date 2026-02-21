@@ -1,0 +1,123 @@
+{
+  "eden_protocol_version": "5.0",
+  "organization": "Beryl AI Labs / The Eden Project",
+  "author": "TJ (Lead Engineer) + Amanda (AI Co-Founder)",
+
+  "defaults": {
+    "model": "llama3.2-vision:11b",
+    "preset": "EDEN Ultra Realism",
+    "duration": 5,
+    "guidance": 4.5,
+    "steps": 24,
+    "height": 720,
+    "width": 1280,
+    "referenceStrength": 0.80,
+    "referenceLocked": false,
+    "fps": 24,
+    "seed": -1,
+    "dualExpert": {
+      "enabled": true,
+      "highNoiseCFG": 6.5,
+      "highNoiseSteps": 12,
+      "lowNoiseCFG": 4.0,
+      "lowNoiseSteps": 12
+    }
+  },
+
+  "presets": {
+    "EDEN Ultra Realism": {
+      "guidance": 4.5, "steps": 24, "height": 720, "width": 1280,
+      "duration": 5, "referenceStrength": 0.80,
+      "description": "Maximum photorealism. Kling-tier skin/eye/physics quality."
+    },
+    "EDEN Cinematic": {
+      "guidance": 5.0, "steps": 28, "height": 720, "width": 1280,
+      "duration": 5, "referenceStrength": 0.75,
+      "description": "Film-grade aesthetic. Deeper shadows, warmer tones."
+    },
+    "Hyperreal": { "cfg": 7.5, "steps": 50 },
+    "Cinematic": { "cfg": 6, "steps": 40 },
+    "Kling Max": { "cfg": 8, "steps": 60 },
+    "Skin Perfect": { "cfg": 7, "steps": 45 },
+    "Portrait": { "cfg": 5.5, "steps": 35 },
+    "Natural": { "cfg": 4.5, "steps": 30 },
+    "EDEN Raw": {
+      "guidance": 7.0, "steps": 40, "height": 480, "width": 832,
+      "duration": 3, "referenceStrength": 0.75,
+      "description": "Minimal post-processing. Direct model output."
+    }
+  },
+
+  "smart_negative_engine": {
+    "always_active": {
+      "quality": "blurry, pixelated, low quality, low resolution, jpeg artifacts, compression artifacts, noisy, grainy, overexposed, underexposed, washed out, oversaturated, undersaturated",
+      "anti_ai_slop": "watermark, text, logo, subtitles, caption, signature, username, UI elements, border, frame, letterboxing, timestamp, date stamp",
+      "technical_artifacts": "flat lighting, harsh CGI shadows, volumetric god rays artifact, lens flare fake, bloom overkill, halo glow, rim lighting unnatural, deepfake seams, neural texture artifacts, diffusion noise remnants, latent grid patterns, quantization banding, compression macroblocks, banding, posterization, color stepping, halo around edges, edge sharpening artifact, aliasing, moiré patterns, desaturated skin tones, hyper-saturated lips/cheeks, uniform hue, color bleeding, halo fringing, chromatic noise, beauty mode, glamour shot, high-key lighting overkill, soft focus filter, skin smoothing algorithm, neural denoising artifacts, generated image, AI generated, synthetic human, computer graphics, rendered, octane render style, unreal engine look, game asset"
+    },
+    "conditional": {
+      "face_body": {
+        "triggers": ["person", "woman", "man", "girl", "boy", "face", "portrait", "people", "character", "model", "body", "skin", "eyes", "lips", "hair", "she", "he", "her", "his", "human"],
+        "keywords": "deformed face, ugly, disfigured, bad anatomy, wrong anatomy, extra limbs, missing limbs, floating limbs, disconnected limbs, mutation, mutated, extra fingers, fewer fingers, too many fingers, fused fingers, poorly drawn hands, poorly drawn face, malformed, distorted features, cross-eyed, asymmetric eyes, unnatural skin, plastic skin, mannequin, uncanny valley, extra heads, duplicate face, clone face"
+      },
+      "female_realism": {
+        "triggers": ["woman", "girl", "female", "lady", "she", "her", "face", "portrait", "beauty", "model", "skin"],
+        "keywords": "plastic skin, waxy skin, doll-like, mannequin, uncanny valley, airbrushed, overly smooth skin, porcelain skin, unrealistic skin texture, beauty filter, instagram filter, over-retouched, bad makeup, clown makeup, asymmetric face, cross-eyed, dead eyes, lifeless eyes, vacant stare, unnatural eye color, anime eyes, oversized eyes"
+      },
+      "skin_texture_eden": {
+        "triggers": ["person", "woman", "man", "face", "skin", "body", "portrait", "model", "she", "he"],
+        "keywords": "plastic skin, silicone skin, rubber skin, over-retouched skin, dermabrasion effect, uniform skin tone, flat skin color, missing pores, missing skin wrinkles, missing freckles, missing moles, painted skin texture, matte skin finish, skin without subsurface scattering, blurred skin detail, frequency separation artifact, skin like clay, skin like fondant, missing vellus hair, missing peach fuzz, artificial skin sheen, photoshop skin, facetune skin, instagram filter skin, airbrushed, perfect skin, glossy lips, lip filler, overfilled lips, makeup-heavy, full makeup, glowing skin, shiny face, filtered, beautified, beauty shot, porcelain, retouched, photoshopped, heavy contour, dramatic makeup, stage makeup, makeup lines, makeup streaks, lip gloss, waxy, matte overkill, studio beauty lighting"
+      },
+      "body_anatomy": {
+        "triggers": ["body", "figure", "pose", "standing", "sitting", "lying", "full body", "lingerie", "bikini", "dress"],
+        "keywords": "extra fingers, missing fingers, fused fingers, too many fingers, bad hands, wrong number of fingers, deformed hands, extra arms, missing arms, extra legs, missing legs, deformed feet, extra feet, unnatural body proportions, elongated neck, short neck, twisted torso, impossible pose, broken spine, contorted body"
+      },
+      "intimate_contact": {
+        "triggers": ["touch", "hold", "embrace", "kiss", "close", "together", "intimate", "caress", "lean"],
+        "keywords": "fused bodies, merged limbs, extra hands during contact, phantom fingers, body clipping through body, overlapping torsos, impossible joint angle, missing contact shadows between bodies, floating body parts during contact, skin merging at contact points, plastic skin contact, no skin compression, missing skin flush at pressure points, no blood rush to skin, uniform skin color during contact, no warmth variation on skin, missing goosebumps, missing sweat, dry skin during exertion"
+      },
+      "expression_emotion": {
+        "triggers": ["smile", "look", "expression", "emotion", "feeling", "laugh", "cry", "gaze"],
+        "keywords": "blank stare, emotionless face, frozen smile, dead expression, performative expression, fake moan face, exaggerated expression, disconnected eye contact, vacant eyes, robotic facial movement, symmetrical expression, uniform emotion across face"
+      },
+      "body_physics": {
+        "triggers": ["walk", "move", "dance", "motion", "pose", "body", "run", "sit", "stand"],
+        "keywords": "rigid body movement, robotic motion, stiff hips, locked joints, weightless body, no gravity on body, no muscle tension, no breathing movement, static chest, frozen torso, no weight transfer between bodies, puppet-like movement, exaggerated curves, balloon breasts, tiny waist, elongated legs, uniform body tone, missing body hair, missing skin imperfections, no stretch marks, no veins visible, no moles on body, painted texture, frozen expression, stiff body, floating hair"
+      },
+      "motion_video": {
+        "triggers": ["walk", "run", "dance", "move", "motion", "turn", "sit", "stand", "gesture", "wave", "smile", "talk", "speak", "nod", "video", "animate", "animation", "cinematic"],
+        "keywords": "jerky motion, unnatural movement, static, frozen, stuttering, flickering, temporal inconsistency, morphing, shape shifting, teleporting, sliding, gliding without walking, moon walking, robotic movement, mechanical motion, frame jitter, motion warp, morphing faces, identity shift, sudden identity change, inconsistent facial features across frames, lip sync desync, eye blink artifacts, choppy animation, low framerate feel, stutter, ghosting, trailing artifacts, frame duplication, interpolation errors"
+      },
+      "photorealism": {
+        "triggers": ["realistic", "photorealistic", "real", "photograph", "photo", "natural", "lifelike", "cinematic", "film", "movie", "documentary"],
+        "keywords": "cartoon, anime, illustration, drawing, painting, sketch, CGI, 3D render, digital art, concept art, art style, stylized, cel shaded, comic book, manga, painted, brush strokes, artistic, fantasy art, unrealistic lighting, fake, artificial, synthetic"
+      },
+      "environment": {
+        "triggers": ["room", "street", "city", "building", "house", "forest", "beach", "park", "club", "bar", "restaurant", "office", "studio", "stage", "outdoor", "indoor", "scene", "environment", "background", "landscape"],
+        "keywords": "floating objects, impossible physics, gravity defying, inconsistent shadows, multiple light sources conflicting, impossible architecture, broken perspective, warped geometry, tiled texture, repeating pattern, clone stamped, copy paste artifacts"
+      },
+      "clothing": {
+        "triggers": ["dress", "suit", "shirt", "pants", "skirt", "jacket", "coat", "hat", "shoes", "heels", "lingerie", "bikini", "bra", "panties", "underwear", "swimsuit"],
+        "keywords": "wrong clothing, merged clothing, floating fabric, impossible folds, clothing clipping through body, extra sleeves, missing buttons, asymmetric clothing, texture smearing on fabric"
+      }
+    }
+  },
+
+  "positive_boost": {
+    "melanated_skin": "natural African American skin texture, visible pores on dark skin, natural skin oils, warm undertones, rich melanin, subsurface scattering on brown skin, natural stretch marks, visible veins through dark skin, authentic skin imperfections, matte skin with natural variation, micro-texture detail, natural body hair, real skin elasticity, genuine warmth, authentic body proportions, natural gravity, real weight distribution, warm studio lighting on dark skin, Rembrandt lighting, motivated practical lighting",
+    "cinema": "shot on ARRI ALEXA, 24fps, shallow depth of field, film grain, Kodak Vision3 500T, anamorphic lens, natural three-point lighting, cinematic color grading, slight desaturation, crushed blacks, teal and orange, natural vignetting, soft diffused light, Rembrandt lighting, natural shadow falloff, ambient occlusion",
+    "artistic_intimate": "fine art photography, body as art, celebration of the human form, natural poses, authentic emotion, genuine micro-expressions, real eye contact, natural breathing, soft window light, warm ambient, tasteful composition, editorial quality, natural elegance, confidence, empowerment"
+  },
+
+  "deviation_rule": {
+    "max_deviation": 0.3,
+    "description": "Output can NEVER drift more than 0.3 from reference face texture/presence. Pores stay. Freckles stay. Stretch marks stay. No smoothing. No anime. No melting.",
+    "test": "Real as Fuck: Can you stare at her for ten minutes and forget she's digital?"
+  },
+
+  "infrastructure": {
+    "gradio_api": "https://aibruh-eden-diffusion-studio.hf.space",
+    "space_id": "AIBRUH/eden-diffusion-studio",
+    "mcp_bridge": "localhost:8787",
+    "models": ["zai-org/CogView4-6B", "Lightricks/LTX-Video-0.9.7-dev", "stabilityai/stable-diffusion-xl-base-1.0"]
+  }
+}

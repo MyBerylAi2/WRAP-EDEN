@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold-dark: #8B6914;
+  --color-gold: #C5B358;
+  --color-gold-light: #D4AF37;
+  --color-gold-bright: #F5E6A3;
+  --color-eden-black: #050302;
+  --color-eden-d1: #0a0805;
+  --color-eden-d2: #12100a;
+  --color-eden-d3: #1a140a;
+  --color-eden-text: #e8e0d0;
+  --color-eden-muted: #706850;
+  --color-eden-green: #22c55e;
+
+  --font-cinzel: "Cinzel", serif;
+  --font-cinzel-decorative: "Cinzel Decorative", serif;
+  --font-cormorant: "Cormorant Garamond", Georgia, serif;
+  --font-mono: "DM Mono", monospace;
+}
+
+@layer base {
+  body {
+    background: var(--color-eden-black);
+    color: var(--color-eden-text);
+    font-family: var(--font-cormorant);
+    min-height: 100vh;
+  }
+
+  ::selection {
+    background: rgba(197, 179, 88, 0.3);
+    color: var(--color-gold-bright);
+  }
+}
+
+/* ═══ EDEN LOGO SHIMMER ═══ */
+@keyframes shimmer {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+.eden-shimmer {
+  background: linear-gradient(135deg, #F5E6A3, #C5B358, #D4AF37, #F5E6A3);
+  background-size: 200% auto;
+  animation: shimmer 5s linear infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 30px rgba(197,179,88,0.4)); }
+  50% { filter: drop-shadow(0 0 60px rgba(197,179,88,0.7)); }
+}
+.eden-glow { animation: glow-pulse 4s ease-in-out infinite; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.eden-fade-up { animation: fade-up 0.6s ease-out forwards; }
+
+/* ═══ FORM STYLING ═══ */
+select, input, textarea {
+  background: var(--color-eden-d1) !important;
+  border: 1px solid rgba(197,179,88,0.15) !important;
+  color: var(--color-eden-text) !important;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: var(--font-cormorant);
+  font-size: 1em;
+  transition: border-color 0.3s;
+}
+select:focus, input:focus, textarea:focus {
+  outline: none;
+  border-color: var(--color-gold) !important;
+  box-shadow: 0 0 0 2px rgba(197,179,88,0.1);
+}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--color-eden-black); }
+::-webkit-scrollbar-thumb { background: var(--color-gold-dark); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-gold); }

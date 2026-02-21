@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 // ═══════════════════════════════════════════════════════════════
-// EDEN REALISM ENGINE v3.0 — THE LIVING GARDEN
-// Landing Page with Living Clover + Full App
+// EDEN REALISM ENGINE v3.1 — THE LIVING GARDEN (REVISED)
+// Landing Page with Photorealistic Living Clover + Full App
 // Beryl AI Labs / The Eden Project
 // ═══════════════════════════════════════════════════════════════
 
@@ -71,158 +71,226 @@ const StatusBadge = ({ text, type }) => (
 );
 
 // ═══════════════════════════════════════════
-// LIVING FOUR-LEAF CLOVER SVG
+// PHOTOREALISTIC FOUR-LEAF CLOVER SVG
+// Inspired by macro photography: lush, full,
+// plump leaves with water droplets, visible veins,
+// subsurface scattering, natural imperfections.
+// SHORT STEM — leaves are the star of the show.
 // ═══════════════════════════════════════════
-function LivingClover({ phase, growthScale, breezeAngle }) {
+function LivingClover({ phase, growthProgress, breezeAngle }) {
   // phase: "dormant" | "sprouting" | "struggling" | "bursting" | "bloomed" | "growing"
-  // growthScale: 1.0 → increases every 30s
+  // growthProgress: 0→1 continuous (leaves expand wider + slightly taller)
   // breezeAngle: gentle rotation offset
 
   const sprouted = phase !== "dormant";
   const bloomed = ["bloomed","growing"].includes(phase);
   const bursting = phase === "bursting";
 
-  // Scale factors for each phase
-  const stemScale = phase === "dormant" ? 0 : phase === "sprouting" ? 0.3 : phase === "struggling" ? 0.6 : 1;
-  const leafScale = !bloomed && !bursting ? 0 : 1;
+  // Stem barely grows — stays short. All growth goes to leaves.
+  const stemReveal = phase === "dormant" ? 0 : phase === "sprouting" ? 0.4 : phase === "struggling" ? 0.7 : 1;
+  const leafReveal = !bloomed && !bursting ? 0 : 1;
+
+  // LEAF GROWTH: Initial bloom is 66% larger (1.66x base), then grows further
+  // growthProgress drives additional expansion on top of the 1.66 base
+  // WIDTH is doubled from previous (+100%): was 1.2 max extra, now 2.4
+  const baseScale = 1.66; // 66% larger initial bloom
+  const leafWidthScale = baseScale + (growthProgress * 2.4);
+  const leafHeightScale = baseScale + (growthProgress * 0.7);
+
+  // SVG canvas — extra wide to accommodate 100% wider leaf expansion
+  const vbW = 360;
+  const vbH = 220;
+  const cx = 180; // center x
+  const stemBase = 215; // very bottom — this is where it meets the top of the E
+  const stemTop = 175; // SHORT stem — only 40 units tall
+  const leafCenter = stemTop - 3; // leaf hub just above stem
 
   return (
     <svg
-      width="120" height="180" viewBox="0 0 120 180"
+      width={vbW} height={vbH} viewBox={`0 0 ${vbW} ${vbH}`}
       style={{
         overflow: "visible",
-        transform: `scale(${growthScale}) rotate(${breezeAngle}deg)`,
-        transformOrigin: "60px 180px",
+        transform: `rotate(${breezeAngle}deg)`,
+        transformOrigin: `${cx}px ${stemBase}px`,
         transition: "transform 2s cubic-bezier(0.34, 1.56, 0.64, 1)",
-        filter: bloomed ? "drop-shadow(0 0 12px rgba(0,230,118,.4)) drop-shadow(0 0 30px rgba(76,175,80,.15))" : "none",
+        filter: bloomed
+          ? "drop-shadow(0 0 18px rgba(0,230,118,.35)) drop-shadow(0 0 40px rgba(76,175,80,.12))"
+          : "none",
       }}
     >
       <defs>
-        {/* Leaf gradient - rich green with depth */}
-        <radialGradient id="leafFill" cx="40%" cy="35%" r="60%">
-          <stop offset="0%" stopColor="#43A047"/>
-          <stop offset="30%" stopColor="#2E7D32"/>
-          <stop offset="60%" stopColor="#1B5E20"/>
+        {/* ═══ PHOTOREALISTIC LEAF GRADIENTS ═══ */}
+        <radialGradient id="leafBody" cx="35%" cy="30%" r="65%">
+          <stop offset="0%" stopColor="#4CAF50" stopOpacity=".95"/>
+          <stop offset="18%" stopColor="#43A047"/>
+          <stop offset="40%" stopColor="#2E7D32"/>
+          <stop offset="65%" stopColor="#1B5E20"/>
+          <stop offset="85%" stopColor="#145214"/>
           <stop offset="100%" stopColor="#0D3B0D"/>
         </radialGradient>
-        {/* Inner leaf shine */}
-        <radialGradient id="leafShine" cx="35%" cy="25%" r="50%">
-          <stop offset="0%" stopColor="#A5D6A7" stopOpacity=".5"/>
-          <stop offset="40%" stopColor="#69F0AE" stopOpacity=".15"/>
+        <radialGradient id="leafSSS" cx="40%" cy="25%" r="55%">
+          <stop offset="0%" stopColor="#81C784" stopOpacity=".45"/>
+          <stop offset="25%" stopColor="#66BB6A" stopOpacity=".25"/>
+          <stop offset="50%" stopColor="#4CAF50" stopOpacity=".12"/>
           <stop offset="100%" stopColor="#1B5E20" stopOpacity="0"/>
         </radialGradient>
-        {/* Vein color */}
-        <linearGradient id="veinG" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#C8E6C9" stopOpacity=".5"/>
-          <stop offset="100%" stopColor="#00E676" stopOpacity=".15"/>
+        <radialGradient id="leafEdge" cx="70%" cy="20%" r="60%">
+          <stop offset="0%" stopColor="#A5D6A7" stopOpacity=".2"/>
+          <stop offset="40%" stopColor="#69F0AE" stopOpacity=".08"/>
+          <stop offset="100%" stopColor="transparent" stopOpacity="0"/>
+        </radialGradient>
+        <linearGradient id="veinMain" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#C8E6C9" stopOpacity=".55"/>
+          <stop offset="50%" stopColor="#A5D6A7" stopOpacity=".35"/>
+          <stop offset="100%" stopColor="#66BB6A" stopOpacity=".15"/>
         </linearGradient>
-        {/* Stem gradient */}
-        <linearGradient id="stemG" x1="50%" y1="100%" x2="50%" y2="0%">
-          <stop offset="0%" stopColor="#2E7D32"/>
-          <stop offset="40%" stopColor="#388E3C"/>
+        <linearGradient id="stemFill" x1="50%" y1="100%" x2="50%" y2="0%">
+          <stop offset="0%" stopColor="#1B5E20"/>
+          <stop offset="30%" stopColor="#2E7D32"/>
+          <stop offset="60%" stopColor="#388E3C"/>
           <stop offset="100%" stopColor="#43A047"/>
         </linearGradient>
-        {/* Dew drop */}
-        <radialGradient id="dew" cx="30%" cy="30%" r="50%">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity=".7"/>
-          <stop offset="100%" stopColor="#C8E6C9" stopOpacity=".1"/>
+        <radialGradient id="dewDrop" cx="30%" cy="25%" r="50%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity=".85"/>
+          <stop offset="30%" stopColor="#E8F5E9" stopOpacity=".5"/>
+          <stop offset="70%" stopColor="#C8E6C9" stopOpacity=".2"/>
+          <stop offset="100%" stopColor="#A5D6A7" stopOpacity=".05"/>
         </radialGradient>
-        <filter id="leafGlow">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b"/>
-          <feFlood floodColor="#00E676" floodOpacity=".35" result="c"/>
-          <feComposite in="c" in2="b" operator="in" result="s"/>
-          <feMerge><feMergeNode in="s"/><feMergeNode in="SourceGraphic"/></feMerge>
+        <radialGradient id="dewCaustic" cx="65%" cy="70%" r="40%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity=".4"/>
+          <stop offset="100%" stopColor="transparent" stopOpacity="0"/>
+        </radialGradient>
+        <filter id="leafGlow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur"/>
+          <feFlood floodColor="#00E676" floodOpacity=".3" result="color"/>
+          <feComposite in="color" in2="blur" operator="in" result="shadow"/>
+          <feMerge><feMergeNode in="shadow"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
       </defs>
 
-      {/* ═══ STEM — grows up from bottom ═══ */}
+      {/* ═══ STEM — grows STRAIGHT UP from top of the E ═══ */}
       <g style={{
-        transform: `scaleY(${stemScale})`,
-        transformOrigin: "60px 180px",
-        transition: phase === "struggling" ? "transform 2s cubic-bezier(0.2,0,0.8,0.2)" : "transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        transform: `scaleY(${stemReveal})`,
+        transformOrigin: `${cx}px ${stemBase}px`,
+        transition: phase === "struggling"
+          ? "transform 2s cubic-bezier(0.2,0,0.8,0.2)"
+          : "transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
       }}>
-        {/* Main stem with natural curve */}
-        <path d="M60,180 C60,165 59,150 58,135 C57,120 58,105 59,95 C60,85 60,75 60,65"
-          stroke="url(#stemG)" strokeWidth="3.5" fill="none" strokeLinecap="round"/>
-        {/* Stem highlight */}
-        <path d="M59.5,178 C59.5,163 58.5,148 57.8,134 C57,120 58,106 59,96"
-          stroke="rgba(165,214,167,.3)" strokeWidth="1" fill="none" strokeLinecap="round"/>
-        {/* Small stem bumps (nodes) */}
-        <ellipse cx="59" cy="130" rx="2" ry="1.5" fill="#388E3C" opacity=".6"/>
-        <ellipse cx="60" cy="100" rx="1.8" ry="1.3" fill="#388E3C" opacity=".5"/>
+        {/* Main stem — straight up with very slight natural wobble */}
+        <path d={`M${cx},${stemBase} C${cx},${stemBase-10} ${cx-0.5},${stemBase-20} ${cx-0.3},${stemTop+8} C${cx},${stemTop+4} ${cx},${stemTop} ${cx},${stemTop}`}
+          stroke="url(#stemFill)" strokeWidth="4.5" fill="none" strokeLinecap="round"/>
+        {/* Stem highlight — moisture shine */}
+        <path d={`M${cx+1},${stemBase-3} C${cx+1},${stemBase-12} ${cx+0.5},${stemBase-22} ${cx+0.7},${stemTop+10}`}
+          stroke="rgba(165,214,167,.35)" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
+        {/* Single small node */}
+        <ellipse cx={cx} cy={stemBase-18} rx="2.8" ry="2" fill="#388E3C" opacity=".5"/>
       </g>
 
-      {/* ═══ FOUR LEAVES — bloom from center ═══ */}
+      {/* ═══ FOUR LEAVES — proper 90° spacing, all visible ═══ */}
       <g filter="url(#leafGlow)" style={{
-        transform: `scale(${leafScale})`,
-        transformOrigin: "60px 65px",
+        transform: `scale(${leafReveal})`,
+        transformOrigin: `${cx}px ${leafCenter}px`,
         transition: bursting
           ? "transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)"
           : "transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
-        opacity: leafScale,
+        opacity: leafReveal,
       }}>
-        {/* ── LEAF 1: Top-Right ── */}
-        <g transform="rotate(0, 60, 65)">
-          <path d="M60,65 C60,55 65,40 75,32 C85,24 90,28 88,38 C86,48 75,58 60,65 Z"
-            fill="url(#leafFill)" stroke="#1B5E20" strokeWidth=".4"/>
-          <path d="M60,65 C60,55 65,40 75,32 C85,24 90,28 88,38 C86,48 75,58 60,65 Z"
-            fill="url(#leafShine)"/>
-          {/* Heart notch */}
-          <path d="M74,31 C74,29 76,27 78,29" stroke="#0D3B0D" strokeWidth=".6" fill="none"/>
-          {/* Central vein */}
-          <path d="M60,65 C63,56 68,45 76,35" stroke="url(#veinG)" strokeWidth=".7" fill="none"/>
-          {/* Side veins */}
-          <path d="M65,52 C69,48 74,45 78,43" stroke="url(#veinG)" strokeWidth=".35" fill="none"/>
-          <path d="M62,58 C66,55 70,53 75,51" stroke="url(#veinG)" strokeWidth=".3" fill="none"/>
-          <path d="M68,46 C72,41 77,37 82,35" stroke="url(#veinG)" strokeWidth=".3" fill="none"/>
-          {/* Dew drop */}
-          <ellipse cx="72" cy="44" rx="1.8" ry="2.2" fill="url(#dew)" opacity=".6"/>
+        {/* Growth wrapper — scales leaves wider and taller over time */}
+        <g style={{
+          transform: `translate(${cx}px, ${leafCenter}px) scale(${leafWidthScale}, ${leafHeightScale}) translate(${-cx}px, ${-leafCenter}px)`,
+          transformOrigin: `${cx}px ${leafCenter}px`,
+          transition: "transform 1.5s cubic-bezier(0.34,1.56,0.64,1)",
+        }}>
+
+          {/* ── LEAF 1: TOP (12 o'clock) ── */}
+          <g transform={`rotate(0, ${cx}, ${leafCenter})`}>
+            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
+                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
+                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
+              fill="url(#leafBody)" stroke="#145214" strokeWidth=".3"/>
+            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
+                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
+                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
+              fill="url(#leafSSS)"/>
+            <path d={`M${cx+25},${leafCenter-41} C${cx+27},${leafCenter-43} ${cx+30},${leafCenter-44} ${cx+32},${leafCenter-42}`}
+              stroke="#0D3B0D" strokeWidth=".7" fill="none"/>
+            <path d={`M${cx},${leafCenter} C${cx+5},${leafCenter-12} ${cx+14},${leafCenter-24} ${cx+27},${leafCenter-38}`}
+              stroke="url(#veinMain)" strokeWidth=".9" fill="none"/>
+            <path d={`M${cx+8},${leafCenter-16} C${cx+15},${leafCenter-22} ${cx+24},${leafCenter-26} ${cx+32},${leafCenter-28}`}
+              stroke="url(#veinMain)" strokeWidth=".4" fill="none"/>
+            <path d={`M${cx+5},${leafCenter-10} C${cx+12},${leafCenter-14} ${cx+20},${leafCenter-17} ${cx+30},${leafCenter-19}`}
+              stroke="url(#veinMain)" strokeWidth=".35" fill="none"/>
+            <ellipse cx={cx+22} cy={leafCenter-22} rx="2.5" ry="3" fill="url(#dewDrop)" opacity=".7"/>
+            <ellipse cx={cx+22.8} cy={leafCenter-23.5} rx=".8" ry=".6" fill="white" opacity=".8"/>
+          </g>
+
+          {/* ── LEAF 2: RIGHT (3 o'clock) ── */}
+          <g transform={`rotate(90, ${cx}, ${leafCenter})`}>
+            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
+                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
+                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
+              fill="url(#leafBody)" stroke="#145214" strokeWidth=".3"/>
+            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
+                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
+                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
+              fill="url(#leafSSS)"/>
+            <path d={`M${cx+25},${leafCenter-41} C${cx+27},${leafCenter-43} ${cx+30},${leafCenter-44} ${cx+32},${leafCenter-42}`}
+              stroke="#0D3B0D" strokeWidth=".7" fill="none"/>
+            <path d={`M${cx},${leafCenter} C${cx+5},${leafCenter-12} ${cx+14},${leafCenter-24} ${cx+27},${leafCenter-38}`}
+              stroke="url(#veinMain)" strokeWidth=".9" fill="none"/>
+            <path d={`M${cx+8},${leafCenter-16} C${cx+15},${leafCenter-22} ${cx+24},${leafCenter-26} ${cx+32},${leafCenter-28}`}
+              stroke="url(#veinMain)" strokeWidth=".4" fill="none"/>
+            <ellipse cx={cx+26} cy={leafCenter-28} rx="2" ry="2.5" fill="url(#dewDrop)" opacity=".55"/>
+            <ellipse cx={cx+26.5} cy={leafCenter-29} rx=".6" ry=".5" fill="white" opacity=".7"/>
+          </g>
+
+          {/* ── LEAF 3: BOTTOM (6 o'clock) ── */}
+          <g transform={`rotate(180, ${cx}, ${leafCenter})`}>
+            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
+                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
+                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
+              fill="url(#leafBody)" stroke="#145214" strokeWidth=".3"/>
+            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
+                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
+                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
+              fill="url(#leafSSS)"/>
+            <path d={`M${cx+25},${leafCenter-41} C${cx+27},${leafCenter-43} ${cx+30},${leafCenter-44} ${cx+32},${leafCenter-42}`}
+              stroke="#0D3B0D" strokeWidth=".7" fill="none"/>
+            <path d={`M${cx},${leafCenter} C${cx+5},${leafCenter-12} ${cx+14},${leafCenter-24} ${cx+27},${leafCenter-38}`}
+              stroke="url(#veinMain)" strokeWidth=".9" fill="none"/>
+            <path d={`M${cx+8},${leafCenter-16} C${cx+15},${leafCenter-22} ${cx+24},${leafCenter-26} ${cx+32},${leafCenter-28}`}
+              stroke="url(#veinMain)" strokeWidth=".4" fill="none"/>
+            <ellipse cx={cx+18} cy={leafCenter-20} rx="2.2" ry="2.8" fill="url(#dewDrop)" opacity=".5"/>
+            <ellipse cx={cx+18.6} cy={leafCenter-21.2} rx=".7" ry=".5" fill="white" opacity=".7"/>
+          </g>
+
+          {/* ── LEAF 4: LEFT (9 o'clock) ── */}
+          <g transform={`rotate(270, ${cx}, ${leafCenter})`}>
+            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
+                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
+                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
+              fill="url(#leafBody)" stroke="#145214" strokeWidth=".3"/>
+            <path d={`M${cx},${leafCenter} C${cx+4},${leafCenter-14} ${cx+14},${leafCenter-32} ${cx+26},${leafCenter-40}
+                       C${cx+36},${leafCenter-45} ${cx+42},${leafCenter-38} ${cx+40},${leafCenter-26}
+                       C${cx+38},${leafCenter-14} ${cx+24},${leafCenter-4} ${cx},${leafCenter} Z`}
+              fill="url(#leafSSS)"/>
+            <path d={`M${cx+25},${leafCenter-41} C${cx+27},${leafCenter-43} ${cx+30},${leafCenter-44} ${cx+32},${leafCenter-42}`}
+              stroke="#0D3B0D" strokeWidth=".7" fill="none"/>
+            <path d={`M${cx},${leafCenter} C${cx+5},${leafCenter-12} ${cx+14},${leafCenter-24} ${cx+27},${leafCenter-38}`}
+              stroke="url(#veinMain)" strokeWidth=".9" fill="none"/>
+            <path d={`M${cx+8},${leafCenter-16} C${cx+15},${leafCenter-22} ${cx+24},${leafCenter-26} ${cx+32},${leafCenter-28}`}
+              stroke="url(#veinMain)" strokeWidth=".4" fill="none"/>
+            <ellipse cx={cx+20} cy={leafCenter-24} rx="2.3" ry="2.7" fill="url(#dewDrop)" opacity=".6"/>
+            <ellipse cx={cx+20.7} cy={leafCenter-25.2} rx=".7" ry=".5" fill="white" opacity=".75"/>
+          </g>
+
         </g>
 
-        {/* ── LEAF 2: Top-Left ── */}
-        <g transform="scale(-1,1) translate(-120,0)">
-          <path d="M60,65 C60,55 65,40 75,32 C85,24 90,28 88,38 C86,48 75,58 60,65 Z"
-            fill="url(#leafFill)" stroke="#1B5E20" strokeWidth=".4"/>
-          <path d="M60,65 C60,55 65,40 75,32 C85,24 90,28 88,38 C86,48 75,58 60,65 Z"
-            fill="url(#leafShine)"/>
-          <path d="M74,31 C74,29 76,27 78,29" stroke="#0D3B0D" strokeWidth=".6" fill="none"/>
-          <path d="M60,65 C63,56 68,45 76,35" stroke="url(#veinG)" strokeWidth=".7" fill="none"/>
-          <path d="M65,52 C69,48 74,45 78,43" stroke="url(#veinG)" strokeWidth=".35" fill="none"/>
-          <path d="M62,58 C66,55 70,53 75,51" stroke="url(#veinG)" strokeWidth=".3" fill="none"/>
-          <path d="M68,46 C72,41 77,37 82,35" stroke="url(#veinG)" strokeWidth=".3" fill="none"/>
-          <ellipse cx="74" cy="40" rx="1.5" ry="1.8" fill="url(#dew)" opacity=".45"/>
-        </g>
-
-        {/* ── LEAF 3: Bottom-Right ── */}
-        <g transform="rotate(85, 60, 65)">
-          <path d="M60,65 C60,55 65,40 75,32 C85,24 90,28 88,38 C86,48 75,58 60,65 Z"
-            fill="url(#leafFill)" stroke="#1B5E20" strokeWidth=".4"/>
-          <path d="M60,65 C60,55 65,40 75,32 C85,24 90,28 88,38 C86,48 75,58 60,65 Z"
-            fill="url(#leafShine)"/>
-          <path d="M74,31 C74,29 76,27 78,29" stroke="#0D3B0D" strokeWidth=".6" fill="none"/>
-          <path d="M60,65 C63,56 68,45 76,35" stroke="url(#veinG)" strokeWidth=".7" fill="none"/>
-          <path d="M65,52 C69,48 74,45 78,43" stroke="url(#veinG)" strokeWidth=".35" fill="none"/>
-          <path d="M62,58 C66,55 70,53 75,51" stroke="url(#veinG)" strokeWidth=".3" fill="none"/>
-          <ellipse cx="76" cy="42" rx="1.3" ry="1.6" fill="url(#dew)" opacity=".35"/>
-        </g>
-
-        {/* ── LEAF 4: Bottom-Left ── */}
-        <g transform="rotate(-85, 60, 65)">
-          <path d="M60,65 C60,55 65,40 75,32 C85,24 90,28 88,38 C86,48 75,58 60,65 Z"
-            fill="url(#leafFill)" stroke="#1B5E20" strokeWidth=".4"/>
-          <path d="M60,65 C60,55 65,40 75,32 C85,24 90,28 88,38 C86,48 75,58 60,65 Z"
-            fill="url(#leafShine)"/>
-          <path d="M74,31 C74,29 76,27 78,29" stroke="#0D3B0D" strokeWidth=".6" fill="none"/>
-          <path d="M60,65 C63,56 68,45 76,35" stroke="url(#veinG)" strokeWidth=".7" fill="none"/>
-          <path d="M65,52 C69,48 74,45 78,43" stroke="url(#veinG)" strokeWidth=".35" fill="none"/>
-          <path d="M62,58 C66,55 70,53 75,51" stroke="url(#veinG)" strokeWidth=".3" fill="none"/>
-          <ellipse cx="70" cy="46" rx="1.4" ry="1.7" fill="url(#dew)" opacity=".5"/>
-        </g>
-
-        {/* Center hub */}
-        <circle cx="60" cy="65" r="3" fill="#2E7D32" stroke="#1B5E20" strokeWidth=".5"/>
-        <circle cx="60" cy="65" r="1.8" fill="#388E3C"/>
-        <circle cx="59" cy="64" r=".8" fill="rgba(165,214,167,.4)"/>
+        {/* Center hub — where all four leaves meet */}
+        <circle cx={cx} cy={leafCenter} r="4.5" fill="#2E7D32" stroke="#1B5E20" strokeWidth=".5"/>
+        <circle cx={cx} cy={leafCenter} r="2.8" fill="#388E3C"/>
+        <circle cx={cx-0.8} cy={leafCenter-0.8} r="1.1" fill="rgba(165,214,167,.4)"/>
+        <circle cx={cx+1} cy={leafCenter-1} r=".9" fill="url(#dewDrop)" opacity=".5"/>
       </g>
     </svg>
   );
@@ -251,7 +319,7 @@ export default function Eden() {
         input:focus, textarea:focus, select:focus { border-color: rgba(197,179,88,0.4) !important; box-shadow: 0 0 12px rgba(197,179,88,0.06); }
 
         @keyframes float-particle { 0%,100%{transform:translateY(0) rotate(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-100vh) rotate(360deg);opacity:0} }
-        @keyframes shooting-star { 0%{transform:translate(0,0) rotate(-35deg);opacity:0;width:0}3%{opacity:.9;width:80px}12%{opacity:.6}25%{opacity:0}100%{transform:translate(500px,300px) rotate(-35deg);opacity:0} }
+        @keyframes shooting-star { 0%{transform:translate(0,0) rotate(-25deg);opacity:0;width:0}1%{opacity:.5;width:60px}3%{opacity:.4}6%{opacity:.25}10%{opacity:.1}15%{opacity:0}100%{transform:translate(300px,180px) rotate(-25deg);opacity:0} }
         @keyframes breathe { 0%,100%{filter:drop-shadow(0 0 20px rgba(197,179,88,.3))}50%{filter:drop-shadow(0 0 40px rgba(212,175,55,.6))} }
         @keyframes glow-pulse { 0%,100%{opacity:.4}50%{opacity:.8} }
         @keyframes fade-up { 0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)} }
@@ -264,7 +332,6 @@ export default function Eden() {
         @keyframes green-gem { 0%{box-shadow:0 0 8px rgba(76,175,80,.4),inset 0 0 4px rgba(76,175,80,.2)}50%{box-shadow:0 0 16px rgba(0,230,118,.6),inset 0 0 8px rgba(129,199,132,.3)}100%{box-shadow:0 0 8px rgba(76,175,80,.4),inset 0 0 4px rgba(76,175,80,.2)} }
         @keyframes border-shimmer { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
         @keyframes gentle-breeze { 0%,100%{transform:rotate(0deg)}15%{transform:rotate(1.8deg)}35%{transform:rotate(-1.2deg)}55%{transform:rotate(1deg)}75%{transform:rotate(-0.8deg)} }
-        @keyframes sprout-struggle { 0%{transform:scaleY(0) scaleX(0.8)}20%{transform:scaleY(0.15) scaleX(0.85)}35%{transform:scaleY(0.12) scaleX(0.82)}50%{transform:scaleY(0.25) scaleX(0.9)}65%{transform:scaleY(0.22) scaleX(0.88)}80%{transform:scaleY(0.5) scaleX(0.95)}100%{transform:scaleY(1) scaleX(1)} }
 
         .eden-particle { position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.8),transparent);animation:float-particle linear infinite;pointer-events:none; }
         .shooting-star { position:absolute;height:1.5px;background:linear-gradient(90deg,rgba(245,230,163,.9),rgba(212,175,55,.5),rgba(197,179,88,.2),transparent);animation:shooting-star linear infinite;pointer-events:none;border-radius:2px; }
@@ -297,7 +364,7 @@ export default function Eden() {
 }
 
 // ═══════════════════════════════════════════
-// LANDING PAGE — THE LIVING GARDEN
+// LANDING PAGE — THE LIVING GARDEN (REVISED)
 // ═══════════════════════════════════════════
 function LandingPage({ mounted, onEnter }) {
   const [chatMsg, setChatMsg] = useState("");
@@ -309,43 +376,47 @@ function LandingPage({ mounted, onEnter }) {
 
   // ═══ CLOVER GROWTH STATE ═══
   const [cloverPhase, setCloverPhase] = useState("dormant");
-  const [growthStage, setGrowthStage] = useState(0); // 0-20 stages over 10 min
+  const [growthProgress, setGrowthProgress] = useState(0); // 0→1 smooth
   const [breezeAngle, setBreezeAngle] = useState(0);
-
-  // Growth scale: starts at 1.0, grows to ~6x over 10 min (20 stages × 0.25 each)
-  const growthScale = 1 + (growthStage * 0.25);
 
   // ═══ CLOVER LIFECYCLE ═══
   useEffect(() => {
     if (!mounted) return;
 
-    // Phase 1: Start sprouting after 1s
     const t1 = setTimeout(() => setCloverPhase("sprouting"), 1000);
-    // Phase 2: Struggle at 2s
-    const t2 = setTimeout(() => setCloverPhase("struggling"), 2000);
-    // Phase 3: Burst open at 4s
-    const t3 = setTimeout(() => setCloverPhase("bursting"), 4000);
-    // Phase 4: Full bloom at 5s
-    const t4 = setTimeout(() => setCloverPhase("bloomed"), 5000);
-    // Phase 5: Begin growth cycle at 30s
+    const t2 = setTimeout(() => setCloverPhase("struggling"), 2500);
+    const t3 = setTimeout(() => setCloverPhase("bursting"), 4500);
+    const t4 = setTimeout(() => setCloverPhase("bloomed"), 5500);
     const t5 = setTimeout(() => setCloverPhase("growing"), 30000);
 
     return () => [t1,t2,t3,t4,t5].forEach(clearTimeout);
   }, [mounted]);
 
-  // ═══ GROWTH INCREMENTS — every 30s for 10 min ═══
+  // ═══ LEAF GROWTH — 33% EXPLOSIVE BURSTS every 5 seconds ═══
+  // Leaves grow in dramatic visible jumps, not slow continuous
   useEffect(() => {
     if (cloverPhase !== "growing") return;
 
-    const interval = setInterval(() => {
-      setGrowthStage(prev => {
-        if (prev >= 20) { clearInterval(interval); return 20; }
-        return prev + 1;
-      });
-    }, 30000);
+    let burstCount = 0;
+    const maxBursts = 12; // 12 bursts × 5s = 60 seconds of dramatic growth
 
-    // First growth immediately when entering "growing" phase
-    setGrowthStage(1);
+    // First burst immediately when entering "growing" phase
+    setGrowthProgress(0.33);
+    burstCount = 1;
+
+    const interval = setInterval(() => {
+      burstCount++;
+      if (burstCount >= maxBursts) {
+        clearInterval(interval);
+        setGrowthProgress(1);
+        return;
+      }
+      // Each burst adds ~33% of remaining growth (diminishing but always noticeable)
+      setGrowthProgress(prev => {
+        const remaining = 1 - prev;
+        return Math.min(prev + remaining * 0.33, 1);
+      });
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [cloverPhase]);
@@ -357,16 +428,15 @@ function LandingPage({ mounted, onEnter }) {
     let start = Date.now();
     const animate = () => {
       const t = (Date.now() - start) / 1000;
-      // Layered sine waves for organic feel — each growth stage slightly changes the pattern
       const sway = Math.sin(t * 0.4) * 2.5
         + Math.sin(t * 0.7 + 1) * 1.2
-        + Math.sin(t * 1.3 + growthStage) * 0.6;
+        + Math.sin(t * 1.3) * 0.6;
       setBreezeAngle(sway);
       frame = requestAnimationFrame(animate);
     };
     animate();
     return () => cancelAnimationFrame(frame);
-  }, [cloverPhase, growthStage]);
+  }, [cloverPhase]);
 
   useEffect(() => { if (chatRef.current) chatRef.current.scrollTop = chatRef.current.scrollHeight; }, [messages]);
 
@@ -392,32 +462,33 @@ function LandingPage({ mounted, onEnter }) {
   };
 
   return (
-    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "radial-gradient(ellipse at 50% 40%, #1a0f05 0%, #0a0604 40%, #050302 100%)", overflow: "hidden", position: "relative" }}>
+    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", background: "radial-gradient(ellipse at 50% 70%, #1a0f05 0%, #0a0604 40%, #050302 100%)", overflow: "hidden", position: "relative" }}>
       {/* Particles */}
       {Array.from({ length: 25 }).map((_, i) => <div key={`p${i}`} className="eden-particle" style={{ left: `${Math.random()*100}%`, bottom: `-${Math.random()*20}%`, width: `${1+Math.random()*3}px`, height: `${1+Math.random()*3}px`, animationDuration: `${8+Math.random()*12}s`, animationDelay: `${Math.random()*8}s` }} />)}
       {Array.from({ length: 8 }).map((_, i) => <div key={`g${i}`} className="eden-particle" style={{ left: `${25+Math.random()*50}%`, bottom: `-${Math.random()*15}%`, width: `${1+Math.random()*2}px`, height: `${1+Math.random()*2}px`, background: `radial-gradient(circle,rgba(0,230,118,${.3+Math.random()*.4}),transparent)`, animationDuration: `${10+Math.random()*14}s`, animationDelay: `${Math.random()*10}s` }} />)}
-      {/* Shooting stars */}
-      {Array.from({ length: 5 }).map((_, i) => <div key={`s${i}`} className="shooting-star" style={{ top: `${3+Math.random()*35}%`, left: `${-5+Math.random()*25}%`, width: `${50+Math.random()*70}px`, animationDuration: `${5+Math.random()*7}s`, animationDelay: `${i*2.5+Math.random()*3}s`, opacity: 0 }} />)}
-      {Array.from({ length: 2 }).map((_, i) => <div key={`gs${i}`} className="shooting-star green-star" style={{ top: `${10+Math.random()*30}%`, left: `${-5+Math.random()*20}%`, width: `${40+Math.random()*50}px`, animationDuration: `${6+Math.random()*6}s`, animationDelay: `${4+i*5+Math.random()*4}s`, opacity: 0 }} />)}
 
-      {/* Radial glow */}
-      <div style={{ position: "absolute", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(197,179,88,.06) 0%, rgba(76,175,80,.01) 40%, transparent 70%)", animation: "glow-pulse 4s ease-in-out infinite", pointerEvents: "none" }} />
+      {/* ═══ SHOOTING STARS — SUSPENDED IN SPACE, barely drifting ═══ */}
+      {Array.from({ length: 3 }).map((_, i) => <div key={`s${i}`} className="shooting-star" style={{ top: `${5+Math.random()*30}%`, left: `${-10+Math.random()*20}%`, width: `${30+Math.random()*40}px`, animationDuration: `${40+Math.random()*30}s`, animationDelay: `${i*12+Math.random()*10}s`, opacity: 0 }} />)}
+      {Array.from({ length: 1 }).map((_, i) => <div key={`gs${i}`} className="shooting-star green-star" style={{ top: `${15+Math.random()*25}%`, left: `${-10+Math.random()*15}%`, width: `${25+Math.random()*30}px`, animationDuration: `${50+Math.random()*20}s`, animationDelay: `${20+Math.random()*15}s`, opacity: 0 }} />)}
 
-      {/* ═══ EDEN TITLE + CLOVER ═══ */}
+      {/* Radial glow — shifted lower to follow the logo position */}
+      <div style={{ position: "absolute", bottom: "15%", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(197,179,88,.06) 0%, rgba(76,175,80,.01) 40%, transparent 70%)", animation: "glow-pulse 4s ease-in-out infinite", pointerEvents: "none" }} />
+
+      {/* ═══ EDEN TITLE + CLOVER — anchored to bottom zone, clover grows UP into open sky ═══ */}
       <div style={{
         position: "relative", cursor: "default",
         transform: mounted ? "scale(1)" : "scale(0.9)",
         opacity: mounted ? 1 : 0,
         transition: "all 1.2s cubic-bezier(0.16,1,0.3,1)",
-        marginTop: -30,
+        marginTop: 0,
       }}>
         {/* Gold top line */}
-        <div style={{ width: 400, height: 1, margin: "0 auto 20px", background: "linear-gradient(90deg, transparent, #C5B358, #F5E6A3, #C5B358, transparent)", animation: mounted ? "line-grow 1.5s ease-out forwards" : "none", animationDelay: ".3s", transformOrigin: "center", opacity: mounted ? 1 : 0 }}/>
+        <div style={{ width: 600, height: 1, margin: "0 auto 20px", background: "linear-gradient(90deg, transparent, #C5B358, #F5E6A3, #C5B358, transparent)", animation: mounted ? "line-grow 1.5s ease-out forwards" : "none", animationDelay: ".3s", transformOrigin: "center", opacity: mounted ? 1 : 0 }}/>
 
-        {/* EDEN text — 33% larger (72 → 96px) — with clover sprouting from it */}
+        {/* EDEN text — +40% from 128 = 179px — with clover sprouting from CENTER E */}
         <div style={{ position: "relative", textAlign: "center" }}>
           <h1 style={{
-            fontSize: 96, fontWeight: 900, letterSpacing: 28, margin: 0,
+            fontSize: 179, fontWeight: 900, letterSpacing: 44, margin: 0,
             fontFamily: "'Cinzel Decorative','Cinzel',serif",
             background: "linear-gradient(135deg,#8B6914 0%,#C5B358 15%,#F5E6A3 30%,#D4AF37 45%,#C5B358 55%,#F5E6A3 65%,#D4AF37 80%,#8B6914 100%)",
             backgroundSize: "200% 100%",
@@ -427,18 +498,19 @@ function LandingPage({ mounted, onEnter }) {
             lineHeight: 1,
           }}>EDEN</h1>
 
-          {/* ═══ LIVING CLOVER — sprouts from the D in EDEN ═══ */}
+          {/* ═══ LIVING CLOVER — stem grows from TOP of center E in EDEN ═══ */}
+          {/* With 179px font + 44 letter-spacing, the center E top is approx at the text top */}
           <div className="clover-container" style={{
             position: "absolute",
-            top: "-145px",
+            top: "-180px",
             left: "50%",
-            marginLeft: "10px",
+            marginLeft: "-105px", /* Centered over the E (second letter) in EDEN */
             zIndex: 10,
             pointerEvents: "none",
           }}>
             <LivingClover
               phase={cloverPhase}
-              growthScale={growthScale}
+              growthProgress={growthProgress}
               breezeAngle={breezeAngle}
             />
           </div>
@@ -451,7 +523,7 @@ function LandingPage({ mounted, onEnter }) {
           <div style={{ width: 80, height: 1, background: "linear-gradient(90deg,#C5B358,transparent)" }}/>
         </div>
 
-        {/* REALISM ENGINE — 33% larger (22 → 29px) */}
+        {/* REALISM ENGINE */}
         <h2 style={{
           fontSize: 29, fontWeight: 600, letterSpacing: 18, margin: 0, textAlign: "center",
           fontFamily: "'Cinzel',serif", textTransform: "uppercase",
@@ -464,9 +536,9 @@ function LandingPage({ mounted, onEnter }) {
         }}>Realism Engine</h2>
 
         {/* Bottom line */}
-        <div style={{ width: 400, height: 1, margin: "18px auto 20px", background: "linear-gradient(90deg,transparent,#C5B358,#F5E6A3,#C5B358,transparent)", animation: mounted ? "line-grow 1.5s ease-out forwards" : "none", animationDelay: ".6s", transformOrigin: "center" }}/>
+        <div style={{ width: 600, height: 1, margin: "18px auto 20px", background: "linear-gradient(90deg,transparent,#C5B358,#F5E6A3,#C5B358,transparent)", animation: mounted ? "line-grow 1.5s ease-out forwards" : "none", animationDelay: ".6s", transformOrigin: "center" }}/>
 
-        <p style={{ fontSize: 11, letterSpacing: 6, textAlign: "center", margin: 0, fontFamily: "'Cinzel',serif", textTransform: "uppercase", color: C.textDim, animation: mounted ? "fade-up 1s ease-out forwards" : "none", animationDelay: ".8s", opacity: mounted ? 1 : 0 }}>Beryl AI Labs &nbsp;·&nbsp; The Eden Project</p>
+        <p style={{ fontSize: 17, letterSpacing: 8, textAlign: "center", margin: 0, fontFamily: "'Cinzel',serif", textTransform: "uppercase", color: C.textDim, animation: mounted ? "fade-up 1s ease-out forwards" : "none", animationDelay: ".8s", opacity: mounted ? 1 : 0 }}>Beryl AI Labs &nbsp;·&nbsp; The Eden Project</p>
 
         {/* Shimmer */}
         <div style={{ position: "absolute", inset: 0, overflow: "hidden", pointerEvents: "none", borderRadius: 20 }}>
@@ -474,26 +546,25 @@ function LandingPage({ mounted, onEnter }) {
         </div>
       </div>
 
-      {/* ENTER EDEN button */}
+      {/* ═══ ENTER OUR AI GARDEN — LARGER BUTTON ═══ */}
       <button onClick={onEnter} style={{
-        marginTop: 28, padding: "14px 40px", borderRadius: 30, cursor: "pointer",
-        background: "linear-gradient(135deg, rgba(76,175,80,0.12), rgba(76,175,80,0.04))",
-        border: "1px solid rgba(76,175,80,0.3)", color: C.greenBright,
-        fontFamily: "'Cinzel',serif", fontSize: 12, letterSpacing: 6, textTransform: "uppercase",
+        marginTop: 20, padding: "18px 56px", borderRadius: 34, cursor: "pointer",
+        background: "linear-gradient(135deg, rgba(76,175,80,0.14), rgba(76,175,80,0.05))",
+        border: "1px solid rgba(76,175,80,0.35)", color: C.greenBright,
+        fontFamily: "'Cinzel',serif", fontSize: 15, letterSpacing: 7, textTransform: "uppercase",
         transition: "all 0.4s", animation: mounted ? "fade-up 1s ease-out forwards" : "none",
         animationDelay: "1.2s", opacity: mounted ? 1 : 0,
-      }} onMouseOver={e => { e.target.style.background = "linear-gradient(135deg,rgba(76,175,80,.2),rgba(76,175,80,.08))"; e.target.style.boxShadow = "0 0 30px rgba(76,175,80,.15)"; }}
-         onMouseOut={e => { e.target.style.background = "linear-gradient(135deg,rgba(76,175,80,.12),rgba(76,175,80,.04))"; e.target.style.boxShadow = "none"; }}>
-        Enter Eden
+      }} onMouseOver={e => { e.target.style.background = "linear-gradient(135deg,rgba(76,175,80,.22),rgba(76,175,80,.1))"; e.target.style.boxShadow = "0 0 40px rgba(76,175,80,.18), 0 0 80px rgba(76,175,80,.06)"; e.target.style.borderColor = "rgba(76,175,80,.5)"; }}
+         onMouseOut={e => { e.target.style.background = "linear-gradient(135deg,rgba(76,175,80,.14),rgba(76,175,80,.05))"; e.target.style.boxShadow = "none"; e.target.style.borderColor = "rgba(76,175,80,.35)"; }}>
+        Enter Our AI Garden
       </button>
 
-      {/* ═══ CHAT — 25% LARGER with ANIMATED GOLD SHIMMER BORDER ═══ */}
+      {/* ═══ CHAT — with ANIMATED GOLD SHIMMER BORDER ═══ */}
       <div style={{
-        width: "100%", maxWidth: 850, padding: "0 24px", marginTop: 36,
+        width: "100%", maxWidth: 850, padding: "0 24px", marginTop: 24, marginBottom: 24,
         animation: mounted ? "fade-up 1s ease-out forwards" : "none",
         animationDelay: "1.4s", opacity: mounted ? 1 : 0,
       }}>
-        {/* Chat messages area — shimmer border, only visible when conversation started */}
         {messages.length > 1 && (
           <div className="chat-shimmer-border" style={{ marginBottom: 16 }}>
             <div className="chat-shimmer-border-inner">
@@ -524,7 +595,7 @@ function LandingPage({ mounted, onEnter }) {
           </div>
         )}
 
-        {/* Input bar — 25% larger with shimmer border */}
+        {/* Input bar */}
         <div className="chat-shimmer-border">
           <div className="chat-shimmer-border-inner" style={{ display: "flex", alignItems: "center", gap: 14, padding: "18px 24px" }}>
             <div style={{ width: 10, height: 10, borderRadius: "50%", flexShrink: 0, background: "linear-gradient(135deg,#4CAF50,#00E676)", boxShadow: "0 0 8px rgba(0,230,118,.5)", animation: "glow-pulse 2s ease-in-out infinite" }}/>
@@ -552,9 +623,8 @@ function LandingPage({ mounted, onEnter }) {
           </div>
         </div>
 
-        {/* Subtle hint text */}
         {messages.length <= 1 && (
-          <p style={{ textAlign: "center", marginTop: 12, fontSize: 11, letterSpacing: 3, fontFamily: "'Cinzel',serif", color: "rgba(139,115,85,.4)", textTransform: "uppercase" }}>
+          <p style={{ textAlign: "center", marginTop: 12, fontSize: 13, letterSpacing: 4, fontFamily: "'Cinzel',serif", color: "rgba(197,179,88,.55)", textTransform: "uppercase" }}>
             Ask about image generation · voice agents · 4D avatars
           </p>
         )}
@@ -562,6 +632,8 @@ function LandingPage({ mounted, onEnter }) {
     </div>
   );
 }
+
+// ═══════════════════════════════════════════
 // APP SHELL — Sidebar + Pages
 // ═══════════════════════════════════════════
 function AppShell() {
@@ -575,9 +647,7 @@ function AppShell() {
 
   return (
     <div style={{ display: "flex", width: "100%", height: "100%", background: C.bg }}>
-      {/* Sidebar */}
       <div style={{ width: 72, borderRight: `1px solid ${C.border}`, display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 16, gap: 4, background: "rgba(12,8,4,.95)", flexShrink: 0 }}>
-        {/* Logo mini */}
         <div style={{ width: 36, height: 36, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,rgba(76,175,80,.1),rgba(197,179,88,.05))", border: `1px solid ${C.borderGreen}`, marginBottom: 16, cursor: "pointer", fontSize: 16 }} onClick={() => window.location.reload()}>🌿</div>
         {tabs.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
@@ -590,14 +660,11 @@ function AppShell() {
             <span style={{ fontSize: 8, letterSpacing: 1, color: tab === t.id ? C.gold : C.textDim, fontFamily: "'Cinzel',serif", textTransform: "uppercase" }}>{t.label}</span>
           </button>
         ))}
-        {/* Bottom spacer + Beryl badge */}
         <div style={{ flex: 1 }}/>
         <div style={{ padding: "8px 0 16px", textAlign: "center" }}>
           <div style={{ fontSize: 7, letterSpacing: 2, color: "rgba(139,115,85,.4)", fontFamily: "'Cinzel',serif", writingMode: "vertical-rl", textOrientation: "mixed" }}>BERYL AI</div>
         </div>
       </div>
-
-      {/* Content */}
       <div style={{ flex: 1, overflow: "hidden" }}>
         {tab === "image" && <ImageStudio />}
         {tab === "video" && <VideoStudio />}
@@ -609,7 +676,7 @@ function AppShell() {
 }
 
 // ═══════════════════════════════════════════
-// IMAGE STUDIO — WORKING via Pollinations FLUX
+// IMAGE STUDIO
 // ═══════════════════════════════════════════
 function ImageStudio() {
   const [prompt, setPrompt] = useState("");
@@ -639,31 +706,20 @@ function ImageStudio() {
     const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(fullPrompt)}?width=${w}&height=${h}&seed=${seed}&nologo=true&negative=${encodeURIComponent(neg)}&model=flux`;
 
     const img = new Image();
-    img.onload = () => {
-      setImageUrl(url);
-      setStatus(`✅ Generated · Seed: ${seed}`);
-      setHistory(p => [{ url, prompt: prompt.trim(), seed }, ...p].slice(0, 12));
-      setLoading(false);
-    };
-    img.onerror = () => {
-      setStatus("❌ Generation failed — try different prompt");
-      setLoading(false);
-    };
+    img.onload = () => { setImageUrl(url); setStatus(`✅ Generated · Seed: ${seed}`); setHistory(p => [{ url, prompt: prompt.trim(), seed }, ...p].slice(0, 12)); setLoading(false); };
+    img.onerror = () => { setStatus("❌ Generation failed — try different prompt"); setLoading(false); };
     img.src = url;
   };
 
   return (
     <div style={{ display: "flex", height: "100%", gap: 0 }}>
-      {/* Left: Controls */}
       <div style={{ width: 380, borderRight: `1px solid ${C.border}`, padding: 24, overflowY: "auto", display: "flex", flexDirection: "column", gap: 16, flexShrink: 0 }}>
         <div style={{ fontFamily: "'Cinzel',serif", fontSize: 14, letterSpacing: 4, color: C.gold, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 18 }}>🖼</span> Image Studio
         </div>
-
         <Card title="Prompt">
           <Input textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Describe your image in detail..." style={{ minHeight: 100 }} onKeyDown={e => e.key === "Enter" && e.ctrlKey && generate()}/>
         </Card>
-
         <Card title="Eden Protocol Preset">
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
             {[["eden","🔱 Eden"],["cinematic","🌙 Cinematic"],["studio","✨ Studio"],["raw","📸 Raw"],["none","🔥 None"]].map(([k,l]) => (
@@ -677,7 +733,6 @@ function ImageStudio() {
             ))}
           </div>
         </Card>
-
         <Card title="Resolution">
           <Select value={res} onChange={e => setRes(e.target.value)} options={[
             { value: "1024x1024", label: "1024 × 1024 (Square)" },
@@ -686,17 +741,12 @@ function ImageStudio() {
             { value: "1536x1024", label: "1536 × 1024 (Wide)" },
           ]} style={{ width: "100%" }}/>
         </Card>
-
         <Btn green onClick={generate} disabled={loading || !prompt.trim()} style={{ width: "100%", padding: "14px 20px", fontSize: 12 }}>
           {loading ? "⏳ Generating..." : "Generate Image"}
         </Btn>
-
         {status && <StatusBadge text={status} type={status.startsWith("✅") ? "success" : status.startsWith("❌") ? "error" : "info"}/>}
       </div>
-
-      {/* Right: Preview + History */}
       <div style={{ flex: 1, padding: 24, overflowY: "auto", display: "flex", flexDirection: "column", gap: 16 }}>
-        {/* Preview */}
         <div style={{ flex: 1, minHeight: 400, borderRadius: 14, border: `1px solid ${C.border}`, background: "rgba(12,8,4,.6)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative" }}>
           {imageUrl ? (
             <img src={imageUrl} alt="Generated" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 10 }}/>
@@ -713,8 +763,6 @@ function ImageStudio() {
             </div>
           )}
         </div>
-
-        {/* History grid */}
         {history.length > 0 && (
           <div>
             <div style={{ fontFamily: "'Cinzel',serif", fontSize: 10, letterSpacing: 3, color: C.textDim, textTransform: "uppercase", marginBottom: 10 }}>History</div>
@@ -733,7 +781,7 @@ function ImageStudio() {
 }
 
 // ═══════════════════════════════════════════
-// VIDEO STUDIO — Clean UI, routes to backend
+// VIDEO STUDIO
 // ═══════════════════════════════════════════
 function VideoStudio() {
   const [prompt, setPrompt] = useState("");
@@ -746,7 +794,6 @@ function VideoStudio() {
   const generateVideo = () => {
     if (!prompt.trim()) return;
     setStatus("🚀 Connecting to Eden Cloud GPU...");
-    // Open HuggingFace Space for actual generation
     setTimeout(() => {
       window.open("https://huggingface.co/spaces/AIBRUH/eden-diffusion-studio", "_blank");
       setStatus("✅ Eden Cloud Studio opened — generate your video there with GPU power");
@@ -759,11 +806,9 @@ function VideoStudio() {
         <div style={{ fontFamily: "'Cinzel',serif", fontSize: 14, letterSpacing: 4, color: C.gold, textTransform: "uppercase", display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 18 }}>🎬</span> Video Studio
         </div>
-
         <Card title="Video Prompt">
           <Input textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Describe your video scene in detail. Include camera movement, lighting, and action..." style={{ minHeight: 120 }}/>
         </Card>
-
         <Card title="Engine">
           <div style={{ display: "flex", gap: 6 }}>
             {[["ltx","LTX-Video 2"],["wan","Wan 2.2"],["kling","Kling 3.0"]].map(([k,l]) => (
@@ -777,7 +822,6 @@ function VideoStudio() {
             ))}
           </div>
         </Card>
-
         <Card title="Settings">
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <div style={{ flex: 1, minWidth: 100 }}>
@@ -806,21 +850,16 @@ function VideoStudio() {
             <span style={{ fontSize: 12, color: C.text, fontFamily: "'Cormorant Garamond',serif" }}>Native Audio</span>
           </div>
         </Card>
-
         <Btn green onClick={generateVideo} disabled={!prompt.trim()} style={{ width: "100%", padding: "14px 20px", fontSize: 12 }}>
           Generate Video
         </Btn>
-
         {status && <StatusBadge text={status} type={status.startsWith("✅") ? "success" : "info"}/>}
-
         <div style={{ padding: 12, borderRadius: 10, background: "rgba(76,175,80,.04)", border: `1px solid ${C.borderGreen}` }}>
           <span style={{ fontSize: 11, color: C.textGreen, fontFamily: "'Cormorant Garamond',serif", lineHeight: 1.5 }}>
             Video generation requires GPU compute. Clicking Generate opens Eden Cloud Studio powered by A10G GPU on HuggingFace. Your prompt and settings will be ready to use.
           </span>
         </div>
       </div>
-
-      {/* Right preview */}
       <div style={{ flex: 1, padding: 24, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", maxWidth: 400 }}>
           <span style={{ fontSize: 48, display: "block", marginBottom: 16, opacity: .3 }}>🎬</span>
@@ -835,7 +874,7 @@ function VideoStudio() {
 }
 
 // ═══════════════════════════════════════════
-// VOICE AGENTS — WORKING via Anthropic API
+// VOICE AGENTS
 // ═══════════════════════════════════════════
 function VoiceAgents() {
   const agents = [
@@ -881,7 +920,6 @@ function VoiceAgents() {
 
   return (
     <div style={{ display: "flex", height: "100%", gap: 0 }}>
-      {/* Agent selector */}
       <div style={{ width: 240, borderRight: `1px solid ${C.border}`, padding: 16, overflowY: "auto", flexShrink: 0 }}>
         <div style={{ fontFamily: "'Cinzel',serif", fontSize: 11, letterSpacing: 3, color: C.gold, textTransform: "uppercase", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 16 }}>🎙</span> Agents
@@ -900,10 +938,7 @@ function VoiceAgents() {
           ))}
         </div>
       </div>
-
-      {/* Chat area */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        {/* Header */}
         <div style={{ padding: "16px 24px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 12 }}>
           <span style={{ fontSize: 24 }}>{agent.icon}</span>
           <div>
@@ -914,9 +949,7 @@ function VoiceAgents() {
             </div>
           </div>
         </div>
-
-        {/* Messages */}
-        <div ref={chatRef} style={{ flex: 1, overflowY: "auto", padding: 24, display: "flex", flexDirection: "column", gap: 12 }}>
+        <div ref={chatRef} style={{ flex: 1, overflowY: "auto", padding: 24, display: "flex", flexDirection: "column", gap: 10 }}>
           {messages.map((m, i) => (
             <div key={i} style={{
               padding: "12px 16px", borderRadius: 14, maxWidth: "75%",
@@ -929,8 +962,6 @@ function VoiceAgents() {
           ))}
           {loading && <div style={{ padding: "12px 16px", borderRadius: 14, alignSelf: "flex-start", background: "linear-gradient(135deg,rgba(76,175,80,.07),rgba(76,175,80,.02))", border: `1px solid ${C.borderGreen}` }}><span style={{ color: C.textGreen, fontSize: 16, letterSpacing: 4 }}>{[0,1,2].map(i => <span key={i} style={{ animation: `dot-pulse 1.2s ease-in-out ${i*.2}s infinite`, display: "inline-block" }}>●</span>)}</span></div>}
         </div>
-
-        {/* Input */}
         <div style={{ padding: "16px 24px", borderTop: `1px solid ${C.border}`, display: "flex", gap: 10 }}>
           <input value={chatMsg} onChange={e => setChatMsg(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder={`Talk to ${agent.name}...`} style={{ flex: 1, padding: "12px 16px", borderRadius: 12, background: C.bgInput, border: `1px solid ${C.border}`, color: C.text, fontSize: 14, fontFamily: "'Cormorant Garamond',serif", outline: "none" }}/>
           <Btn green onClick={send} disabled={loading || !chatMsg.trim()} style={{ padding: "12px 20px" }}>Send</Btn>
@@ -941,7 +972,7 @@ function VoiceAgents() {
 }
 
 // ═══════════════════════════════════════════
-// AVATAR BUILDER — Clean UI, routes to backend
+// AVATAR BUILDER
 // ═══════════════════════════════════════════
 function AvatarBuilder() {
   const [speech, setSpeech] = useState("");
@@ -964,7 +995,6 @@ function AvatarBuilder() {
           <span style={{ fontSize: 18 }}>👤</span> Avatar Builder
           <span style={{ fontSize: 9, padding: "3px 8px", borderRadius: 6, background: "rgba(76,175,80,.1)", border: `1px solid ${C.borderGreen}`, color: C.greenBright, letterSpacing: 1, marginLeft: "auto" }}>EVE 4D</span>
         </div>
-
         <Card title="1. Avatar Image">
           <div style={{ border: `2px dashed ${C.border}`, borderRadius: 12, padding: 32, textAlign: "center", cursor: "pointer", transition: "all .2s" }}>
             <span style={{ fontSize: 28, display: "block", marginBottom: 8, opacity: .4 }}>📷</span>
@@ -972,23 +1002,19 @@ function AvatarBuilder() {
             <br/><span style={{ fontSize: 10, color: "rgba(139,115,85,.4)", fontFamily: "'Cinzel',serif", letterSpacing: 1 }}>Select from History</span>
           </div>
         </Card>
-
         <Card title="2. Speech">
           <Input textarea value={speech} onChange={e => setSpeech(e.target.value)} placeholder="Enter what you'd like the avatar to say..." style={{ minHeight: 80 }}/>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10 }}>
             <span style={{ fontSize: 10, color: C.textDim, fontFamily: "'Cinzel',serif", letterSpacing: 1 }}>VOICE:</span>
             <Select value="natural" onChange={() => {}} options={[
               { value: "natural", label: "Natural Female" },
-              { value: "male", label: "Professional Male" },
               { value: "warm", label: "Warm Narrator" },
             ]} style={{ flex: 1 }}/>
           </div>
         </Card>
-
         <Card title="3. Avatar Prompt (Optional)">
           <Input textarea value={avatarPrompt} onChange={e => setAvatarPrompt(e.target.value)} placeholder="Enter the avatar's actions, emotions, expressions..." style={{ minHeight: 60 }}/>
         </Card>
-
         <Card title="Quality">
           <div style={{ display: "flex", gap: 8 }}>
             {[["720p","Standard (720P · 24FPS)"],["1080p","Professional (1080P · 48FPS)"]].map(([k,l]) => (
@@ -1002,21 +1028,16 @@ function AvatarBuilder() {
             ))}
           </div>
         </Card>
-
         <Btn green onClick={generate} style={{ width: "100%", padding: "14px 20px", fontSize: 12 }}>
           Generate Avatar
         </Btn>
-
         {status && <StatusBadge text={status} type={status.startsWith("✅") ? "success" : "info"}/>}
-
         <div style={{ padding: 12, borderRadius: 10, background: "rgba(76,175,80,.04)", border: `1px solid ${C.borderGreen}` }}>
           <span style={{ fontSize: 11, color: C.textGreen, fontFamily: "'Cormorant Garamond',serif", lineHeight: 1.5 }}>
             Avatar generation uses EVE 4D pipeline with KDTalker + Chatterbox TTS. Requires GPU compute via Eden Cloud Studio.
           </span>
         </div>
       </div>
-
-      {/* Right: Preview */}
       <div style={{ flex: 1, padding: 24, display: "flex", flexDirection: "column" }}>
         <div style={{ fontFamily: "'Cinzel',serif", fontSize: 10, letterSpacing: 3, color: C.textDim, textTransform: "uppercase", marginBottom: 16 }}>Avatar Library</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: 12, flex: 1, alignContent: "start" }}>

@@ -588,7 +588,7 @@ function LandingPage({ mounted, onEnter }) {
             height: 140,
             zIndex: 10,
             pointerEvents: "none",
-            transform: `scale(${1.0 + (["bloomed","growing"].includes(cloverPhase) || cloverPhase === "bursting" ? 0.66 : 0) + (growthProgress * 1.0)})`,
+            transform: `scale(${1.0 + (["bloomed","growing"].includes(cloverPhase) || cloverPhase === "bursting" ? 0.66 : 0) + (Math.min(growthProgress, 1.5) * 0.3)})`,
             transformOrigin: "center bottom",
             transition: "transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
           }}>

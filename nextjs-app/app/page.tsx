@@ -72,6 +72,101 @@ const StatusBadge = ({ text, type }) => (
   }}>{text}</div>
 );
 
+// ─── Prompt Generator Component ───
+function PromptGenerator({ onGenerate, mediaType = "image" }) {
+  const [show, setShow] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [context, setContext] = useState("");
+  const [showContext, setShowContext] = useState(false);
+
+  const tiers = [
+    { id: "ice", label: "ICE COLD", desc: "SFW · Elegant · Safe for work", color: "#64B5F6", icon: "❄️" },
+    { id: "mild", label: "MILD", desc: "Sensual · Erotic tension · No explicit", color: "#FFB74D", icon: "🔥" },
+    { id: "spicy", label: "SPICY", desc: "Hardcore · Full explicit · Lulu tier", color: "#EF5350", icon: "🌶️" },
+  ];
+
+  const handleTier = async (tier) => {
+    setGenerating(true);
+    setShow(false);
+    try {
+      const resp = await fetch("/api/generate-prompt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tier, context: context.trim(), mediaType }),
+      });
+      const data = await resp.json();
+      if (data.prompt) {
+        onGenerate(data.prompt);
+      }
+    } catch {}
+    setGenerating(false);
+    setContext("");
+    setShowContext(false);
+  };
+
+  return (
+    <div>
+      <button onClick={() => setShow(!show)} disabled={generating} style={{
+        width: "100%", padding: "10px 16px", borderRadius: 10, cursor: generating ? "wait" : "pointer",
+        fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase",
+        background: generating ? "rgba(197,179,88,.15)" : show ? "rgba(197,179,88,.12)" : "rgba(197,179,88,.04)",
+        border: `1px solid ${show ? "rgba(197,179,88,.35)" : C.border}`,
+        color: generating ? C.gold : show ? "#FFFFFF" : C.textDim,
+        transition: "all .3s", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+      }}>
+        {generating ? (
+          <><div style={{ width: 14, height: 14, border: `2px solid ${C.border}`, borderTop: `2px solid ${C.gold}`, borderRadius: "50%", animation: "spin-loader 1s linear infinite" }}/> Generating Prompt...</>
+        ) : (
+          <><span style={{ fontSize: 16 }}>✨</span> Prompt Generator</>
+        )}
+      </button>
+
+      {show && (
+        <div style={{
+          marginTop: 8, padding: 14, borderRadius: 12,
+          background: "rgba(12,8,4,.95)", border: `1px solid ${C.border}`,
+          display: "flex", flexDirection: "column", gap: 8,
+        }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#FFFFFF", fontFamily: "'Cinzel',serif", letterSpacing: 2, textAlign: "center" }}>
+            SELECT TIER
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            {tiers.map(t => (
+              <button key={t.id} onClick={() => handleTier(t.id)} style={{
+                flex: 1, padding: "12px 6px", borderRadius: 10, cursor: "pointer", textAlign: "center",
+                background: "rgba(197,179,88,.03)", border: `1px solid ${C.border}`,
+                transition: "all .2s",
+              }}>
+                <div style={{ fontSize: 20, marginBottom: 4 }}>{t.icon}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: t.color, fontFamily: "'Cinzel',serif", letterSpacing: 1 }}>{t.label}</div>
+                <div style={{ fontSize: 9, color: C.textDim, fontFamily: "'Cormorant Garamond',serif", marginTop: 2, lineHeight: 1.3 }}>{t.desc}</div>
+              </button>
+            ))}
+          </div>
+          {/* Optional context input */}
+          <button onClick={() => setShowContext(!showContext)} style={{
+            padding: "6px", borderRadius: 6, cursor: "pointer", fontSize: 10, fontWeight: 700,
+            fontFamily: "'Cinzel',serif", letterSpacing: 1, background: "transparent",
+            border: `1px solid ${showContext ? "rgba(197,179,88,.2)" : "transparent"}`,
+            color: C.textDim, textAlign: "center",
+          }}>
+            {showContext ? "HIDE CONTEXT" : "+ ADD CONTEXT (OPTIONAL)"}
+          </button>
+          {showContext && (
+            <input value={context} onChange={e => setContext(e.target.value)} placeholder="e.g. woman in red dress at jazz club, couple on yacht, bedroom scene with candles..."
+              style={{
+                width: "100%", padding: "8px 12px", borderRadius: 8, background: C.bgInput,
+                border: `1px solid ${C.border}`, color: "#fff", fontSize: 13,
+                fontFamily: "'Cormorant Garamond',serif", outline: "none", boxSizing: "border-box",
+              }}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Default model presets for Eden Chat ───
 const HF_MODELS = [
   { id: "huihui-ai/Qwen2.5-VL-7B-Instruct-abliterated", label: "Qwen2.5-VL 7B (Vision)", vision: true },
@@ -1760,8 +1855,9 @@ function ImageStudio() {
           <span style={{ fontSize: 22 }}>🖼</span> Image Studio
         </div>
         <Card title="Prompt">
-          <Input textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Describe your image in detail..." style={{ minHeight: 100 }} onKeyDown={e => e.key === "Enter" && e.ctrlKey && generate()}/>
+          <Input textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Describe your image in detail... Be specific about subject, lighting, composition, mood, wardrobe, setting, camera angle..." style={{ minHeight: 180, fontSize: 14, lineHeight: 1.6 }} onKeyDown={e => e.key === "Enter" && e.ctrlKey && generate()}/>
         </Card>
+        <PromptGenerator onGenerate={p => setPrompt(p)} mediaType="image" />
         {/* ═══ GPU SELECTOR — ZeroGPU + GO BIG ═══ */}
         <div style={{ display: "flex", gap: 6 }}>
           {/* ZeroGPU Button (default) */}
@@ -2375,8 +2471,9 @@ function VideoStudio() {
           <span style={{ fontSize: 22 }}>🎬</span> Video Studio
         </div>
         <Card title="Video Prompt">
-          <Input textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Describe your video scene in detail. Include camera movement, lighting, and action..." style={{ minHeight: 120 }} onKeyDown={e => e.key === "Enter" && e.ctrlKey && generateVideo()}/>
+          <Input textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Describe your video scene in detail. Include camera movement, lighting, action, wardrobe, setting, mood..." style={{ minHeight: 180, fontSize: 14, lineHeight: 1.6 }} onKeyDown={e => e.key === "Enter" && e.ctrlKey && generateVideo()}/>
         </Card>
+        <PromptGenerator onGenerate={p => setPrompt(p)} mediaType="video" />
         {/* ═══ GPU SELECTOR ═══ */}
         <div style={{ display: "flex", gap: 6 }}>
           <button onClick={() => { if (gpuActive) { setGpuOffConfirm(true); return; } setGpuMode("zerogpu"); }} style={{

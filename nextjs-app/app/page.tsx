@@ -1506,7 +1506,7 @@ function AppShell() {
 function ImageStudio() {
   const [prompt, setPrompt] = useState("");
   const [preset, setPreset] = useState("EDEN Ultra Realism");
-  const [backend, setBackend] = useState("Juggernaut Pro FLUX");
+  const [backend, setBackend] = useState("FLUX Schnell (Fast R&D)");
   const [res, setRes] = useState("1024x1024 ( 1:1 )");
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
@@ -1658,44 +1658,44 @@ function ImageStudio() {
     const payload = { prompt: trimmed, preset, resolution: res, randomSeed: true, enhance: true, mode: "image_studio" };
 
     if (cascade) {
-      // ─── PASS 1: FAST PREVIEW — Z-Image Turbo ~3-5 seconds ───
-      setStatus("⚡ Fast preview rendering (Z-Image Turbo)...");
+      // ─── PASS 1: SCHNELL R&D — 4 steps, ~3 seconds ───
+      setStatus("⚡ Schnell R&D preview (4 steps)...");
       try {
         const fastResp = await fetch("/api/generate-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...payload, backend: "Z-Image Turbo (Fast)", steps: 12 }),
+          body: JSON.stringify({ ...payload, backend: "FLUX Schnell (Fast R&D)", steps: 4 }),
         });
         const fastData = await fastResp.json();
         if (fastData.image) {
           setImageUrl(fastData.image);
-          setStatus(`⚡ Preview ready · Remastering via ${backend}...`);
-          setHistory(p => [{ url: fastData.image, prompt: trimmed, seed: fastData.seed, tag: "preview" }, ...p].slice(0, 30));
+          setStatus(`⚡ Schnell preview ready · Remastering via FLUX Dev...`);
+          setHistory(p => [{ url: fastData.image, prompt: trimmed, seed: fastData.seed, tag: "schnell" }, ...p].slice(0, 30));
         }
       } catch {
-        // Fast pass failed — fall through to quality pass
+        // Schnell failed — fall through to Dev pass
       }
 
-      // ─── PASS 2: EDEN PROTOCOL REMASTER — runs immediately after preview ───
+      // ─── PASS 2: FLUX DEV REMASTER — 25 steps, ~18 seconds, publish quality ───
       setRemastering(true);
       try {
         const qualResp = await fetch("/api/generate-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...payload, backend }),
+          body: JSON.stringify({ ...payload, backend: "FLUX Dev (Publish Quality)", steps: 25 }),
         });
         const qualData = await qualResp.json();
         if (qualData.image) {
           setRemasterUrl(qualData.image);
           setImageUrl(qualData.image);
           setIsRemastered(true);
-          setStatus(`✅ EDEN REMASTERED · ${qualData.steps || 50} steps · ${qualData.backend || backend} · Seed: ${qualData.seed || "auto"}`);
+          setStatus(`✅ EDEN REMASTERED · ${qualData.steps || 25} steps · FLUX Dev · Seed: ${qualData.seed || "auto"}`);
           setHistory(p => [{ url: qualData.image, prompt: trimmed, seed: qualData.seed, tag: "remastered" }, ...p].slice(0, 30));
         } else {
-          setStatus(`⚡ Preview shown · Remaster unavailable: ${qualData.error || "backend busy"}`);
+          setStatus(`⚡ Schnell preview shown · Dev remaster unavailable: ${qualData.error || "backend busy"}`);
         }
       } catch (e) {
-        setStatus(`⚡ Preview shown · Remaster error: ${e.message}`);
+        setStatus(`⚡ Schnell preview shown · Dev remaster error: ${e.message}`);
       }
       setRemastering(false);
       setLoading(false);

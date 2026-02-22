@@ -2,21 +2,31 @@ import { NextRequest, NextResponse } from "next/server";
 import { Client } from "@gradio/client";
 import { IMAGE_BACKENDS, EDEN_PRESETS, buildSmartNegative, injectPositiveKeywords } from "@/lib/data";
 
-// ─── Smart step selection based on backend capability ───
-// Z-Image Turbo: 4-12 steps (distilled, fast)
-// FLUX.1/2: 20-50 steps (full diffusion)
-// epiCRealism XL / Juggernaut: 30-60 steps (SDXL, max quality)
-// CogView4: 25-40 steps
-function getOptimalSteps(spaceId: string, requestedSteps?: number): number {
-  if (requestedSteps && requestedSteps > 0) return requestedSteps;
+// ─── Extract image URL from various Gradio response formats ───
+function extractImageUrl(data: unknown): string | null {
+  if (!data) return null;
+  if (typeof data === "string") return data;
+  if (typeof data === "object" && data !== null) {
+    const obj = data as Record<string, unknown>;
+    if (obj.url) return String(obj.url);
+    if (obj.path) return String(obj.path);
+    if (obj.image) return String(obj.image);
+  }
+  return null;
+}
 
-  if (spaceId.includes("Z-Image") || spaceId.includes("Tongyi")) return 8;
-  if (spaceId.includes("epicrealism") || spaceId.includes("Juggernaut")) return 50;
-  if (spaceId.includes("FLUX.2")) return 40;
-  if (spaceId.includes("FLUX.1")) return 35;
-  if (spaceId.includes("CogView")) return 30;
-  if (spaceId.includes("eden-diffusion")) return 45;
-  return 30; // safe default
+function extractFromArray(data: unknown[]): string | null {
+  for (const item of data) {
+    if (Array.isArray(item)) {
+      // Gallery format — take last (best) image
+      const last = item[item.length - 1];
+      const url = extractImageUrl(last);
+      if (url) return url;
+    }
+    const url = extractImageUrl(item);
+    if (url) return url;
+  }
+  return null;
 }
 
 export async function POST(req: NextRequest) {
@@ -25,73 +35,114 @@ export async function POST(req: NextRequest) {
     const { prompt, preset, backend, resolution, steps, seed, randomSeed, enhance, negative, mode } = body;
 
     // ERE-1: Inject positive keywords based on prompt content + mode
-    // Keywords are appended AFTER user prompt to preserve user's specific attributes
     let fullPrompt = injectPositiveKeywords(prompt, mode || "image_studio", preset);
     const presetText = EDEN_PRESETS[preset as keyof typeof EDEN_PRESETS] || "";
     if (presetText) fullPrompt = `${fullPrompt}, ${presetText}`;
     if (enhance) fullPrompt = `(masterpiece, best quality, extremely detailed, raw photo), ${fullPrompt}`;
 
-    // ERE-1: Smart Negative Engine — auto-detects subject and injects conditionals
     const fullNeg = buildSmartNegative(prompt, negative || undefined);
+    const spaceId = IMAGE_BACKENDS[backend as keyof typeof IMAGE_BACKENDS] || "black-forest-labs/FLUX.1-schnell";
+    const actualSeed = randomSeed ? Math.floor(Math.random() * 2 ** 32) : (seed || 0);
 
-    const spaceId = IMAGE_BACKENDS[backend as keyof typeof IMAGE_BACKENDS] || "Tongyi-MAI/Z-Image-Turbo";
-    const actualSeed = randomSeed ? Math.floor(Math.random() * 2 ** 32) : seed;
-    const optimalSteps = getOptimalSteps(spaceId, steps);
+    // Parse resolution
+    const resParts = (resolution || "1024x1024").match(/(\d+)x(\d+)/);
+    const width = resParts ? parseInt(resParts[1]) : 1024;
+    const height = resParts ? parseInt(resParts[2]) : 1024;
 
     const client = await Client.connect(spaceId);
 
+    // ═══ FLUX SCHNELL — 4 steps, ~3 seconds, rapid testing ═══
+    if (spaceId.includes("FLUX.1-schnell")) {
+      const actualSteps = steps || 4;
+      const result = await client.predict("/infer", {
+        prompt: fullPrompt,
+        seed: actualSeed,
+        randomize_seed: !!randomSeed,
+        width,
+        height,
+        num_inference_steps: actualSteps,
+      });
+      const data = result.data as unknown[];
+      const url = Array.isArray(data) ? extractFromArray(data) : extractImageUrl(data);
+      if (url) {
+        return NextResponse.json({
+          image: url,
+          seed: (Array.isArray(data) && data.length > 1) ? data[1] : actualSeed,
+          steps: actualSteps,
+          backend: "FLUX Schnell",
+        });
+      }
+      return NextResponse.json({ error: "Schnell returned no image" }, { status: 500 });
+    }
+
+    // ═══ FLUX DEV — 20-25 steps, ~18 seconds, production quality ═══
+    if (spaceId.includes("FLUX.1-dev")) {
+      const actualSteps = steps || 25;
+      // FLUX.1-dev Space uses /infer endpoint same as schnell
+      const result = await client.predict("/infer", {
+        prompt: fullPrompt,
+        seed: actualSeed,
+        randomize_seed: !!randomSeed,
+        width,
+        height,
+        num_inference_steps: actualSteps,
+        guidance_scale: 3.5,
+      });
+      const data = result.data as unknown[];
+      const url = Array.isArray(data) ? extractFromArray(data) : extractImageUrl(data);
+      if (url) {
+        return NextResponse.json({
+          image: url,
+          seed: (Array.isArray(data) && data.length > 1) ? data[1] : actualSeed,
+          steps: actualSteps,
+          backend: "FLUX Dev",
+        });
+      }
+      return NextResponse.json({ error: "FLUX Dev returned no image" }, { status: 500 });
+    }
+
     // ═══ Z-IMAGE TURBO PATH ═══
     if (spaceId.includes("Z-Image") || spaceId.includes("Tongyi")) {
+      const actualSteps = steps || 8;
       const result = await client.predict("/Z_Image_Turbo_generate", {
         prompt: fullPrompt,
         resolution: resolution || "1024x1024 ( 1:1 )",
-        random_seed: randomSeed,
+        random_seed: !!randomSeed,
         seed: actualSeed,
-        steps: optimalSteps,
+        steps: actualSteps,
         shift: 3.0,
       });
-
       const data = result.data as unknown[];
-      if (Array.isArray(data) && data.length > 0) {
-        const gallery = data[0];
-        if (Array.isArray(gallery) && gallery.length > 0) {
-          const img = gallery[gallery.length - 1];
-          const url = typeof img === "string" ? img : (img as Record<string, unknown>)?.image || (img as Record<string, unknown>)?.url || (img as Record<string, unknown>)?.path;
-          return NextResponse.json({ image: url, seed: data[2] || actualSeed, steps: optimalSteps, backend: "Z-Image Turbo" });
-        }
+      const url = Array.isArray(data) ? extractFromArray(data) : null;
+      if (url) {
+        return NextResponse.json({ image: url, seed: data[2] || actualSeed, steps: actualSteps, backend: "Z-Image Turbo" });
       }
-      return NextResponse.json({ error: "No image in result" }, { status: 500 });
+      return NextResponse.json({ error: "Z-Image returned no image" }, { status: 500 });
     }
 
-    // ═══ FLUX / SDXL / COGVIEW — Full realism path ═══
-    // These models support negative prompts and higher step counts
-    try {
-      const result = await client.predict("/predict", [fullPrompt, fullNeg]);
-      const data = result.data;
-      if (typeof data === "string") {
-        return NextResponse.json({ image: data, seed: actualSeed, steps: optimalSteps, backend: backend || "FLUX" });
-      }
-      // Some spaces return arrays or objects
-      if (Array.isArray(data) && data.length > 0) {
-        const item = data[0];
-        const url = typeof item === "string" ? item : (item as Record<string, unknown>)?.image || (item as Record<string, unknown>)?.url || (item as Record<string, unknown>)?.path;
-        if (url) {
-          return NextResponse.json({ image: url, seed: actualSeed, steps: optimalSteps, backend: backend || "FLUX" });
-        }
-      }
-    } catch {
-      // Some spaces use different endpoint names — try alternatives
+    // ═══ GENERIC GRADIO SPACE — try common endpoints ═══
+    const endpoints = ["/infer", "/predict", "/generate", "/run"];
+    for (const ep of endpoints) {
       try {
-        const result = await client.predict("/generate", { prompt: fullPrompt, negative_prompt: fullNeg, num_inference_steps: optimalSteps, seed: actualSeed });
+        const result = await client.predict(ep, {
+          prompt: fullPrompt,
+          negative_prompt: fullNeg,
+          num_inference_steps: steps || 30,
+          seed: actualSeed,
+          width,
+          height,
+        });
         const data = result.data;
-        const url = typeof data === "string" ? data : Array.isArray(data) ? (typeof data[0] === "string" ? data[0] : (data[0] as Record<string, unknown>)?.url || (data[0] as Record<string, unknown>)?.path) : null;
-        if (url) return NextResponse.json({ image: url, seed: actualSeed, steps: optimalSteps, backend: backend || "alt" });
+        const url = Array.isArray(data) ? extractFromArray(data) : extractImageUrl(data);
+        if (url) {
+          return NextResponse.json({ image: url, seed: actualSeed, steps: steps || 30, backend: backend || spaceId });
+        }
       } catch {
-        // Final fallback
+        continue; // Try next endpoint
       }
     }
 
-    return NextResponse.json({ error: "No image generated — try a different backend" }, { status: 500 });
+    return NextResponse.json({ error: "No image generated — backend may be sleeping or unavailable" }, { status: 500 });
 
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : "Unknown error";

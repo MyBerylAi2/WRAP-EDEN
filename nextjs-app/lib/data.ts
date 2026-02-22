@@ -266,11 +266,9 @@ export const EDEN_PRESETS: Record<string, string> = {
 // ─── IMAGE BACKENDS ─────────────────────────────────────────────────
 
 export const IMAGE_BACKENDS: Record<string, string> = {
-  "Z-Image Turbo (Fast)": "Tongyi-MAI/Z-Image-Turbo",
-  "FLUX.1 Dev": "black-forest-labs/FLUX.1-dev",
-  "FLUX.2 Dev (4-bit)": "diffusers/FLUX.2-dev-bnb-4bit",
-  "epiCRealism XL": "John6666/epicrealism-xl-vxvi-lastfame-dmd2-realism-sdxl",
-  "Eden Diffusion Studio": "AIBRUH/eden-diffusion-studio",
+  "FLUX Schnell (Fast R&D)": "black-forest-labs/FLUX.1-schnell",
+  "FLUX Dev (Publish Quality)": "black-forest-labs/FLUX.1-dev",
+  "Z-Image Turbo": "Tongyi-MAI/Z-Image-Turbo",
   "CogView4": "THUDM/CogView4-6B",
   "Juggernaut Pro FLUX": "RunDiffusion/JuggernautProFlux",
 };

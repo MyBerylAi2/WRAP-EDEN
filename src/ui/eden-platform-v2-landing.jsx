@@ -80,75 +80,139 @@ const StatusBadge = ({ text, type }) => (
 function LivingClover({ phase, growthProgress, breezeAngle, totalScale }) {
   const bloomed = ["bloomed","growing"].includes(phase);
   const bursting = phase === "bursting";
-
-  // Stem reveal: grows upward from base
   const stemReveal = phase === "dormant" ? 0 : phase === "sprouting" ? 0.4 : phase === "struggling" ? 0.7 : 1;
-  // Leaves only appear after burst
   const leafReveal = !bloomed && !bursting ? 0 : 1;
 
-  // SVG dimensions — compact, self-contained plant
-  // NO SCALING HERE — scaling is done by the parent container div
-  const vbW = 120;
-  const vbH = 120;
-  const cx = 60;
-  const stemBase = 118;
-  const stemTop = 88;
+  const vbW = 140;
+  const vbH = 140;
+  const cx = 70;
+  const stemBase = 138;
+  const stemTop = 100;
   const hub = stemTop - 2;
 
-  // Single leaf path — plump heart shape, origin at hub (0,0)
-  const leaf = "M0,0 C2,-10 10,-26 20,-32 C28,-36 34,-30 32,-20 C30,-10 18,-2 0,0 Z";
+  // PHOTOREALISTIC leaf — wide, plump heart shape matching reference photo
+  // Rounder, fuller shape with pronounced heart notch at tip
+  const leafOuter = "M0,0 C-1,-5 2,-14 6,-22 C10,-28 16,-36 24,-41 C28,-43 32,-44 36,-42 C40,-39 42,-34 42,-28 C42,-20 38,-12 30,-6 C22,-1 10,1 0,0 Z";
+
+  // Dense vein system — matches reference photo's intricate branching network
+  const Veins = () => (
+    <g>
+      {/* Central vein — thick, prominent midrib */}
+      <path d="M0,0 C3,-6 10,-20 26,-38" stroke="rgba(200,230,201,.55)" strokeWidth="1.1" fill="none"/>
+      {/* Primary veins — 6 major branches curving toward leaf edge */}
+      <path d="M2,-4 C8,-6 16,-8 26,-10" stroke="rgba(200,230,201,.4)" strokeWidth=".6" fill="none"/>
+      <path d="M4,-8 C10,-11 18,-14 30,-16" stroke="rgba(200,230,201,.4)" strokeWidth=".55" fill="none"/>
+      <path d="M6,-13 C12,-16 20,-20 32,-23" stroke="rgba(200,230,201,.4)" strokeWidth=".5" fill="none"/>
+      <path d="M9,-18 C15,-22 24,-26 35,-29" stroke="rgba(200,230,201,.38)" strokeWidth=".5" fill="none"/>
+      <path d="M12,-23 C18,-27 26,-31 36,-34" stroke="rgba(200,230,201,.35)" strokeWidth=".45" fill="none"/>
+      <path d="M16,-28 C22,-32 28,-35 35,-37" stroke="rgba(200,230,201,.3)" strokeWidth=".4" fill="none"/>
+      {/* Secondary veins — branches off primaries */}
+      <path d="M6,-5 C9,-7 12,-9 16,-10" stroke="rgba(200,230,201,.28)" strokeWidth=".35" fill="none"/>
+      <path d="M8,-10 C11,-12 15,-14 20,-15" stroke="rgba(200,230,201,.28)" strokeWidth=".35" fill="none"/>
+      <path d="M10,-14 C14,-16 18,-19 24,-20" stroke="rgba(200,230,201,.25)" strokeWidth=".3" fill="none"/>
+      <path d="M13,-19 C17,-22 22,-24 28,-26" stroke="rgba(200,230,201,.25)" strokeWidth=".3" fill="none"/>
+      <path d="M15,-23 C19,-26 24,-28 30,-30" stroke="rgba(200,230,201,.22)" strokeWidth=".3" fill="none"/>
+      <path d="M18,-27 C22,-30 27,-32 32,-34" stroke="rgba(200,230,201,.2)" strokeWidth=".28" fill="none"/>
+      <path d="M20,-31 C24,-34 28,-36 33,-37" stroke="rgba(200,230,201,.18)" strokeWidth=".25" fill="none"/>
+      {/* Tertiary veins — fine webbing between secondaries */}
+      <path d="M5,-6 C7,-8 9,-10 12,-11" stroke="rgba(200,230,201,.15)" strokeWidth=".22" fill="none"/>
+      <path d="M7,-9 C9,-11 12,-13 15,-14" stroke="rgba(200,230,201,.15)" strokeWidth=".22" fill="none"/>
+      <path d="M9,-13 C12,-15 15,-17 19,-18" stroke="rgba(200,230,201,.14)" strokeWidth=".2" fill="none"/>
+      <path d="M11,-16 C14,-18 17,-20 22,-22" stroke="rgba(200,230,201,.14)" strokeWidth=".2" fill="none"/>
+      <path d="M14,-20 C17,-23 20,-25 25,-27" stroke="rgba(200,230,201,.13)" strokeWidth=".2" fill="none"/>
+      <path d="M17,-25 C20,-28 23,-30 28,-32" stroke="rgba(200,230,201,.12)" strokeWidth=".18" fill="none"/>
+      <path d="M19,-29 C22,-31 25,-33 30,-35" stroke="rgba(200,230,201,.11)" strokeWidth=".18" fill="none"/>
+      {/* Cross-veins — connecting network between major veins (like reference photo) */}
+      <path d="M8,-8 C9,-11 10,-14 12,-16" stroke="rgba(200,230,201,.12)" strokeWidth=".18" fill="none"/>
+      <path d="M14,-13 C15,-16 16,-19 18,-22" stroke="rgba(200,230,201,.12)" strokeWidth=".18" fill="none"/>
+      <path d="M20,-18 C21,-22 22,-25 24,-28" stroke="rgba(200,230,201,.1)" strokeWidth=".16" fill="none"/>
+      <path d="M26,-22 C27,-26 28,-29 30,-32" stroke="rgba(200,230,201,.1)" strokeWidth=".16" fill="none"/>
+      <path d="M32,-26 C33,-29 34,-32 35,-34" stroke="rgba(200,230,201,.09)" strokeWidth=".15" fill="none"/>
+      {/* Quaternary — ultra-fine meshwork for photorealism */}
+      <path d="M4,-7 C5,-8 6,-9 8,-10" stroke="rgba(200,230,201,.08)" strokeWidth=".15" fill="none"/>
+      <path d="M7,-11 C8,-12 10,-14 12,-15" stroke="rgba(200,230,201,.08)" strokeWidth=".15" fill="none"/>
+      <path d="M10,-15 C12,-17 13,-18 16,-20" stroke="rgba(200,230,201,.08)" strokeWidth=".14" fill="none"/>
+      <path d="M16,-22 C18,-24 19,-25 22,-27" stroke="rgba(200,230,201,.07)" strokeWidth=".14" fill="none"/>
+      <path d="M22,-27 C24,-29 26,-31 28,-32" stroke="rgba(200,230,201,.07)" strokeWidth=".13" fill="none"/>
+      <path d="M28,-31 C30,-33 31,-34 33,-36" stroke="rgba(200,230,201,.06)" strokeWidth=".13" fill="none"/>
+      {/* Margin veins — running along leaf edge */}
+      <path d="M30,-8 C34,-14 38,-20 40,-28" stroke="rgba(200,230,201,.12)" strokeWidth=".2" fill="none"/>
+      <path d="M34,-16 C37,-22 39,-28 40,-34" stroke="rgba(200,230,201,.1)" strokeWidth=".18" fill="none"/>
+    </g>
+  );
+
+  // Dew drops with caustic refraction highlight
+  const DewDrop = ({ x, y, rx, ry, op }) => (
+    <g>
+      <ellipse cx={x} cy={y} rx={rx} ry={ry} fill="url(#dw)" opacity={op}/>
+      <ellipse cx={x+rx*0.3} cy={y-ry*0.35} rx={rx*0.3} ry={ry*0.25} fill="white" opacity={op*1.2}/>
+      <ellipse cx={x-rx*0.15} cy={y+ry*0.3} rx={rx*0.2} ry={ry*0.15} fill="rgba(255,255,255,.15)" opacity={op*0.5}/>
+    </g>
+  );
 
   return (
     <svg
       width={vbW} height={vbH} viewBox={`0 0 ${vbW} ${vbH}`}
       style={{
         overflow: "visible",
-        /* NO transform scale here — parent div handles all scaling */
-        /* Only breeze rotation, pivoting from stem base so the whole plant sways as one */
         transform: `rotate(${breezeAngle}deg)`,
         transformOrigin: `${cx}px ${stemBase}px`,
         transition: "transform 2s ease-in-out",
         filter: bloomed
-          ? "drop-shadow(0 0 18px rgba(0,230,118,.35)) drop-shadow(0 0 40px rgba(76,175,80,.12))"
+          ? "drop-shadow(0 0 18px rgba(0,230,118,.3)) drop-shadow(0 0 40px rgba(76,175,80,.1))"
           : "none",
       }}
     >
       <defs>
-        <radialGradient id="lf" cx="35%" cy="30%" r="65%">
-          <stop offset="0%" stopColor="#4CAF50" stopOpacity=".95"/>
-          <stop offset="18%" stopColor="#43A047"/>
-          <stop offset="40%" stopColor="#2E7D32"/>
-          <stop offset="65%" stopColor="#1B5E20"/>
-          <stop offset="100%" stopColor="#0D3B0D"/>
+        {/* Photorealistic leaf body — lighter yellow-green like reference, subsurface glow in center */}
+        <radialGradient id="lf" cx="30%" cy="35%" r="70%">
+          <stop offset="0%" stopColor="#7bc67a" stopOpacity=".95"/>
+          <stop offset="12%" stopColor="#6abf69"/>
+          <stop offset="28%" stopColor="#53a653"/>
+          <stop offset="45%" stopColor="#43A047"/>
+          <stop offset="60%" stopColor="#388E3C"/>
+          <stop offset="78%" stopColor="#2E7D32"/>
+          <stop offset="100%" stopColor="#1B5E20"/>
         </radialGradient>
-        <radialGradient id="ls" cx="40%" cy="25%" r="55%">
-          <stop offset="0%" stopColor="#81C784" stopOpacity=".45"/>
-          <stop offset="25%" stopColor="#66BB6A" stopOpacity=".25"/>
+        {/* Subsurface scattering — warm light passing through leaf tissue */}
+        <radialGradient id="ls" cx="35%" cy="30%" r="55%">
+          <stop offset="0%" stopColor="#A5D6A7" stopOpacity=".35"/>
+          <stop offset="20%" stopColor="#81C784" stopOpacity=".2"/>
+          <stop offset="50%" stopColor="#66BB6A" stopOpacity=".1"/>
           <stop offset="100%" stopColor="#1B5E20" stopOpacity="0"/>
         </radialGradient>
-        <linearGradient id="vn" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#C8E6C9" stopOpacity=".55"/>
-          <stop offset="100%" stopColor="#66BB6A" stopOpacity=".15"/>
-        </linearGradient>
+        {/* Edge darkening — natural shadow at leaf margins */}
+        <radialGradient id="le" cx="50%" cy="50%" r="50%">
+          <stop offset="55%" stopColor="transparent" stopOpacity="0"/>
+          <stop offset="85%" stopColor="#0D3B0D" stopOpacity=".15"/>
+          <stop offset="100%" stopColor="#0D3B0D" stopOpacity=".35"/>
+        </radialGradient>
+        {/* Natural color spots — subtle yellow-brown patches like real leaves */}
+        <radialGradient id="lp" cx="60%" cy="40%" r="30%">
+          <stop offset="0%" stopColor="#8fad5e" stopOpacity=".15"/>
+          <stop offset="100%" stopColor="transparent" stopOpacity="0"/>
+        </radialGradient>
         <linearGradient id="st" x1="50%" y1="100%" x2="50%" y2="0%">
           <stop offset="0%" stopColor="#1B5E20"/>
-          <stop offset="40%" stopColor="#2E7D32"/>
-          <stop offset="100%" stopColor="#43A047"/>
+          <stop offset="30%" stopColor="#2E7D32"/>
+          <stop offset="70%" stopColor="#43A047"/>
+          <stop offset="100%" stopColor="#4CAF50"/>
         </linearGradient>
         <radialGradient id="dw" cx="30%" cy="25%" r="50%">
-          <stop offset="0%" stopColor="#fff" stopOpacity=".85"/>
-          <stop offset="40%" stopColor="#E8F5E9" stopOpacity=".4"/>
-          <stop offset="100%" stopColor="#A5D6A7" stopOpacity=".05"/>
+          <stop offset="0%" stopColor="#fff" stopOpacity=".9"/>
+          <stop offset="25%" stopColor="#E8F5E9" stopOpacity=".5"/>
+          <stop offset="60%" stopColor="#C8E6C9" stopOpacity=".15"/>
+          <stop offset="100%" stopColor="#A5D6A7" stopOpacity=".03"/>
         </radialGradient>
         <filter id="lg" x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="b"/>
-          <feFlood floodColor="#00E676" floodOpacity=".25" result="c"/>
+          <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="b"/>
+          <feFlood floodColor="#00E676" floodOpacity=".18" result="c"/>
           <feComposite in="c" in2="b" operator="in" result="s"/>
           <feMerge><feMergeNode in="s"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
       </defs>
 
-      {/* STEM — grows up, WELDED to leaves above */}
+      {/* STEM */}
       <g style={{
         transform: `scaleY(${stemReveal})`,
         transformOrigin: `${cx}px ${stemBase}px`,
@@ -156,14 +220,13 @@ function LivingClover({ phase, growthProgress, breezeAngle, totalScale }) {
           ? "transform 2s cubic-bezier(0.2,0,0.8,0.2)"
           : "transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
       }}>
-        <path d={`M${cx},${stemBase} C${cx},${stemBase-8} ${cx-0.5},${stemBase-18} ${cx},${stemTop}`}
-          stroke="url(#st)" strokeWidth="4" fill="none" strokeLinecap="round"/>
-        <path d={`M${cx+0.8},${stemBase-2} C${cx+0.8},${stemBase-10} ${cx+0.3},${stemBase-18} ${cx+0.5},${stemTop+4}`}
-          stroke="rgba(165,214,167,.3)" strokeWidth="1" fill="none" strokeLinecap="round"/>
-        <ellipse cx={cx} cy={stemBase-14} rx="2.2" ry="1.5" fill="#388E3C" opacity=".4"/>
+        <path d={`M${cx},${stemBase} C${cx},${stemBase-10} ${cx-0.5},${stemBase-22} ${cx},${stemTop}`}
+          stroke="url(#st)" strokeWidth="4.5" fill="none" strokeLinecap="round"/>
+        <path d={`M${cx+1},${stemBase-3} C${cx+1},${stemBase-12} ${cx+0.3},${stemBase-22} ${cx+0.5},${stemTop+5}`}
+          stroke="rgba(165,214,167,.3)" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
       </g>
 
-      {/* FOUR LEAVES — ALL WELDED to stem at hub point — NEVER DETACH */}
+      {/* FOUR PHOTOREALISTIC LEAVES — welded at hub, never detach */}
       <g filter="url(#lg)" style={{
         opacity: leafReveal,
         transform: `scale(${leafReveal})`,
@@ -172,48 +235,152 @@ function LivingClover({ phase, growthProgress, breezeAngle, totalScale }) {
           ? "transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)"
           : "transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
       }}>
-        {/* LEAF 1: TOP */}
-        <g transform={`translate(${cx},${hub})`}>
-          <path d={leaf} fill="url(#lf)" stroke="#145214" strokeWidth=".3"/>
-          <path d={leaf} fill="url(#ls)"/>
-          <path d="M0,0 C3,-8 10,-20 21,-30" stroke="url(#vn)" strokeWidth=".8" fill="none"/>
-          <path d="M5,-10 C10,-16 18,-20 25,-22" stroke="url(#vn)" strokeWidth=".35" fill="none"/>
-          <ellipse cx="14" cy="-18" rx="2" ry="2.5" fill="url(#dw)" opacity=".65"/>
-          <ellipse cx="14.6" cy="-19.2" rx=".7" ry=".5" fill="white" opacity=".8"/>
+        {/* LEAF 1: TOP-RIGHT (like reference: ~1 o'clock) */}
+        <g transform={`translate(${cx},${hub}) rotate(-10)`}>
+          <path d={leafOuter} fill="url(#lf)" stroke="#145214" strokeWidth=".5"/>
+          <path d={leafOuter} fill="url(#ls)"/>
+          <path d={leafOuter} fill="url(#le)"/>
+          <path d={leafOuter} fill="url(#lp)"/>
+          <path d="M28,-42 C31,-44 34,-44 37,-42" stroke="#1B5E20" strokeWidth=".7" fill="none"/>
+          <Veins/>
+          <DewDrop x={18} y={-20} rx={2.2} ry={2.8} op={0.65}/>
+          <DewDrop x={30} y={-30} rx={1.5} ry={1.8} op={0.5}/>
+          <DewDrop x={12} y={-32} rx={1.2} ry={1.4} op={0.4}/>
         </g>
-        {/* LEAF 2: RIGHT */}
-        <g transform={`translate(${cx},${hub}) rotate(90)`}>
-          <path d={leaf} fill="url(#lf)" stroke="#145214" strokeWidth=".3"/>
-          <path d={leaf} fill="url(#ls)"/>
-          <path d="M0,0 C3,-8 10,-20 21,-30" stroke="url(#vn)" strokeWidth=".8" fill="none"/>
-          <path d="M5,-10 C10,-16 18,-20 25,-22" stroke="url(#vn)" strokeWidth=".35" fill="none"/>
-          <ellipse cx="18" cy="-22" rx="1.8" ry="2.2" fill="url(#dw)" opacity=".5"/>
-          <ellipse cx="18.5" cy="-23" rx=".6" ry=".45" fill="white" opacity=".7"/>
+
+        {/* LEAF 2: TOP-LEFT (mirror, ~11 o'clock) */}
+        <g transform={`translate(${cx},${hub}) rotate(-10) scale(-1,1)`}>
+          <path d={leafOuter} fill="url(#lf)" stroke="#145214" strokeWidth=".5"/>
+          <path d={leafOuter} fill="url(#ls)"/>
+          <path d={leafOuter} fill="url(#le)"/>
+          <path d={leafOuter} fill="url(#lp)"/>
+          <path d="M28,-42 C31,-44 34,-44 37,-42" stroke="#1B5E20" strokeWidth=".7" fill="none"/>
+          <Veins/>
+          <DewDrop x={22} y={-24} rx={2} ry={2.5} op={0.55}/>
+          <DewDrop x={14} y={-14} rx={1.3} ry={1.6} op={0.4}/>
+          <DewDrop x={34} y={-34} rx={1.1} ry={1.3} op={0.35}/>
         </g>
-        {/* LEAF 3: BOTTOM */}
-        <g transform={`translate(${cx},${hub}) rotate(180)`}>
-          <path d={leaf} fill="url(#lf)" stroke="#145214" strokeWidth=".3"/>
-          <path d={leaf} fill="url(#ls)"/>
-          <path d="M0,0 C3,-8 10,-20 21,-30" stroke="url(#vn)" strokeWidth=".8" fill="none"/>
-          <path d="M5,-10 C10,-16 18,-20 25,-22" stroke="url(#vn)" strokeWidth=".35" fill="none"/>
-          <ellipse cx="12" cy="-16" rx="1.6" ry="2" fill="url(#dw)" opacity=".45"/>
-          <ellipse cx="12.5" cy="-17" rx=".5" ry=".4" fill="white" opacity=".65"/>
+
+        {/* LEAF 3: BOTTOM-RIGHT (~5 o'clock) */}
+        <g transform={`translate(${cx},${hub}) rotate(170)`}>
+          <path d={leafOuter} fill="url(#lf)" stroke="#145214" strokeWidth=".5"/>
+          <path d={leafOuter} fill="url(#ls)"/>
+          <path d={leafOuter} fill="url(#le)"/>
+          <path d={leafOuter} fill="url(#lp)"/>
+          <path d="M28,-42 C31,-44 34,-44 37,-42" stroke="#1B5E20" strokeWidth=".7" fill="none"/>
+          <Veins/>
+          <DewDrop x={20} y={-22} rx={1.8} ry={2.2} op={0.5}/>
+          <DewDrop x={32} y={-32} rx={1.2} ry={1.5} op={0.35}/>
         </g>
-        {/* LEAF 4: LEFT */}
-        <g transform={`translate(${cx},${hub}) rotate(270)`}>
-          <path d={leaf} fill="url(#lf)" stroke="#145214" strokeWidth=".3"/>
-          <path d={leaf} fill="url(#ls)"/>
-          <path d="M0,0 C3,-8 10,-20 21,-30" stroke="url(#vn)" strokeWidth=".8" fill="none"/>
-          <path d="M5,-10 C10,-16 18,-20 25,-22" stroke="url(#vn)" strokeWidth=".35" fill="none"/>
-          <ellipse cx="16" cy="-20" rx="2" ry="2.4" fill="url(#dw)" opacity=".55"/>
-          <ellipse cx="16.6" cy="-21" rx=".6" ry=".5" fill="white" opacity=".7"/>
+
+        {/* LEAF 4: BOTTOM-LEFT (mirror, ~7 o'clock) */}
+        <g transform={`translate(${cx},${hub}) rotate(170) scale(-1,1)`}>
+          <path d={leafOuter} fill="url(#lf)" stroke="#145214" strokeWidth=".5"/>
+          <path d={leafOuter} fill="url(#ls)"/>
+          <path d={leafOuter} fill="url(#le)"/>
+          <path d={leafOuter} fill="url(#lp)"/>
+          <path d="M28,-42 C31,-44 34,-44 37,-42" stroke="#1B5E20" strokeWidth=".7" fill="none"/>
+          <Veins/>
+          <DewDrop x={16} y={-18} rx={2} ry={2.4} op={0.55}/>
+          <DewDrop x={28} y={-28} rx={1.3} ry={1.6} op={0.38}/>
         </g>
-        {/* Center hub — welded junction */}
-        <circle cx={cx} cy={hub} r="3.5" fill="#2E7D32" stroke="#1B5E20" strokeWidth=".5"/>
-        <circle cx={cx} cy={hub} r="2" fill="#388E3C"/>
-        <circle cx={cx-0.6} cy={hub-0.6} r=".8" fill="rgba(165,214,167,.35)"/>
+
+        {/* Center hub — where stem meets all 4 leaves */}
+        <circle cx={cx} cy={hub} r="4" fill="#2E7D32" stroke="#1B5E20" strokeWidth=".6"/>
+        <circle cx={cx} cy={hub} r="2.5" fill="#388E3C"/>
+        <circle cx={cx-0.5} cy={hub-0.5} r="1" fill="rgba(165,214,167,.35)"/>
       </g>
     </svg>
+  );
+}
+
+// ═══════════════════════════════════════════
+// HEADER LOGO — EDEN with full bloom clover on the E + REALISM ENGINE below
+// For internal pages (sidebar, top nav)
+// ═══════════════════════════════════════════
+function EdenHeaderLogo({ size = "md", onClick }) {
+  const s = size === "sm" ? 0.55 : size === "lg" ? 1.4 : 1.0;
+  const fontSize = Math.round(38 * s);
+  const subSize = Math.round(9 * s);
+  const cloverH = Math.round(32 * s);
+
+  // Static full-bloom clover — matches landing page style
+  const MiniClover = () => {
+    const w = cloverH;
+    const h = cloverH;
+    const cx = w / 2;
+    const stemBase = h * 0.95;
+    const stemTop = h * 0.55;
+    const hub = stemTop - 1;
+    const leaf = "M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z";
+    return (
+      <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ overflow: "visible", filter: "drop-shadow(0 0 6px rgba(0,230,118,.25))" }}>
+        <defs>
+          <radialGradient id="hlf" cx="30%" cy="35%" r="70%">
+            <stop offset="0%" stopColor="#7bc67a" stopOpacity=".95"/>
+            <stop offset="25%" stopColor="#43A047"/>
+            <stop offset="55%" stopColor="#2E7D32"/>
+            <stop offset="100%" stopColor="#1B5E20"/>
+          </radialGradient>
+          <linearGradient id="hst" x1="50%" y1="100%" x2="50%" y2="0%">
+            <stop offset="0%" stopColor="#1B5E20"/>
+            <stop offset="100%" stopColor="#43A047"/>
+          </linearGradient>
+        </defs>
+        {/* Stem */}
+        <path d={`M${cx},${stemBase} C${cx},${stemBase*0.82} ${cx},${stemTop+2} ${cx},${stemTop}`}
+          stroke="url(#hst)" strokeWidth={Math.max(1.5, 2*s)} fill="none" strokeLinecap="round"/>
+        {/* 4 leaves at cardinal angles like landing page */}
+        <g transform={`translate(${cx},${hub}) rotate(-10)`}><path d={leaf} fill="url(#hlf)" stroke="#145214" strokeWidth=".3"/></g>
+        <g transform={`translate(${cx},${hub}) rotate(-10) scale(-1,1)`}><path d={leaf} fill="url(#hlf)" stroke="#145214" strokeWidth=".3"/></g>
+        <g transform={`translate(${cx},${hub}) rotate(170)`}><path d={leaf} fill="url(#hlf)" stroke="#145214" strokeWidth=".3"/></g>
+        <g transform={`translate(${cx},${hub}) rotate(170) scale(-1,1)`}><path d={leaf} fill="url(#hlf)" stroke="#145214" strokeWidth=".3"/></g>
+        {/* Hub */}
+        <circle cx={cx} cy={hub} r={Math.max(1.5, 2*s)} fill="#2E7D32"/>
+        <circle cx={cx} cy={hub} r={Math.max(0.8, 1.2*s)} fill="#388E3C"/>
+      </svg>
+    );
+  };
+
+  const goldGrad = "linear-gradient(135deg,#8B6914 0%,#C5B358 15%,#F5E6A3 30%,#D4AF37 45%,#C5B358 55%,#F5E6A3 65%,#D4AF37 80%,#8B6914 100%)";
+
+  return (
+    <div onClick={onClick} style={{ display: "flex", flexDirection: "column", alignItems: "center", cursor: onClick ? "pointer" : "default", userSelect: "none" }}>
+      {/* EDEN word with clover sprouting from top of the center E */}
+      <div style={{ position: "relative", display: "inline-block" }}>
+        <span style={{
+          fontSize,
+          fontWeight: 900,
+          letterSpacing: Math.round(8 * s),
+          fontFamily: "'Cinzel Decorative','Cinzel',serif",
+          background: goldGrad,
+          backgroundSize: "200% 100%",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          lineHeight: 1,
+        }}>EDEN</span>
+        {/* Clover positioned on top of the second E — matches landing page layout */}
+        <div style={{
+          position: "absolute",
+          top: -cloverH + Math.round(4 * s),
+          left: "50%",
+          marginLeft: Math.round(4 * s),
+          pointerEvents: "none",
+        }}>
+          <MiniClover />
+        </div>
+      </div>
+      {/* REALISM ENGINE — directly below */}
+      <span style={{
+        fontSize: subSize,
+        fontWeight: 500,
+        letterSpacing: Math.round(4 * s),
+        fontFamily: "'Cormorant Garamond',serif",
+        color: "rgba(197,179,88,.55)",
+        textTransform: "uppercase",
+        marginTop: Math.round(2 * s),
+      }}>Realism Engine</span>
+    </div>
   );
 }
 
@@ -239,8 +406,8 @@ export default function Eden() {
         ::-webkit-scrollbar-thumb { background: rgba(197,179,88,0.2); border-radius: 4px; }
         input:focus, textarea:focus, select:focus { border-color: rgba(197,179,88,0.4) !important; box-shadow: 0 0 12px rgba(197,179,88,0.06); }
 
-        @keyframes float-particle { 0%,100%{transform:translateY(0) rotate(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-100vh) rotate(360deg);opacity:0} }
-        @keyframes shooting-star { 0%{transform:translate(0,0) rotate(-25deg);opacity:0;width:0}1%{opacity:.5;width:60px}3%{opacity:.4}6%{opacity:.25}10%{opacity:.1}15%{opacity:0}100%{transform:translate(300px,180px) rotate(-25deg);opacity:0} }
+        @keyframes twinkle { 0%,100%{opacity:.2}50%{opacity:.75} }
+        @keyframes slow-drift { 0%{transform:translate(0,0);opacity:0}5%{opacity:.5}25%{opacity:.35}50%{transform:translate(15px,8px);opacity:.55}75%{opacity:.3}95%{opacity:.45}100%{transform:translate(30px,15px);opacity:0} }
         @keyframes breathe { 0%,100%{filter:drop-shadow(0 0 20px rgba(197,179,88,.3))}50%{filter:drop-shadow(0 0 40px rgba(212,175,55,.6))} }
         @keyframes glow-pulse { 0%,100%{opacity:.4}50%{opacity:.8} }
         @keyframes fade-up { 0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)} }
@@ -254,9 +421,9 @@ export default function Eden() {
         @keyframes border-shimmer { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
         @keyframes gentle-breeze { 0%,100%{transform:rotate(0deg)}15%{transform:rotate(1.8deg)}35%{transform:rotate(-1.2deg)}55%{transform:rotate(1deg)}75%{transform:rotate(-0.8deg)} }
 
-        .eden-particle { position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(212,175,55,.8),transparent);animation:float-particle linear infinite;pointer-events:none; }
-        .shooting-star { position:absolute;height:1.5px;background:linear-gradient(90deg,rgba(245,230,163,.9),rgba(212,175,55,.5),rgba(197,179,88,.2),transparent);animation:shooting-star linear infinite;pointer-events:none;border-radius:2px; }
-        .shooting-star::before { content:'';position:absolute;left:0;top:-1.5px;width:4px;height:4px;border-radius:50%;background:radial-gradient(circle,#FFF8DC,#F5E6A3);box-shadow:0 0 8px 3px rgba(245,230,163,.7),0 0 16px 6px rgba(212,175,55,.3); }
+        .twinkle-star { position:absolute;border-radius:50%;animation:twinkle ease-in-out infinite;pointer-events:none; }
+        .slow-drift-star { position:absolute;width:2px;height:2px;border-radius:50%;background:radial-gradient(circle,rgba(245,230,163,.8),rgba(212,175,55,.3),transparent);animation:slow-drift linear infinite;pointer-events:none; }
+        .slow-drift-star::before { content:'';position:absolute;left:-1px;top:-1px;width:4px;height:4px;border-radius:50%;background:radial-gradient(circle,rgba(255,248,220,.6),transparent);}
         .green-star { background:linear-gradient(90deg,rgba(0,230,118,.8),rgba(76,175,80,.4),rgba(56,142,60,.2),transparent)!important; }
         .green-star::before { background:radial-gradient(circle,#C8E6C9,#00E676)!important;box-shadow:0 0 8px 3px rgba(0,230,118,.7),0 0 16px 6px rgba(76,175,80,.3)!important; }
 
@@ -313,45 +480,34 @@ function LandingPage({ mounted, onEnter }) {
     return () => [t1,t2,t3,t4,t5].forEach(clearTimeout);
   }, [mounted]);
 
-  // ═══ LEAF GROWTH — 33% EXPLOSIVE BURSTS every 5 seconds ═══
-  // Leaves grow in dramatic visible jumps, not slow continuous
+  // ═══ GROWTH — 3 size doublings, every 3 seconds, then stops ═══
+  const [growthBursts, setGrowthBursts] = useState(0);
   useEffect(() => {
-    if (cloverPhase !== "growing") return;
-
-    let burstCount = 0;
-    const maxBursts = 12; // 12 bursts × 5s = 60 seconds of dramatic growth
-
-    // First burst immediately when entering "growing" phase
-    setGrowthProgress(0.33);
-    burstCount = 1;
+    if (!["bloomed","growing"].includes(cloverPhase)) return;
+    if (growthBursts >= 3) return;
 
     const interval = setInterval(() => {
-      burstCount++;
-      if (burstCount >= maxBursts) {
-        clearInterval(interval);
-        setGrowthProgress(1);
-        return;
-      }
-      // Each burst adds ~33% of remaining growth (diminishing but always noticeable)
-      setGrowthProgress(prev => {
-        const remaining = 1 - prev;
-        return Math.min(prev + remaining * 0.33, 1);
+      setGrowthBursts(prev => {
+        if (prev >= 3) { clearInterval(interval); return prev; }
+        setGrowthProgress(p => p + (p < 0.1 ? 0.5 : p * 1.0)); // double
+        return prev + 1;
       });
-    }, 5000);
+    }, 3000);
 
     return () => clearInterval(interval);
-  }, [cloverPhase]);
+  }, [cloverPhase, growthBursts]);
 
-  // ═══ BREEZE EFFECT — continuous subtle sway ═══
+  // ═══ GENTLE ROCKING BREEZE — slow, visible sway like wind blowing ═══
   useEffect(() => {
     if (cloverPhase === "dormant") return;
     let frame;
     let start = Date.now();
     const animate = () => {
       const t = (Date.now() - start) / 1000;
-      const sway = Math.sin(t * 0.4) * 2.5
-        + Math.sin(t * 0.7 + 1) * 1.2
-        + Math.sin(t * 1.3) * 0.6;
+      // Slow primary sway + subtle secondary wobble
+      const sway = Math.sin(t * 0.3) * 4.0
+        + Math.sin(t * 0.55 + 0.8) * 2.0
+        + Math.sin(t * 0.9 + 2.1) * 0.8;
       setBreezeAngle(sway);
       frame = requestAnimationFrame(animate);
     };
@@ -384,13 +540,12 @@ function LandingPage({ mounted, onEnter }) {
 
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", background: "radial-gradient(ellipse at 50% 70%, #1a0f05 0%, #0a0604 40%, #050302 100%)", overflow: "hidden", position: "relative" }}>
-      {/* Particles */}
-      {Array.from({ length: 25 }).map((_, i) => <div key={`p${i}`} className="eden-particle" style={{ left: `${Math.random()*100}%`, bottom: `-${Math.random()*20}%`, width: `${1+Math.random()*3}px`, height: `${1+Math.random()*3}px`, animationDuration: `${8+Math.random()*12}s`, animationDelay: `${Math.random()*8}s` }} />)}
-      {Array.from({ length: 8 }).map((_, i) => <div key={`g${i}`} className="eden-particle" style={{ left: `${25+Math.random()*50}%`, bottom: `-${Math.random()*15}%`, width: `${1+Math.random()*2}px`, height: `${1+Math.random()*2}px`, background: `radial-gradient(circle,rgba(0,230,118,${.3+Math.random()*.4}),transparent)`, animationDuration: `${10+Math.random()*14}s`, animationDelay: `${Math.random()*10}s` }} />)}
+      {/* Static twinkling stars — no movement, just gentle opacity pulse */}
+      {Array.from({ length: 28 }).map((_, i) => <div key={`t${i}`} className="twinkle-star" style={{ top: `${3+Math.random()*75}%`, left: `${2+Math.random()*96}%`, width: `${1+Math.random()*2}px`, height: `${1+Math.random()*2}px`, background: `radial-gradient(circle,rgba(212,175,55,${.4+Math.random()*.5}),transparent)`, animationDuration: `${3+Math.random()*5}s`, animationDelay: `${Math.random()*6}s` }} />)}
+      {Array.from({ length: 8 }).map((_, i) => <div key={`tg${i}`} className="twinkle-star" style={{ top: `${10+Math.random()*60}%`, left: `${15+Math.random()*70}%`, width: `${1+Math.random()*1.5}px`, height: `${1+Math.random()*1.5}px`, background: `radial-gradient(circle,rgba(0,230,118,${.25+Math.random()*.35}),transparent)`, animationDuration: `${4+Math.random()*6}s`, animationDelay: `${Math.random()*8}s` }} />)}
 
-      {/* ═══ SHOOTING STARS — SUSPENDED IN SPACE, barely drifting ═══ */}
-      {Array.from({ length: 3 }).map((_, i) => <div key={`s${i}`} className="shooting-star" style={{ top: `${5+Math.random()*30}%`, left: `${-10+Math.random()*20}%`, width: `${30+Math.random()*40}px`, animationDuration: `${40+Math.random()*30}s`, animationDelay: `${i*12+Math.random()*10}s`, opacity: 0 }} />)}
-      {Array.from({ length: 1 }).map((_, i) => <div key={`gs${i}`} className="shooting-star green-star" style={{ top: `${15+Math.random()*25}%`, left: `${-10+Math.random()*15}%`, width: `${25+Math.random()*30}px`, animationDuration: `${50+Math.random()*20}s`, animationDelay: `${20+Math.random()*15}s`, opacity: 0 }} />)}
+      {/* Near-static drift stars — barely perceptible movement */}
+      {Array.from({ length: 6 }).map((_, i) => <div key={`s${i}`} className="slow-drift-star" style={{ top: `${8+Math.random()*55}%`, left: `${5+Math.random()*85}%`, animationDuration: `${200+Math.random()*150}s`, animationDelay: `${Math.random()*50}s`, opacity: 0 }} />)}
 
       {/* Radial glow — shifted lower to follow the logo position */}
       <div style={{ position: "absolute", bottom: "15%", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(197,179,88,.06) 0%, rgba(76,175,80,.01) 40%, transparent 70%)", animation: "glow-pulse 4s ease-in-out infinite", pointerEvents: "none" }} />
@@ -419,19 +574,19 @@ function LandingPage({ mounted, onEnter }) {
             lineHeight: 1,
           }}>EDEN</h1>
 
-          {/* ═══ LIVING CLOVER — WELDED to top of center E, grows upward ═══ */}
-          {/* Container handles ALL growth scaling from bottom-center (where stem meets E) */}
-          {/* The SVG inside only handles breeze rotation — NO scaling on SVG */}
+          {/* ═══ LIVING CLOVER — stem grows from TOP DEAD CENTER of second E ═══ */}
+          {/* EDEN = E(0) D(1) E(2) N(3). With 179px font + 44 letter-spacing: */}
+          {/* Each char ~135px wide. E2 center ≈ 60% from left of text block */}
+          {/* Container bottom edge = where stem base touches the E top */}
           <div className="clover-container" style={{
             position: "absolute",
-            top: "-120px",
-            left: "50%",
-            marginLeft: "-60px",
-            width: 120,
-            height: 120,
+            top: "-126px",
+            left: "60%",
+            marginLeft: "-70px",
+            width: 140,
+            height: 140,
             zIndex: 10,
             pointerEvents: "none",
-            /* ALL SCALING HAPPENS HERE — from the bottom center where stem meets the E */
             transform: `scale(${1.0 + (["bloomed","growing"].includes(cloverPhase) || cloverPhase === "bursting" ? 0.66 : 0) + (growthProgress * 1.0)})`,
             transformOrigin: "center bottom",
             transition: "transform 1.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
@@ -576,7 +731,7 @@ function AppShell() {
   return (
     <div style={{ display: "flex", width: "100%", height: "100%", background: C.bg }}>
       <div style={{ width: 72, borderRight: `1px solid ${C.border}`, display: "flex", flexDirection: "column", alignItems: "center", paddingTop: 16, gap: 4, background: "rgba(12,8,4,.95)", flexShrink: 0 }}>
-        <div style={{ width: 36, height: 36, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,rgba(76,175,80,.1),rgba(197,179,88,.05))", border: `1px solid ${C.borderGreen}`, marginBottom: 16, cursor: "pointer", fontSize: 16 }} onClick={() => window.location.reload()}>🌿</div>
+        <div style={{ marginBottom: 12, cursor: "pointer" }} onClick={() => window.location.reload()}><EdenHeaderLogo size="sm" /></div>
         {tabs.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             width: 56, padding: "10px 0", borderRadius: 10, border: "none", cursor: "pointer",

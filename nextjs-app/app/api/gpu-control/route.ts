@@ -24,22 +24,26 @@ export async function POST(req: NextRequest) {
   try {
     const { hardware, sleep } = await req.json();
 
-    // Change hardware
+    // Change hardware — use PUT /settings endpoint (POST /hardware is unreliable)
     if (hardware) {
-      const res = await fetch(`https://huggingface.co/api/spaces/${SPACE_ID}/hardware`, {
-        method: "POST",
+      const res = await fetch(`https://huggingface.co/api/spaces/${SPACE_ID}/settings`, {
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${HF_TOKEN}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ flavor: hardware }),
+        body: JSON.stringify({ hardware }),
       });
       if (!res.ok) {
         const errText = await res.text();
         return NextResponse.json({ error: `HF API ${res.status}: ${errText.slice(0, 200)}` }, { status: res.status });
       }
-      const data = await res.json();
-      return NextResponse.json({ ok: true, hardware: data });
+      // After hardware change, restart the Space to apply
+      await fetch(`https://huggingface.co/api/spaces/${SPACE_ID}/restart`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${HF_TOKEN}` },
+      });
+      return NextResponse.json({ ok: true, hardware });
     }
 
     // Change sleep timeout

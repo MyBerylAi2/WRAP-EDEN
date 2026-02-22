@@ -86,18 +86,37 @@ function PromptGenerator({ onGenerate, mediaType = "image" }) {
   ];
 
   const [error, setError] = useState(null);
-  const [tierBadge, setTierBadge] = useState(null); // { requested, actual, match }
+  const [tierBadge, setTierBadge] = useState(null);
+  const [pendingTier, setPendingTier] = useState(null); // waiting for pairing selection
+  const [pairing, setPairing] = useState(null); // "mf" | "ww"
 
-  const handleTier = async (tier) => {
+  const pairings = [
+    { id: "mf", icon: "👫", label: "M + W", desc: "Man & Woman" },
+    { id: "ww", icon: "👩‍❤️‍👩", label: "W + W", desc: "Woman & Woman" },
+  ];
+
+  const handleTier = (tier) => {
+    if (tier === "ice") {
+      // Ice doesn't need pairing — go straight
+      fireTier(tier, null);
+    } else {
+      // Mild/Spicy — ask for pairing
+      setPendingTier(tier);
+    }
+  };
+
+  const fireTier = async (tier, selectedPairing) => {
     setGenerating(true);
     setShow(false);
+    setPendingTier(null);
+    setPairing(null);
     setError(null);
     setTierBadge(null);
     try {
       const resp = await fetch("/api/generate-prompt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier, context: context.trim(), mediaType }),
+        body: JSON.stringify({ tier, context: context.trim(), mediaType, pairing: selectedPairing }),
       });
       const data = await resp.json();
       if (data.prompt) {
@@ -171,6 +190,30 @@ function PromptGenerator({ onGenerate, mediaType = "image" }) {
               </button>
             ))}
           </div>
+          {/* Pairing selector — appears after Mild/Spicy */}
+          {pendingTier && (
+            <div style={{
+              padding: 10, borderRadius: 10, background: "rgba(197,179,88,.06)",
+              border: `1px solid rgba(197,179,88,.2)`,
+            }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: C.gold, fontFamily: "'Cinzel',serif", letterSpacing: 2, textAlign: "center", marginBottom: 8 }}>
+                SELECT PAIRING
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                {pairings.map(p => (
+                  <button key={p.id} onClick={() => fireTier(pendingTier, p.id)} style={{
+                    flex: 1, padding: "14px 8px", borderRadius: 10, cursor: "pointer", textAlign: "center",
+                    background: "rgba(197,179,88,.04)", border: `1px solid ${C.border}`,
+                    transition: "all .2s",
+                  }}>
+                    <div style={{ fontSize: 28, marginBottom: 4 }}>{p.icon}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#FFFFFF", fontFamily: "'Cinzel',serif", letterSpacing: 1 }}>{p.label}</div>
+                    <div style={{ fontSize: 10, color: C.textDim, fontFamily: "'Cormorant Garamond',serif", marginTop: 2 }}>{p.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {/* Optional context input */}
           <button onClick={() => setShowContext(!showContext)} style={{
             padding: "6px", borderRadius: 6, cursor: "pointer", fontSize: 10, fontWeight: 700,
@@ -1629,7 +1672,7 @@ function AppShell() {
 function ImageStudio() {
   const [prompt, setPrompt] = useState("");
   const [preset, setPreset] = useState("EDEN Ultra Realism");
-  const [backend, setBackend] = useState("FLUX Schnell (Fast R&D)");
+  const [backend, setBackend] = useState("Z-Image (Uncensored)");
   const [res, setRes] = useState("1024x1024 ( 1:1 )");
   const [loading, setLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState(null);
@@ -1642,6 +1685,12 @@ function ImageStudio() {
   const [showJudge, setShowJudge] = useState(false);
   const [imageMeta, setImageMeta] = useState(null);
   const [fullscreen, setFullscreen] = useState(false);
+  // Render progress + stopwatch
+  const [renderProgress, setRenderProgress] = useState(0); // 0-100
+  const [renderPhase, setRenderPhase] = useState(""); // status burp text
+  const [renderTimer, setRenderTimer] = useState(0); // seconds elapsed
+  const renderTimerRef = useRef(null);
+  const renderStartRef = useRef(null);
   // GPU Control
   const [gpuMode, setGpuMode] = useState("zerogpu"); // "zerogpu" | "dedicated"
   const [gpuTier, setGpuTier] = useState(null); // selected hardware flavor
@@ -1757,7 +1806,7 @@ function ImageStudio() {
   };
 
   const presetKeys = ["EDEN Ultra Realism", "EDEN Cinematic", "Hyperreal", "Kling Max", "Skin Perfect", "Boudoir", "Mahogany Glamour", "The Parlor", "Diamond Room", "Portrait", "Natural", "EDEN Raw", "Studio"];
-  const backendKeys = ["FLUX Schnell (Fast R&D)", "FLUX Dev (Publish Quality)", "Z-Image Turbo", "CogView4", "Juggernaut Pro FLUX"];
+  const backendKeys = ["Z-Image (Uncensored)", "Z-Image Turbo (Fast)", "Z-Image (Official)"];
   const resOptions = [
     { value: "1024x1024 ( 1:1 )", label: "1024 × 1024 (Square)" },
     { value: "768x1280 ( 9:16 Portrait )", label: "768 × 1280 (Portrait)" },
@@ -1776,88 +1825,280 @@ function ImageStudio() {
     if (!prompt.trim()) return;
     lastActivityRef.current = Date.now(); // reset auto-sleep timer
     setLoading(true);
+    setImageUrl(null);        // Clear previous image so progress/timer is visible
     setRemasterUrl(null);
     setIsRemastered(false);
     setRemastering(false);
     setShowJudge(false);
+    setRenderProgress(0);
+    setRenderPhase("Initializing render pipeline...");
+    setRenderTimer(0);
+
+    // Start stopwatch
+    renderStartRef.current = Date.now();
+    if (renderTimerRef.current) clearInterval(renderTimerRef.current);
+    renderTimerRef.current = setInterval(() => {
+      if (renderStartRef.current) setRenderTimer(Math.floor((Date.now() - renderStartRef.current) / 1000));
+    }, 100);
 
     const trimmed = prompt.trim();
     const payload = { prompt: trimmed, preset, resolution: res, randomSeed: true, enhance: true, mode: "image_studio" };
 
-    if (cascade) {
-      // ─── PASS 1: SCHNELL R&D — 4 steps, ~3 seconds ───
-      setStatus("⚡ Schnell R&D preview (4 steps)...");
-      try {
-        const fastResp = await fetch("/api/generate-image", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...payload, backend: "FLUX Schnell (Fast R&D)", steps: 4 }),
-        });
-        const fastData = await fastResp.json();
-        if (fastData.image) {
-          setImageUrl(fastData.image);
-          setStatus(`⚡ Schnell preview ready · Remastering via FLUX Dev...`);
-          setHistory(p => [{ url: fastData.image, prompt: trimmed, seed: fastData.seed, tag: "schnell" }, ...p].slice(0, 30));
-        }
-      } catch {
-        // Schnell failed — fall through to Dev pass
-      }
+    // ─── Helper: validate image actually loads before declaring success ───
+    const validateImage = (url) => new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => resolve(url);
+      img.onerror = () => reject(new Error("Image URL returned but failed to load — backend may have returned an error page instead of an image"));
+      img.src = url;
+      setTimeout(() => reject(new Error("Image load timed out after 30s")), 30000);
+    });
 
-      // ─── PASS 2: FLUX DEV REMASTER — 25 steps, ~18 seconds, publish quality ───
-      setRemastering(true);
+    // Helper: stop the timer and record completion time
+    const stopTimer = () => {
+      if (renderTimerRef.current) clearInterval(renderTimerRef.current);
+      const elapsed = renderStartRef.current ? (Date.now() - renderStartRef.current) / 1000 : 0;
+      return elapsed.toFixed(1);
+    };
+
+    // ─── Smart backend cascade: API handles fallback internally ───
+    const schnellBackends = [backend];
+    const devBackends = [backend];
+
+    const tryFetch = async (backendName, steps) => {
+      const resp = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, backend: backendName, steps }),
+      });
+      return resp.json();
+    };
+
+    if (cascade) {
+      let schnellUrl = null;
+      let schnellSeed = null;
+
+      // ─── PASS 1: SCHNELL R&D — EDEN T4 ───
+      setRenderProgress(5);
+      setRenderPhase("Connecting to FLUX engine...");
+      setStatus("⚡ Schnell R&D preview (4 steps)...");
+      let fastData = null;
       try {
-        const qualResp = await fetch("/api/generate-image", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...payload, backend: "FLUX Dev (Publish Quality)", steps: 25 }),
-        });
-        const qualData = await qualResp.json();
-        if (qualData.image) {
-          setRemasterUrl(qualData.image);
-          setImageUrl(qualData.image);
-          setIsRemastered(true);
-          setStatus(`✅ EDEN REMASTERED · ${qualData.steps || 25} steps · FLUX Dev · Seed: ${qualData.seed || "auto"}`);
-          setHistory(p => [{ url: qualData.image, prompt: trimmed, seed: qualData.seed, tag: "remastered" }, ...p].slice(0, 30));
-          setImageMeta({ url: qualData.image, prompt: trimmed, seed: qualData.seed, backend: "FLUX Dev", steps: qualData.steps || 25, created: new Date().toISOString(), type: "image" });
-          setShowJudge(true);
+        setRenderProgress(10);
+        for (const schnellBackend of schnellBackends) {
+          setRenderPhase(`Trying ${schnellBackend}...`);
+          try {
+            fastData = await tryFetch(schnellBackend, 4);
+            if (fastData.image) {
+              setRenderPhase(`${schnellBackend} responded!`);
+              break;
+            }
+            if (fastData.error) {
+              setRenderPhase(`${schnellBackend}: ${fastData.error.slice(0, 60)}...`);
+              fastData = null; // try next
+            }
+          } catch {
+            fastData = null; // try next backend
+          }
+        }
+        // If no backend worked, create a synthetic error
+        if (!fastData) fastData = { error: "All Schnell backends unavailable" };
+        setRenderProgress(25);
+        if (fastData.error) {
+          setRenderPhase(`Schnell failed: ${fastData.error}`);
+          setStatus(`❌ Schnell failed: ${fastData.error}`);
+        } else if (fastData.image) {
+          setRenderProgress(35);
+          setRenderPhase("Loading Schnell preview image...");
+          try {
+            await validateImage(fastData.image);
+            schnellUrl = fastData.image;
+            schnellSeed = fastData.seed;
+            setImageUrl(fastData.image);
+            setRenderProgress(40);
+            setRenderPhase("Schnell preview loaded! Starting Dev remaster...");
+            const schnellItemNo = generateItemNumber("IMG");
+            setImageMeta({ url: fastData.image, prompt: trimmed, seed: fastData.seed, backend: "FLUX Schnell", steps: 4, created: new Date().toISOString(), type: "image", itemNo: schnellItemNo });
+            setStatus(`⚡ ${schnellItemNo} · Schnell preview ready · Remastering via FLUX Dev...`);
+            setHistory(p => [{ url: fastData.image, prompt: trimmed, seed: fastData.seed, tag: "schnell" }, ...p].slice(0, 30));
+          } catch (imgErr) {
+            setStatus(`❌ Schnell returned bad image: ${imgErr.message}`);
+          }
         } else {
-          setStatus(`⚡ Schnell preview shown · Dev remaster unavailable: ${qualData.error || "backend busy"}`);
+          setStatus("❌ Schnell returned no image data");
         }
       } catch (e) {
-        setStatus(`⚡ Schnell preview shown · Dev remaster error: ${e.message}`);
+        setStatus(`❌ Schnell network error: ${e.message}`);
+      }
+
+      // ─── PASS 2: FLUX DEV REMASTER — EDEN T4 ───
+      setRemastering(true);
+      setRenderProgress(45);
+      setRenderPhase("Connecting to FLUX Dev (25 steps)...");
+      try {
+        setRenderProgress(50);
+        let qualData = null;
+        for (const devBackend of devBackends) {
+          setRenderPhase(`Trying ${devBackend}...`);
+          try {
+            qualData = await tryFetch(devBackend, 25);
+            if (qualData.image) {
+              setRenderPhase(`${devBackend} responded!`);
+              break;
+            }
+            if (qualData.error) {
+              setRenderPhase(`${devBackend}: ${qualData.error.slice(0, 60)}...`);
+              qualData = null;
+            }
+          } catch {
+            qualData = null;
+          }
+        }
+        if (!qualData) qualData = { error: "All Dev backends unavailable" };
+        setRenderProgress(80);
+        if (qualData.error) {
+          setRenderPhase(`Dev failed: ${qualData.error}`);
+          if (schnellUrl) {
+            const elapsed = stopTimer();
+            setStatus(`⚡ Schnell preview shown · Dev remaster failed: ${qualData.error} · ${elapsed}s`);
+            setShowJudge(true);
+          } else {
+            stopTimer();
+            setStatus(`❌ Both Schnell and Dev failed. Dev error: ${qualData.error}`);
+          }
+        } else if (qualData.image) {
+          setRenderProgress(90);
+          setRenderPhase("Loading remastered image...");
+          try {
+            await validateImage(qualData.image);
+            setRenderProgress(100);
+            setRenderPhase("Remaster complete!");
+            setRemasterUrl(qualData.image);
+            setImageUrl(qualData.image);
+            setIsRemastered(true);
+            const elapsed = stopTimer();
+            const devItemNo = generateItemNumber("IMG");
+            setStatus(`✅ ${devItemNo} · EDEN REMASTERED · ${qualData.steps || 25} steps · FLUX Dev · Seed: ${qualData.seed || "auto"} · ${elapsed}s`);
+            setHistory(p => [{ url: qualData.image, prompt: trimmed, seed: qualData.seed, tag: "remastered" }, ...p].slice(0, 30));
+            setImageMeta({ url: qualData.image, prompt: trimmed, seed: qualData.seed, backend: "FLUX Dev", steps: qualData.steps || 25, created: new Date().toISOString(), type: "image", itemNo: devItemNo, renderTime: elapsed, gpuUsed: gpuTier || "zerogpu" });
+            setShowJudge(true);
+          } catch (imgErr) {
+            if (schnellUrl) {
+              setStatus(`⚡ Schnell preview shown · Dev image failed to load: ${imgErr.message}`);
+              setShowJudge(true);
+            } else {
+              setStatus(`❌ Dev returned unloadable image: ${imgErr.message}`);
+            }
+          }
+        } else {
+          if (schnellUrl) {
+            setStatus(`⚡ Schnell preview shown · Dev returned no image data`);
+            setShowJudge(true);
+          } else {
+            setStatus(`❌ Both passes returned no image`);
+          }
+        }
+      } catch (e) {
+        if (schnellUrl) {
+          setStatus(`⚡ Schnell preview shown · Dev remaster error: ${e.message}`);
+          setShowJudge(true);
+        } else {
+          setStatus(`❌ Both passes failed. Dev error: ${e.message}`);
+        }
       }
       setRemastering(false);
+
+      // ─── FALLBACK: If BOTH passes failed, auto-try Pollinations ───
+      if (!schnellUrl && !imageUrl) {
+        setRenderProgress(60);
+        setRenderPhase("Falling back to Pollinations FLUX...");
+        setStatus("⏳ Backends unavailable · Falling back to Pollinations FLUX...");
+        try {
+          const seed = Math.floor(Math.random() * 999999);
+          const pollUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(trimmed)}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux`;
+          setRenderProgress(75);
+          setRenderPhase("Waiting for Pollinations render...");
+          await validateImage(pollUrl);
+          setRenderProgress(100);
+          setRenderPhase("Pollinations render complete!");
+          setImageUrl(pollUrl);
+          const elapsed = stopTimer();
+          const fallbackItemNo = generateItemNumber("IMG");
+          setStatus(`✅ ${fallbackItemNo} · Generated (Pollinations fallback) · Seed: ${seed} · ${elapsed}s`);
+          setHistory(p => [{ url: pollUrl, prompt: trimmed, seed, tag: "pollinations" }, ...p].slice(0, 30));
+          setImageMeta({ url: pollUrl, prompt: trimmed, seed, backend: "Pollinations FLUX", steps: 0, created: new Date().toISOString(), type: "image", itemNo: fallbackItemNo, renderTime: elapsed, gpuUsed: "pollinations" });
+          setShowJudge(true);
+        } catch {
+          stopTimer();
+          setRenderPhase("All backends failed");
+          setStatus("❌ All backends failed — GPU unavailable and Pollinations unreachable");
+        }
+      }
       setLoading(false);
 
     } else {
       // ─── SINGLE PASS: Direct to selected backend ───
+      setRenderProgress(10);
+      setRenderPhase(`Connecting to ${backend}...`);
       setStatus(`⏳ ERE-1 generating via ${backend}...`);
       try {
+        setRenderProgress(20);
+        setRenderPhase(`Sending prompt to ${backend}...`);
         const resp = await fetch("/api/generate-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...payload, backend }),
         });
+        setRenderProgress(70);
+        setRenderPhase("Decoding response...");
         const data = await resp.json();
-        if (data.image) {
-          setImageUrl(data.image);
-          setStatus(`✅ Generated · Seed: ${data.seed || "auto"} · ${data.steps || "?"} steps · ${data.backend || backend}`);
-          setHistory(p => [{ url: data.image, prompt: trimmed, seed: data.seed }, ...p].slice(0, 30));
-          setImageMeta({ url: data.image, prompt: trimmed, seed: data.seed, backend: data.backend || backend, steps: data.steps, created: new Date().toISOString(), type: "image" });
-          setShowJudge(true);
-        } else {
-          // Fallback to Pollinations
-          setStatus("⏳ Fallback: Pollinations FLUX...");
+        if (data.error) {
+          setRenderProgress(75);
+          setRenderPhase("Primary failed — trying Pollinations fallback...");
+          setStatus(`⚠ ${backend} failed: ${data.error} · Trying Pollinations...`);
           const seed = Math.floor(Math.random() * 999999);
           const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(trimmed)}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux`;
-          const img = new window.Image();
-          img.onload = () => { setImageUrl(url); setStatus(`✅ Generated (Pollinations) · Seed: ${seed}`); setHistory(p => [{ url, prompt: trimmed, seed }, ...p].slice(0, 30)); setLoading(false); };
-          img.onerror = () => { setStatus(`❌ ${data.error || "Generation failed"}`); setLoading(false); };
-          img.src = url;
-          return;
+          try {
+            await validateImage(url);
+            setRenderProgress(100);
+            setRenderPhase("Pollinations render complete!");
+            setImageUrl(url);
+            const elapsed = stopTimer();
+            const pollItemNo = generateItemNumber("IMG");
+            setStatus(`✅ ${pollItemNo} · Generated (Pollinations fallback) · Seed: ${seed} · ${elapsed}s`);
+            setHistory(p => [{ url, prompt: trimmed, seed }, ...p].slice(0, 30));
+            setImageMeta({ url, prompt: trimmed, seed, backend: "Pollinations FLUX", steps: 0, created: new Date().toISOString(), type: "image", itemNo: pollItemNo, renderTime: elapsed, gpuUsed: "pollinations" });
+            setShowJudge(true);
+          } catch {
+            stopTimer();
+            setRenderPhase("All backends failed");
+            setStatus(`❌ ${backend} failed: ${data.error} · Pollinations fallback also failed`);
+          }
+        } else if (data.image) {
+          setRenderProgress(85);
+          setRenderPhase("Loading generated image...");
+          try {
+            await validateImage(data.image);
+            setRenderProgress(100);
+            setRenderPhase("Render complete!");
+            setImageUrl(data.image);
+            const elapsed = stopTimer();
+            const singleItemNo = generateItemNumber("IMG");
+            setStatus(`✅ ${singleItemNo} · Generated · Seed: ${data.seed || "auto"} · ${data.steps || "?"} steps · ${data.backend || backend} · ${elapsed}s`);
+            setHistory(p => [{ url: data.image, prompt: trimmed, seed: data.seed }, ...p].slice(0, 30));
+            setImageMeta({ url: data.image, prompt: trimmed, seed: data.seed, backend: data.backend || backend, steps: data.steps, created: new Date().toISOString(), type: "image", itemNo: singleItemNo, renderTime: elapsed, gpuUsed: gpuTier || "zerogpu" });
+            setShowJudge(true);
+          } catch (imgErr) {
+            stopTimer();
+            setRenderPhase("Image load failed");
+            setStatus(`❌ ${backend} returned an image URL but it failed to load: ${imgErr.message}`);
+          }
+        } else {
+          stopTimer();
+          setRenderPhase("No image returned");
+          setStatus(`❌ ${backend} returned no image and no error — backend may be sleeping`);
         }
       } catch (e) {
-        setStatus(`❌ ${e.message}`);
+        setStatus(`❌ Network error: ${e.message}`);
       }
       setLoading(false);
     }
@@ -1866,7 +2107,8 @@ function ImageStudio() {
   const handleLikeImage = () => {
     if (!imageMeta) return;
     const gallery = loadGallery();
-    gallery.unshift({ ...imageMeta, id: `i-${Date.now()}`, portfolio: false, batch: null });
+    const itemNo = imageMeta.itemNo || generateItemNumber("IMG");
+    gallery.unshift({ ...imageMeta, id: itemNo, itemNo, portfolio: false, batch: null });
     saveGallery(gallery);
     setShowJudge(false);
     setStatus("✅ Saved to Gallery");
@@ -2081,7 +2323,7 @@ function ImageStudio() {
             <>
               <img src={imageUrl} alt="Generated" onClick={() => setFullscreen(true)} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 10, cursor: "zoom-in" }}/>
               {showJudge && imageMeta && (
-                <JudgeOverlay type="image" url={imageUrl} prompt={imageMeta.prompt} seed={imageMeta.seed} backend={imageMeta.backend} steps={imageMeta.steps} onLike={handleLikeImage} onLeave={handleLeaveImage} />
+                <JudgeOverlay type="image" url={imageUrl} prompt={imageMeta.prompt} seed={imageMeta.seed} backend={imageMeta.backend} steps={imageMeta.steps} itemNo={imageMeta.itemNo} onLike={handleLikeImage} onLeave={handleLeaveImage} />
               )}
               {/* Fullscreen Lightbox */}
               {fullscreen && imageUrl && (
@@ -2144,10 +2386,47 @@ function ImageStudio() {
               )}
             </>
           ) : loading ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, width: "80%", maxWidth: 360 }}>
+              {/* Status burp */}
+              <div style={{
+                fontSize: 12, color: C.gold, fontFamily: "'Cormorant Garamond',serif", fontWeight: 600,
+                textAlign: "center", minHeight: 18, opacity: renderPhase ? 1 : 0, transition: "opacity .3s",
+              }}>
+                {renderPhase}
+              </div>
+              {/* Spinner */}
               <div style={{ width: 40, height: 40, border: `2px solid ${C.border}`, borderTop: `2px solid ${cascade ? C.gold : C.green}`, borderRadius: "50%", animation: "spin-loader 1s linear infinite" }}/>
-              <span style={{ fontSize: 14, fontWeight: 700, color: C.text, fontFamily: "'Cinzel',serif", letterSpacing: 2 }}>{cascade ? "FAST PREVIEW..." : "GENERATING..."}</span>
-              {cascade && <span style={{ fontSize: 12, color: C.textDim, fontFamily: "'Cormorant Garamond',serif" }}>Schnell 4-step → then FLUX Dev remaster</span>}
+              {/* Progress bar */}
+              <div style={{ width: "100%", height: 6, borderRadius: 3, background: "rgba(139,115,85,.15)", overflow: "hidden" }}>
+                <div style={{
+                  height: "100%", borderRadius: 3,
+                  background: `linear-gradient(90deg, ${C.gold}, ${C.green})`,
+                  width: `${renderProgress}%`,
+                  transition: "width 0.5s ease-out",
+                }}/>
+              </div>
+              {/* Percentage */}
+              <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: C.gold, fontFamily: "'Cinzel',serif", letterSpacing: 1 }}>
+                  {renderProgress}%
+                </span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: C.text, fontFamily: "'Cinzel',serif", letterSpacing: 2 }}>
+                  {cascade ? (remastering ? "REMASTERING" : "FAST PREVIEW") : "GENERATING"}
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: C.gold, fontFamily: "'Cinzel',serif", letterSpacing: 1 }}>
+                  {renderProgress}%
+                </span>
+              </div>
+              {/* Stopwatch timer */}
+              <div style={{
+                fontSize: 28, fontWeight: 700, color: "#FFFFFF", fontFamily: "'Cinzel',serif",
+                letterSpacing: 4, textAlign: "center",
+              }}>
+                {Math.floor(renderTimer / 60).toString().padStart(2, "0")}:{(renderTimer % 60).toString().padStart(2, "0")}
+              </div>
+              <span style={{ fontSize: 11, color: C.textDim, fontFamily: "'Cormorant Garamond',serif", letterSpacing: 1 }}>
+                {cascade ? "Schnell 4-step → then FLUX Dev remaster" : `Direct to ${backend}`}
+              </span>
             </div>
           ) : (
             <div style={{ textAlign: "center" }}>
@@ -2180,6 +2459,29 @@ function ImageStudio() {
 }
 
 // ═══════════════════════════════════════════
+// EDEN ITEM NUMBER SYSTEM — Unique ID for every render
+// Format: EDN-{TYPE}{SEQ}-{DATE}{HASH}
+// e.g. EDN-IMG0042-022224A7X → Image #42, Feb 22 2024, hash A7X
+// Functions as: confirmation receipt, gallery ID, reporting key
+// ═══════════════════════════════════════════
+const ITEM_SEQ_KEY = "eden_item_seq";
+function getNextSeq(): number {
+  const seq = parseInt(localStorage.getItem(ITEM_SEQ_KEY) || "0") + 1;
+  localStorage.setItem(ITEM_SEQ_KEY, String(seq));
+  return seq;
+}
+function generateItemNumber(type: "IMG" | "VID"): string {
+  const seq = getNextSeq();
+  const now = new Date();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  const yy = String(now.getFullYear()).slice(-2);
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const hash = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  return `EDN-${type}${String(seq).padStart(4, "0")}-${mm}${dd}${yy}${hash}`;
+}
+
+// ═══════════════════════════════════════════
 // GALLERY SYSTEM — Shared across all studios
 // ═══════════════════════════════════════════
 const GALLERY_KEY = "eden_gallery";
@@ -2189,13 +2491,19 @@ function loadGallery() {
 function saveGallery(items) { localStorage.setItem(GALLERY_KEY, JSON.stringify(items)); }
 
 // Like/Leave judgment overlay after render
-function JudgeOverlay({ type, url, prompt, seed, backend, steps, onLike, onLeave }) {
+function JudgeOverlay({ type, url, prompt, seed, backend, steps, itemNo, onLike, onLeave }) {
   return (
     <div style={{
       position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 20px",
       background: "linear-gradient(transparent, rgba(0,0,0,0.92) 30%)",
-      display: "flex", alignItems: "center", gap: 10, zIndex: 10,
+      display: "flex", flexDirection: "column", gap: 8, zIndex: 10,
     }}>
+      {itemNo && (
+        <div style={{ fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, letterSpacing: 2, color: C.gold, textAlign: "center" }}>
+          {itemNo}
+        </div>
+      )}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
       <button onClick={onLike} style={{
         flex: 1, padding: "12px", borderRadius: 10, cursor: "pointer",
         background: "linear-gradient(135deg, rgba(46,125,50,0.3), rgba(27,94,32,0.2))",
@@ -2209,6 +2517,7 @@ function JudgeOverlay({ type, url, prompt, seed, backend, steps, onLike, onLeave
         color: "#ef9a9a", fontFamily: "'Cinzel',serif", fontSize: 13, fontWeight: 700, letterSpacing: 2,
         transition: "all .2s",
       }}>LEAVE IT</button>
+      </div>
     </div>
   );
 }
@@ -2290,6 +2599,8 @@ function GalleryPanel({ type, onRemix, onSendToFilmRoom }) {
                 <span style={{ fontSize: 28 }}>🎬</span>
               </div>
             )}
+            {/* Item Number tag */}
+            {item.itemNo && <div style={{ position: "absolute", top: 2, left: 2, padding: "1px 4px", borderRadius: 4, background: "rgba(0,0,0,.8)", fontSize: 7, color: C.gold, fontWeight: 700, fontFamily: "'Cinzel',serif", letterSpacing: 0.5 }}>{item.itemNo.split("-").pop()}</div>}
             {/* Portfolio star */}
             {item.portfolio && <div style={{ position: "absolute", top: 3, right: 3, fontSize: 12 }}>⭐</div>}
             {/* Batch tag */}
@@ -2319,6 +2630,16 @@ function GalleryPanel({ type, onRemix, onSendToFilmRoom }) {
             </div>
             {/* Meta */}
             <div style={{ padding: 20 }}>
+              {/* Item Number — Confirmation Receipt */}
+              {viewItem.itemNo && (
+                <div style={{
+                  display: "inline-block", padding: "4px 12px", borderRadius: 6, marginBottom: 8,
+                  background: "rgba(197,179,88,.1)", border: "1px solid rgba(197,179,88,.3)",
+                  fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, letterSpacing: 2, color: C.gold,
+                }}>
+                  {viewItem.itemNo}
+                </div>
+              )}
               <div style={{ fontSize: 11, color: C.textDim, fontFamily: "'Cormorant Garamond',serif", marginBottom: 6 }}>
                 {new Date(viewItem.created).toLocaleDateString()} at {new Date(viewItem.created).toLocaleTimeString()} · {viewItem.backend || "Unknown"} · Seed: {viewItem.seed || "auto"} · {viewItem.steps || "?"} steps
               </div>
@@ -2354,7 +2675,7 @@ function GalleryPanel({ type, onRemix, onSendToFilmRoom }) {
                   fontFamily: "'Cinzel',serif", letterSpacing: 1, background: "rgba(197,179,88,.04)",
                   border: `1px solid ${C.border}`, color: C.textDim,
                 }}>BATCH</button>
-                <button onClick={() => { const a = document.createElement("a"); a.href = viewItem.url; a.download = `eden-${viewItem.type}-${viewItem.id}.${viewItem.type === "video" ? "mp4" : "png"}`; a.click(); }} style={{
+                <button onClick={() => { const a = document.createElement("a"); a.href = viewItem.url; a.download = `${viewItem.itemNo || viewItem.id}.${viewItem.type === "video" ? "mp4" : "png"}`; a.click(); }} style={{
                   padding: "8px 14px", borderRadius: 8, cursor: "pointer", fontSize: 11, fontWeight: 700,
                   fontFamily: "'Cinzel',serif", letterSpacing: 1, background: "rgba(197,179,88,.04)",
                   border: `1px solid ${C.border}`, color: C.textDim,
@@ -2493,8 +2814,9 @@ function VideoStudio() {
       const data = await resp.json();
       if (data.video) {
         setVideoUrl(data.video);
-        setVideoMeta({ url: data.video, prompt: prompt.trim(), seed: data.seed, backend: data.backend || backend, created: new Date().toISOString(), type: "video" });
-        setStatus(`✅ Video generated · ${data.backend || backend} · Seed: ${data.seed || "auto"}`);
+        const vidItemNo = generateItemNumber("VID");
+        setVideoMeta({ url: data.video, prompt: prompt.trim(), seed: data.seed, backend: data.backend || backend, created: new Date().toISOString(), type: "video", itemNo: vidItemNo });
+        setStatus(`✅ ${vidItemNo} · Video generated · ${data.backend || backend} · Seed: ${data.seed || "auto"}`);
         setShowJudge(true);
       } else {
         setStatus(`❌ ${data.error || "Video generation failed"}`);
@@ -2508,7 +2830,8 @@ function VideoStudio() {
   const handleLike = () => {
     if (!videoMeta) return;
     const gallery = loadGallery();
-    gallery.unshift({ ...videoMeta, id: `v-${Date.now()}`, portfolio: false, batch: null });
+    const itemNo = videoMeta.itemNo || generateItemNumber("VID");
+    gallery.unshift({ ...videoMeta, id: itemNo, itemNo, portfolio: false, batch: null });
     saveGallery(gallery);
     setShowJudge(false);
     setStatus("✅ Saved to Gallery");
@@ -2647,7 +2970,7 @@ function VideoStudio() {
             <>
               <video src={videoUrl} controls autoPlay loop style={{ maxWidth: "100%", maxHeight: "100%", borderRadius: 10 }} />
               {showJudge && videoMeta && (
-                <JudgeOverlay type="video" url={videoUrl} prompt={videoMeta.prompt} seed={videoMeta.seed} backend={videoMeta.backend} onLike={handleLike} onLeave={handleLeave} />
+                <JudgeOverlay type="video" url={videoUrl} prompt={videoMeta.prompt} seed={videoMeta.seed} backend={videoMeta.backend} itemNo={videoMeta.itemNo} onLike={handleLike} onLeave={handleLeave} />
               )}
             </>
           ) : loading ? (

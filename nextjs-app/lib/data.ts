@@ -266,11 +266,9 @@ export const EDEN_PRESETS: Record<string, string> = {
 // ─── IMAGE BACKENDS ─────────────────────────────────────────────────
 
 export const IMAGE_BACKENDS: Record<string, string> = {
-  "FLUX Schnell (Fast R&D)": "black-forest-labs/FLUX.1-schnell",
-  "FLUX Dev (Publish Quality)": "black-forest-labs/FLUX.1-dev",
-  "Z-Image Turbo": "Tongyi-MAI/Z-Image-Turbo",
-  "CogView4": "THUDM/CogView4-6B",
-  "Juggernaut Pro FLUX": "RunDiffusion/JuggernautProFlux",
+  "Z-Image (Uncensored)": "heartsync",
+  "Z-Image Turbo (Fast)": "z-image-fast",
+  "Z-Image (Official)": "z-image-official",
 };
 
 // ─── VIDEO BACKENDS ─────────────────────────────────────────────────

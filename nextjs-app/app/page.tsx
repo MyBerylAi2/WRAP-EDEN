@@ -86,11 +86,13 @@ function PromptGenerator({ onGenerate, mediaType = "image" }) {
   ];
 
   const [error, setError] = useState(null);
+  const [tierBadge, setTierBadge] = useState(null); // { requested, actual, match }
 
   const handleTier = async (tier) => {
     setGenerating(true);
     setShow(false);
     setError(null);
+    setTierBadge(null);
     try {
       const resp = await fetch("/api/generate-prompt", {
         method: "POST",
@@ -100,6 +102,7 @@ function PromptGenerator({ onGenerate, mediaType = "image" }) {
       const data = await resp.json();
       if (data.prompt) {
         onGenerate(data.prompt);
+        setTierBadge({ requested: data.requestedTier || tier, actual: data.actualTier || tier, match: data.tierMatch !== false });
       } else {
         setError(data.error || "No prompt returned");
       }
@@ -131,6 +134,18 @@ function PromptGenerator({ onGenerate, mediaType = "image" }) {
       {error && (
         <div style={{ padding: "8px 12px", borderRadius: 8, background: "rgba(244,67,54,0.08)", border: "1px solid rgba(244,67,54,0.2)", fontSize: 12, color: "#ef9a9a", fontFamily: "'Cormorant Garamond',serif" }}>
           Prompt gen error: {error}
+        </div>
+      )}
+      {tierBadge && (
+        <div style={{
+          padding: "6px 12px", borderRadius: 8, fontSize: 11, fontWeight: 700, fontFamily: "'Cinzel',serif", letterSpacing: 1, textAlign: "center",
+          background: tierBadge.match ? "rgba(76,175,80,0.08)" : "rgba(255,183,77,0.08)",
+          border: `1px solid ${tierBadge.match ? "rgba(76,175,80,0.25)" : "rgba(255,183,77,0.25)"}`,
+          color: tierBadge.match ? C.greenBright : "#FFB74D",
+        }}>
+          {tierBadge.match
+            ? `✓ ${tierBadge.actual.toUpperCase()} TIER CONFIRMED`
+            : `⚠ REQUESTED ${tierBadge.requested.toUpperCase()} → GOT ${tierBadge.actual.toUpperCase()} — TEMPLATE APPLIED`}
         </div>
       )}
 

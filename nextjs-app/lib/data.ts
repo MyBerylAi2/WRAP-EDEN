@@ -125,12 +125,12 @@ export const SMART_NEGATIVE_ENGINE = {
       keywords: "deformed face, ugly, disfigured, bad anatomy, wrong anatomy, extra limbs, missing limbs, floating limbs, disconnected limbs, mutation, mutated, extra fingers, fewer fingers, too many fingers, fused fingers, poorly drawn hands, poorly drawn face, malformed, distorted features, cross-eyed, asymmetric eyes, unnatural skin, plastic skin, mannequin, uncanny valley, extra heads, duplicate face, clone face",
     },
     female_realism: {
-      triggers: ["woman", "girl", "female", "lady", "she", "her", "face", "portrait", "beauty", "model", "skin"],
-      keywords: "plastic skin, waxy skin, doll-like, mannequin, uncanny valley, airbrushed, overly smooth skin, porcelain skin, unrealistic skin texture, beauty filter, instagram filter, over-retouched, bad makeup, clown makeup, asymmetric face, cross-eyed, dead eyes, lifeless eyes, vacant stare, unnatural eye color, anime eyes, oversized eyes",
+      triggers: ["woman", "girl", "female", "lady", "she", "her", "face", "portrait", "beauty", "model", "skin", "goddess"],
+      keywords: "(plastic skin:1.4), (waxy skin:1.4), doll-like, mannequin, uncanny valley, (airbrushed:1.5), (overly smooth skin:1.4), porcelain skin, unrealistic skin texture, (beauty filter:1.3), instagram filter, (over-retouched:1.4), bad makeup, clown makeup, asymmetric face, cross-eyed, dead eyes, lifeless eyes, vacant stare, unnatural eye color, anime eyes, oversized eyes, (dewy finish:1.3), (glossy skin:1.3), (shiny skin:1.3)",
     },
     skin_texture: {
-      triggers: ["person", "woman", "man", "face", "skin", "body", "portrait", "model"],
-      keywords: "plastic skin, silicone skin, rubber skin, over-retouched skin, dermabrasion effect, uniform skin tone, flat skin color, missing pores, missing skin wrinkles, painted skin texture, skin without subsurface scattering, blurred skin detail, skin like clay, skin like fondant, missing vellus hair, missing peach fuzz, artificial skin sheen, photoshop skin, facetune skin, perfect skin, glossy lips, glowing skin, shiny face, filtered, beautified, beauty shot, porcelain, retouched, photoshopped, studio beauty lighting",
+      triggers: ["person", "woman", "man", "face", "skin", "body", "portrait", "model", "goddess"],
+      keywords: "(plastic skin:1.5), (silicone skin:1.4), rubber skin, (over-retouched skin:1.4), dermabrasion effect, uniform skin tone, flat skin color, (missing pores:1.4), missing skin wrinkles, painted skin texture, (skin without subsurface scattering:1.3), (blurred skin detail:1.4), skin like clay, skin like fondant, (missing vellus hair:1.3), missing peach fuzz, (artificial skin sheen:1.4), (photoshop skin:1.4), (facetune skin:1.5), (perfect skin:1.4), (glossy lips:1.2), (glowing skin:1.3), (shiny face:1.3), filtered, beautified, beauty shot, porcelain, retouched, photoshopped, studio beauty lighting",
     },
     body_anatomy: {
       triggers: ["body", "figure", "pose", "standing", "sitting", "lying", "full body", "lingerie", "bikini", "dress"],
@@ -179,7 +179,10 @@ export function buildSmartNegative(userPrompt: string, extraNegative?: string): 
   return unique.join(", ");
 }
 
-/** Inject positive keywords based on prompt content */
+/** Inject positive keywords based on prompt content.
+ *  KEY PRINCIPLE: User's specific attributes (eye color, hair texture, etc.)
+ *  must NEVER be diluted. We inject boosts AFTER the user prompt,
+ *  and cap injection volume so the model prioritizes user intent. */
 export function injectPositiveKeywords(
   userPrompt: string,
   mode: string,
@@ -189,27 +192,43 @@ export function injectPositiveKeywords(
   const boosts: string[] = [];
 
   // Always inject cinema keywords for photorealism
-  if (["image_studio", "producer", "artist", "eve", "voice_avatar"].includes(mode)) {
-    boosts.push(...CINEMA_KEYWORDS.slice(0, 5));
+  if (["image_studio", "producer", "artist", "eve", "voice_avatar", "lulu"].includes(mode)) {
+    boosts.push(...CINEMA_KEYWORDS.slice(0, 7));
   }
 
-  // Skin keywords for human subjects
-  const humanTriggers = ["person", "woman", "man", "portrait", "face", "model", "she", "he", "girl", "lady"];
+  // Skin keywords for human subjects — INCREASED from 8→15 for deeper realism
+  const humanTriggers = ["person", "woman", "man", "portrait", "face", "model", "she", "he", "girl", "lady", "goddess", "beauty"];
   if (humanTriggers.some((t) => lower.includes(t))) {
-    boosts.push(...SKIN_KEYWORDS.slice(0, 8));
-    boosts.push(...ANTI_DETECTION_KEYWORDS.slice(0, 4));
+    boosts.push(...SKIN_KEYWORDS.slice(0, 15));
+    boosts.push(...ANTI_DETECTION_KEYWORDS.slice(0, 6));
   }
 
-  // Melanin lighting for dark skin subjects
-  const melaninTriggers = ["african", "black", "brown skin", "dark skin", "melanin", "ebony"];
+  // Melanin lighting for dark skin subjects — INCREASED from 6→ALL for proper representation
+  const melaninTriggers = ["african", "black", "brown skin", "dark skin", "melanin", "ebony", "african american"];
   if (melaninTriggers.some((t) => lower.includes(t))) {
-    boosts.push(...MELANIN_LIGHTING.slice(0, 6));
+    boosts.push(...MELANIN_LIGHTING); // ALL melanin lighting keywords — critical for dark skin
   }
 
   // Emotion keywords
-  const emotionTriggers = ["emotion", "feeling", "expression", "smile", "laugh", "cry", "intimate"];
+  const emotionTriggers = ["emotion", "feeling", "expression", "smile", "laugh", "cry", "intimate", "serene", "grace"];
   if (emotionTriggers.some((t) => lower.includes(t))) {
-    boosts.push(...EMOTION_KEYWORDS.slice(0, 5));
+    boosts.push(...EMOTION_KEYWORDS.slice(0, 8));
+  }
+
+  // Environment keywords for scene-heavy prompts
+  const envTriggers = ["bed", "room", "silk", "velvet", "lace", "satin", "chandelier", "mahogany", "parlor"];
+  if (envTriggers.some((t) => lower.includes(t))) {
+    boosts.push(...ENVIRONMENT_KEYWORDS.slice(0, 8));
+  }
+
+  // Lulu/Mahogany Hall mode — premium intimate realism
+  if (mode === "lulu" || lower.includes("lingerie") || lower.includes("intimate") || lower.includes("boudoir")) {
+    boosts.push(
+      "(film grain:1.3)", "(matte skin finish:1.4)", "(visible pores:1.3)",
+      "(subsurface scattering:1.2)", "(natural skin imperfections:1.2)",
+      "anti-specular highlight", "powder-set complexion",
+      "natural redness variation", "skin translucency",
+    );
   }
 
   // Apply preset boost
@@ -218,7 +237,10 @@ export function injectPositiveKeywords(
   }
 
   if (boosts.length === 0) return userPrompt;
-  return `${userPrompt}, ${boosts.join(", ")}`;
+
+  // Deduplicate boosts to avoid redundancy bloat
+  const unique = [...new Set(boosts.map(b => b.trim()).filter(Boolean))];
+  return `${userPrompt}, ${unique.join(", ")}`;
 }
 
 // ─── EDEN PRESETS ───────────────────────────────────────────────────
@@ -235,6 +257,10 @@ export const EDEN_PRESETS: Record<string, string> = {
   "EDEN Raw": "raw photo, unedited, natural lighting, authentic, documentary style, street photography, film grain, matte skin",
   "Studio": "studio photography, softbox lighting, clean background, professional portrait, sharp focus, Hasselblad",
   "Medical": "medical professional headshot, neutral background, even lighting, ID photo quality, clean, trustworthy",
+  "Mahogany Glamour": "photorealistic, 8k uhd, matte skin finish, visible pores, melanin-rich texture, subsurface scattering, film grain, Rembrandt lighting pattern, warm key light 3200K, candlelight color temperature, soft diffused fill, 1920s glamour, jazz age elegance, mahogany wood paneling, beaded gown, anti-specular highlight, powder-set complexion, natural redness variation",
+  "The Parlor": "photorealistic, 8k uhd, matte skin finish, visible pores, melanin-rich texture, subsurface scattering, film grain, candlelit parlor, velvet chaise lounge, ornate gold frame, silk curtains, warm key light 3200K, Rembrandt lighting, soft diffused fill, amber tungsten glow, pore-level detail",
+  "Diamond Room": "photorealistic, 8k uhd, matte skin finish, visible pores, melanin-rich texture, subsurface scattering, film grain, intimate boudoir, amber lamplight, satin sheets, art deco mirror, Rembrandt lighting, soft window side-light, natural redness variation, skin translucency, anti-specular highlight, genuine micro-expression, authentic emotional weight",
+  "Boudoir": "photorealistic, 8k uhd, intimate boudoir photography, (matte skin finish:1.4), (visible pores:1.3), subsurface scattering, (film grain:1.3), shallow depth of field f/1.4, Rembrandt lighting, warm key light 3200K, soft diffused fill, natural skin imperfections, powder-set complexion, anti-specular highlight, candlelight warmth, silk thread count visible, satin light interaction",
 };
 
 // ─── IMAGE BACKENDS ─────────────────────────────────────────────────

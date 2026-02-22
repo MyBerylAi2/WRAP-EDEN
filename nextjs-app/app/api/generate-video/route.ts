@@ -79,6 +79,16 @@ function extractVideoUrl(obj: unknown, spaceUrl: string): string | null {
 
 function extractFirstVideo(data: unknown[], spaceUrl: string): string | null {
   for (const item of data) {
+    // Wan/LongCat format: {video: {path: "...", url: "..."}, subtitles: null}
+    if (item && typeof item === "object" && !Array.isArray(item)) {
+      const obj = item as Record<string, unknown>;
+      // Check for {video: {...}} wrapper (Wan 2.2, LongCat)
+      if (obj.video && typeof obj.video === "object") {
+        const vid = obj.video as Record<string, unknown>;
+        const vUrl = (vid.url || vid.path) as string | undefined;
+        if (vUrl) return vUrl.startsWith("http") ? vUrl : `${spaceUrl}/gradio_api/file=${vUrl}`;
+      }
+    }
     // Gallery format: [[vid1, vid2, ...], seed]
     if (Array.isArray(item)) {
       for (const sub of item) {
@@ -86,6 +96,7 @@ function extractFirstVideo(data: unknown[], spaceUrl: string): string | null {
         if (url) return url;
       }
     }
+    // Direct file format (LTX-2): {path: "...", url: "..."}
     const url = extractVideoUrl(item, spaceUrl);
     if (url) return url;
   }
@@ -375,15 +386,18 @@ function chantrell(prompt: string): string {
 // ═══ VIDEO SPACE CONFIGS ═══
 const VIDEO_SPACES = {
   // PRIMARY — LTX-2 Turbo (text-to-video, camera LoRAs, up to 15s)
+  // Params: first_frame, end_frame, prompt, duration, input_video, generation_mode, enhance_prompt, seed, randomize_seed, height, width, camera_lora, audio_path
   "ltx2-turbo": {
     url: "https://alexnasa-ltx-2-turbo.hf.space",
     endpoint: "generate_video",
     buildData: (prompt: string, duration: number, w: number, h: number, seed: number, randomSeed: boolean, cameraMotion: string) =>
-      [prompt, null, null, null, "Text-to-Video", duration, h, w, true, seed, randomSeed, cameraMotion || "No LoRA", null],
+      [null, null, prompt, duration, null, "Text-to-Video", true, seed, randomSeed, h || 512, w || 768, cameraMotion || "No LoRA", null],
     label: "LTX-2 Turbo",
-    timeout: 180000, // 3 min for video
+    timeout: 180000,
   },
   // SECONDARY — Official Wan 2.2 5B (text-to-video, high quality)
+  // Params: image, prompt, height, width, duration_seconds, sampling_steps, guide_scale, shift, seed
+  // Returns: {video: filepath, subtitles: filepath | null}
   "wan22-5b": {
     url: "https://wan-ai-wan-2-2-5b.hf.space",
     endpoint: "generate_video",
@@ -393,11 +407,13 @@ const VIDEO_SPACES = {
     timeout: 180000,
   },
   // TERTIARY — LongCat Video (simple T2V, distilled for speed)
+  // Params: prompt, neg_prompt, height, width, seed, use_distill, use_refine
+  // Returns: {video: filepath, subtitles: filepath | null}
   "longcat": {
     url: "https://multimodalart-longcat-video.hf.space",
     endpoint: "generate_video",
-    buildData: (prompt: string, _duration: number, w: number, h: number, seed: number, randomSeed: boolean, _cameraMotion: string) =>
-      [prompt, w || 832, h || 480, seed, randomSeed],
+    buildData: (prompt: string, _duration: number, w: number, h: number, seed: number, _randomSeed: boolean, _cameraMotion: string) =>
+      [prompt, "ugly, blurry, low quality, static, subtitles", h || 480, w || 832, seed, true, false],
     label: "LongCat Video",
     timeout: 180000,
   },
@@ -467,10 +483,11 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
+        console.log(`[generate-video] ${space.label} raw data:`, JSON.stringify(result.data).slice(0, 500));
         const url = extractFirstVideo(result.data, space.url);
         if (url) {
           const seedUsed = result.data.length > 1 ? result.data[result.data.length - 1] : actualSeed;
-          console.log(`[generate-video] SUCCESS via ${space.label}`);
+          console.log(`[generate-video] SUCCESS via ${space.label}: ${url.slice(0, 200)}`);
           return NextResponse.json({
             video: url,
             seed: seedUsed,

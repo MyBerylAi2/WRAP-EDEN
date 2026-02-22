@@ -1626,6 +1626,7 @@ function ImageStudio() {
   const [history, setHistory] = useState([]);
   const [showJudge, setShowJudge] = useState(false);
   const [imageMeta, setImageMeta] = useState(null);
+  const [fullscreen, setFullscreen] = useState(false);
   // GPU Control
   const [gpuMode, setGpuMode] = useState("zerogpu"); // "zerogpu" | "dedicated"
   const [gpuTier, setGpuTier] = useState(null); // selected hardware flavor
@@ -2063,9 +2064,37 @@ function ImageStudio() {
         <div style={{ flex: 1, minHeight: 400, borderRadius: 14, border: `1px solid ${isRemastered ? "rgba(76,175,80,.3)" : C.border}`, background: "rgba(12,8,4,.6)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative", transition: "border-color .5s" }}>
           {imageUrl ? (
             <>
-              <img src={imageUrl} alt="Generated" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 10 }}/>
+              <img src={imageUrl} alt="Generated" onClick={() => setFullscreen(true)} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 10, cursor: "zoom-in" }}/>
               {showJudge && imageMeta && (
                 <JudgeOverlay type="image" url={imageUrl} prompt={imageMeta.prompt} seed={imageMeta.seed} backend={imageMeta.backend} steps={imageMeta.steps} onLike={handleLikeImage} onLeave={handleLeaveImage} />
+              )}
+              {/* Fullscreen Lightbox */}
+              {fullscreen && imageUrl && (
+                <div onClick={() => setFullscreen(false)} style={{
+                  position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 99999,
+                  background: "rgba(0,0,0,0.95)", display: "flex", alignItems: "center", justifyContent: "center",
+                  cursor: "zoom-out", padding: 20,
+                }}>
+                  <img src={imageUrl} alt="Fullscreen" style={{ maxWidth: "95vw", maxHeight: "95vh", objectFit: "contain", borderRadius: 8, boxShadow: "0 0 60px rgba(197,179,88,0.15)" }}/>
+                  <div style={{
+                    position: "absolute", top: 20, right: 24, fontSize: 14, fontWeight: 700,
+                    color: C.textDim, fontFamily: "'Cinzel',serif", letterSpacing: 2, opacity: 0.7,
+                  }}>CLICK ANYWHERE TO CLOSE</div>
+                  {imageMeta && (
+                    <div style={{
+                      position: "absolute", bottom: 20, left: "50%", transform: "translateX(-50%)",
+                      padding: "10px 20px", borderRadius: 10, background: "rgba(12,8,4,0.85)",
+                      border: `1px solid ${C.border}`, maxWidth: "80vw", textAlign: "center",
+                    }}>
+                      <div style={{ fontSize: 13, color: C.text, fontFamily: "'Cormorant Garamond',serif", lineHeight: 1.5 }}>
+                        {imageMeta.prompt?.slice(0, 200)}{imageMeta.prompt?.length > 200 ? "..." : ""}
+                      </div>
+                      <div style={{ fontSize: 11, color: C.textDim, fontFamily: "'Cormorant Garamond',serif", marginTop: 4 }}>
+                        {imageMeta.backend} · {imageMeta.steps} steps · Seed: {imageMeta.seed || "auto"}
+                      </div>
+                    </div>
+                  )}
+                </div>
               )}
               {/* REMASTER BADGE */}
               {isRemastered && (

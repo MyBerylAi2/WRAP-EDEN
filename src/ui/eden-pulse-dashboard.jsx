@@ -386,52 +386,52 @@ export default function EdenPulseDashboard() {
       `}</style>
 
       {/* ═══ HEADER ═══ */}
-      <div style={{ background: C.bgSurface, borderBottom: `1px solid ${C.border}`, padding: "14px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ background: C.bgSurface, borderBottom: `1px solid ${C.border}`, padding: "20px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <StatusDot size={12} />
+          <StatusDot size={16} />
           <div>
             <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-              <span style={{ fontFamily: "'Cinzel', serif", fontSize: 18, letterSpacing: 8, color: C.gold, fontWeight: 600 }}>EDEN PULSE</span>
-              <span style={{ fontSize: 10, letterSpacing: 2, color: C.goldDark, fontFamily: "'Cinzel', serif" }}>v2.0</span>
+              <span style={{ fontFamily: "'Cinzel', serif", fontSize: 32, letterSpacing: 10, color: C.gold, fontWeight: 700 }}>EDEN PULSE</span>
+              <span style={{ fontSize: 16, letterSpacing: 3, color: C.goldDark, fontFamily: "'Cinzel', serif" }}>v2.0</span>
             </div>
-            <div style={{ fontSize: 10, letterSpacing: 4, color: C.textDim, textTransform: "uppercase", marginTop: 2 }}>THE RELENTLESS EYE · BERYL AI LABS · RESEARCH INTELLIGENCE DIVISION</div>
+            <div style={{ fontSize: 14, letterSpacing: 5, color: C.textDim, textTransform: "uppercase", marginTop: 4 }}>THE RELENTLESS EYE · BERYL AI LABS · RESEARCH INTELLIGENCE DIVISION</div>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 11, color: C.textDim }}>{now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
-            <div style={{ fontFamily: "'Cinzel', serif", fontSize: 20, color: C.gold, letterSpacing: 3, fontWeight: 600 }}>{now.toLocaleTimeString("en-US", { hour12: false })}</div>
+            <div style={{ fontSize: 15, color: C.textDim }}>{now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
+            <div style={{ fontFamily: "'Cinzel', serif", fontSize: 30, color: C.gold, letterSpacing: 4, fontWeight: 700 }}>{now.toLocaleTimeString("en-US", { hour12: false })}</div>
           </div>
-          <div style={{ height: 40, width: 1, background: C.border }} />
-          <div style={{ padding: "8px 16px", borderRadius: 8, background: "rgba(0,230,118,0.06)", border: `1px solid rgba(0,230,118,0.15)` }}>
-            <div style={{ fontSize: 9, letterSpacing: 2, color: C.greenVibrant, fontFamily: "'Cinzel', serif", fontWeight: 600 }}>8 TEAM MEMBERS ONLINE</div>
-            <div style={{ fontSize: 8, color: C.greenBright, letterSpacing: 1, marginTop: 2 }}>1 DIRECTOR · 7 HEARTBEATS · AGENT FRAMEWORK</div>
+          <div style={{ height: 48, width: 1, background: C.border }} />
+          <div style={{ padding: "10px 20px", borderRadius: 10, background: "rgba(0,230,118,0.06)", border: `1px solid rgba(0,230,118,0.15)` }}>
+            <div style={{ fontSize: 14, letterSpacing: 3, color: C.greenVibrant, fontFamily: "'Cinzel', serif", fontWeight: 700 }}>8 TEAM MEMBERS ONLINE</div>
+            <div style={{ fontSize: 12, color: C.greenBright, letterSpacing: 2, marginTop: 3 }}>1 DIRECTOR · 7 HEARTBEATS · AGENT FRAMEWORK</div>
           </div>
         </div>
       </div>
 
       {/* ═══ DIRECTOR BAR ═══ */}
-      <div style={{ background: "rgba(197,179,88,0.04)", borderBottom: `1px solid ${C.border}`, padding: "8px 28px", display: "flex", alignItems: "center", gap: 14 }}>
-        <AgentPhoto agentId="director" size={36} />
+      <div style={{ background: "rgba(197,179,88,0.04)", borderBottom: `1px solid ${C.border}`, padding: "12px 28px", display: "flex", alignItems: "center", gap: 16 }}>
+        <AgentPhoto agentId="director" size={48} />
         <div style={{ flex: 1 }}>
-          <span style={{ fontFamily: "'Cinzel', serif", fontSize: 11, letterSpacing: 3, color: C.gold }}>DEPARTMENT DIRECTOR</span>
-          <span style={{ fontSize: 12, color: C.textBright, marginLeft: 12 }}>{DIRECTOR.name}, Ph.D.</span>
-          <span style={{ fontSize: 10, color: C.textDim, marginLeft: 8, fontStyle: "italic" }}>"{DIRECTOR.role}"</span>
+          <span style={{ fontFamily: "'Cinzel', serif", fontSize: 16, letterSpacing: 4, color: C.gold, fontWeight: 600 }}>DEPARTMENT DIRECTOR</span>
+          <span style={{ fontSize: 17, color: C.textBright, marginLeft: 14, fontWeight: 500 }}>{DIRECTOR.name}, Ph.D.</span>
+          <span style={{ fontSize: 14, color: C.textDim, marginLeft: 10, fontStyle: "italic" }}>"{DIRECTOR.role}"</span>
         </div>
-        <div style={{ display: "flex", gap: 16 }}>
+        <div style={{ display: "flex", gap: 22 }}>
           {[DIRECTOR.stat1, DIRECTOR.stat2, DIRECTOR.stat3].map((s, i) => (
             <div key={i} style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 13, fontFamily: "'Cinzel', serif", color: C.gold, fontWeight: 600 }}>{s.value}</div>
-              <div style={{ fontSize: 8, color: C.textDim, letterSpacing: 1 }}>{s.label}</div>
+              <div style={{ fontSize: 20, fontFamily: "'Cinzel', serif", color: C.gold, fontWeight: 700 }}>{s.value}</div>
+              <div style={{ fontSize: 11, color: C.textDim, letterSpacing: 2 }}>{s.label}</div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ═══ TICKER ═══ */}
-      <div style={{ background: "rgba(197,179,88,0.02)", borderBottom: `1px solid ${C.border}`, padding: "6px 0", overflow: "hidden", whiteSpace: "nowrap" }}>
+      {/* ═══ TICKER — White bar, dark bold text ═══ */}
+      <div style={{ background: "#FFFFFF", borderBottom: `2px solid ${C.gold}40`, borderTop: `2px solid ${C.gold}40`, padding: "10px 0", overflow: "hidden", whiteSpace: "nowrap" }}>
         <div style={{ display: "inline-block", animation: "ticker 90s linear infinite" }}>
-          {[...ticker, ...ticker].map((t, i) => <span key={i} style={{ fontSize: 12, color: C.textDim, marginRight: 50 }}>{t}</span>)}
+          {[...ticker, ...ticker].map((t, i) => <span key={i} style={{ fontSize: 16, color: "#1A1510", fontWeight: 700, marginRight: 60, letterSpacing: 0.5 }}>{t}</span>)}
         </div>
       </div>
 
@@ -439,12 +439,12 @@ export default function EdenPulseDashboard() {
       <div style={{ display: "flex", borderBottom: `1px solid ${C.border}`, background: "rgba(12,8,4,0.6)" }}>
         {tabs.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
-            padding: "11px 20px", background: tab === t.id ? "rgba(197,179,88,0.04)" : "none", border: "none", cursor: "pointer",
-            fontFamily: "'Cinzel', serif", fontSize: 10, letterSpacing: 3, textTransform: "uppercase",
+            padding: "14px 24px", background: tab === t.id ? "rgba(197,179,88,0.04)" : "none", border: "none", cursor: "pointer",
+            fontFamily: "'Cinzel', serif", fontSize: 14, letterSpacing: 4, textTransform: "uppercase",
             color: tab === t.id ? C.gold : C.textDim,
-            borderBottom: tab === t.id ? `2px solid ${C.gold}` : "2px solid transparent",
-            transition: "all 0.3s", display: "flex", alignItems: "center", gap: 5,
-          }}><span style={{ fontSize: 11 }}>{t.icon}</span>{t.label}</button>
+            borderBottom: tab === t.id ? `3px solid ${C.gold}` : "3px solid transparent",
+            transition: "all 0.3s", display: "flex", alignItems: "center", gap: 6,
+          }}><span style={{ fontSize: 16 }}>{t.icon}</span>{t.label}</button>
         ))}
       </div>
 

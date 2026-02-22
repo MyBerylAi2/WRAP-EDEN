@@ -416,50 +416,58 @@ export default function EdenPulseDashboard() {
         }
       `}</style>
 
-      {/* ═══ HEADER — LARGE LOGO WITH CLOVER ═══ */}
+      {/* ═══ HEADER — CLOVER SPROUTING FROM MIDDLE E ═══ */}
       <div style={{ background: C.bgSurface, borderBottom: `1px solid ${C.border}`, padding: "18px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        {/* LEFT: CLOVER LOGO + EDEN PULSE + TAGLINE */}
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          {/* THE CLOVER — Static, from index page */}
-          <div style={{ position: "relative", width: 56, height: 56, flexShrink: 0 }}>
-            <svg width={56} height={56} viewBox="0 0 56 56" style={{ overflow: "visible", filter: "drop-shadow(0 0 8px rgba(0,230,118,.3))" }}>
-              <defs>
-                <radialGradient id="plf" cx="30%" cy="35%" r="70%">
-                  <stop offset="0%" stopColor="#7bc67a" stopOpacity=".95"/>
-                  <stop offset="25%" stopColor="#43A047"/>
-                  <stop offset="55%" stopColor="#2E7D32"/>
-                  <stop offset="100%" stopColor="#1B5E20"/>
-                </radialGradient>
-                <linearGradient id="pst" x1="50%" y1="100%" x2="50%" y2="0%">
-                  <stop offset="0%" stopColor="#1B5E20"/>
-                  <stop offset="100%" stopColor="#43A047"/>
-                </linearGradient>
-              </defs>
-              {/* Stem */}
-              <path d="M28,53 C28,43 28,22 28,19" stroke="url(#pst)" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-              {/* 4 Leaves */}
-              <g transform="translate(28,18) rotate(-10)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".4"/></g>
-              <g transform="translate(28,18) rotate(-10) scale(-1,1)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".4"/></g>
-              <g transform="translate(28,18) rotate(170)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".4"/></g>
-              <g transform="translate(28,18) rotate(170) scale(-1,1)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".4"/></g>
-              {/* Hub */}
-              <circle cx={28} cy={18} r={2.2} fill="#2E7D32"/>
-              <circle cx={28} cy={18} r={1.3} fill="#388E3C"/>
-            </svg>
-          </div>
-          {/* EDEN PULSE text */}
-          <div>
+        {/* LEFT: EDEN PULSE with clover on the E + TAGLINE */}
+        <div>
+          {/* EDEN PULSE wordmark — clover sprouts from the middle E (2nd E in EDEN) */}
+          <div style={{ position: "relative", display: "inline-block" }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
-              <span style={{
-                fontFamily: "'Cinzel Decorative','Cinzel',serif", fontSize: 36, letterSpacing: 10, fontWeight: 900,
-                background: "linear-gradient(135deg,#8B6914 0%,#C5B358 15%,#F5E6A3 30%,#D4AF37 45%,#C5B358 55%,#F5E6A3 65%,#D4AF37 80%,#8B6914 100%)",
-                backgroundSize: "200% 100%",
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-              }}>EDEN PULSE</span>
+              <span style={{ position: "relative", display: "inline-block" }}>
+                <span style={{
+                  fontFamily: "'Cinzel Decorative','Cinzel',serif", fontSize: 36, letterSpacing: 10, fontWeight: 900,
+                  background: "linear-gradient(135deg,#8B6914 0%,#C5B358 15%,#F5E6A3 30%,#D4AF37 45%,#C5B358 55%,#F5E6A3 65%,#D4AF37 80%,#8B6914 100%)",
+                  backgroundSize: "200% 100%",
+                  WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                }}>EDEN PULSE</span>
+                {/* CLOVER — positioned on top of the middle E (the 2nd E in ED[E]N) */}
+                {/* In "EDEN PULSE" at 36px + letterSpacing 10, the 3rd char E centers ~around 56px from left */}
+                <div style={{
+                  position: "absolute",
+                  top: -30,
+                  left: 56,
+                  pointerEvents: "none",
+                }}>
+                  <svg width={36} height={36} viewBox="0 0 36 36" style={{ overflow: "visible", filter: "drop-shadow(0 0 6px rgba(0,230,118,.3))" }}>
+                    <defs>
+                      <radialGradient id="plf" cx="30%" cy="35%" r="70%">
+                        <stop offset="0%" stopColor="#7bc67a" stopOpacity=".95"/>
+                        <stop offset="25%" stopColor="#43A047"/>
+                        <stop offset="55%" stopColor="#2E7D32"/>
+                        <stop offset="100%" stopColor="#1B5E20"/>
+                      </radialGradient>
+                      <linearGradient id="pst" x1="50%" y1="100%" x2="50%" y2="0%">
+                        <stop offset="0%" stopColor="#1B5E20"/>
+                        <stop offset="100%" stopColor="#43A047"/>
+                      </linearGradient>
+                    </defs>
+                    {/* Stem — grows down into the E */}
+                    <path d="M18,34 C18,27 18,14 18,12" stroke="url(#pst)" strokeWidth="2" fill="none" strokeLinecap="round"/>
+                    {/* 4 Leaves */}
+                    <g transform="translate(18,11) rotate(-10)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".3"/></g>
+                    <g transform="translate(18,11) rotate(-10) scale(-1,1)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".3"/></g>
+                    <g transform="translate(18,11) rotate(170)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".3"/></g>
+                    <g transform="translate(18,11) rotate(170) scale(-1,1)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".3"/></g>
+                    {/* Hub */}
+                    <circle cx={18} cy={11} r={1.8} fill="#2E7D32"/>
+                    <circle cx={18} cy={11} r={1} fill="#388E3C"/>
+                  </svg>
+                </div>
+              </span>
               <span style={{ fontSize: 14, letterSpacing: 3, color: C.goldDark, fontFamily: "'Cinzel', serif", fontWeight: 600 }}>v2.0</span>
             </div>
-            <div style={{ fontSize: 12, letterSpacing: 5, color: "#FFFFFF", textTransform: "uppercase", marginTop: 5, fontWeight: 700, fontFamily: "'Cinzel', serif" }}>THE RELENTLESS EYE · BERYL AI LABS · RESEARCH INTELLIGENCE DIVISION</div>
           </div>
+          <div style={{ fontSize: 12, letterSpacing: 5, color: "#FFFFFF", textTransform: "uppercase", marginTop: 5, fontWeight: 700, fontFamily: "'Cinzel', serif" }}>THE RELENTLESS EYE · BERYL AI LABS · RESEARCH INTELLIGENCE DIVISION</div>
         </div>
         {/* RIGHT: CLOCK + STATUS */}
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>

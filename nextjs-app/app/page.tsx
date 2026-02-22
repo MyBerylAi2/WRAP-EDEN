@@ -386,6 +386,202 @@ function EdenHeaderLogo({ size = "md", onClick }) {
 }
 
 // ═══════════════════════════════════════════
+// SPACE CANVAS — Suspended animation starfield
+// 3 parallax layers, gentle drift, soft nebula glow
+// Pure canvas — zero React re-renders
+// ═══════════════════════════════════════════
+function SpaceCanvas() {
+  const canvasRef = useRef(null);
+  const starsRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let animId;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    // ═══ STAR COLOR PALETTE — weighted selection ═══
+    const COLORS = [
+      { r: 235, g: 220, b: 180, w: 55 },  // Warm white
+      { r: 197, g: 179, b: 88,  w: 20 },  // Eden Gold
+      { r: 0,   g: 230, b: 118, w: 15 },  // Eden Green
+      { r: 245, g: 230, b: 163, w: 10 },  // Bright Gold
+    ];
+    const pickColor = (i) => {
+      const roll = ((i * 7393) % 100);
+      let cum = 0;
+      for (const c of COLORS) { cum += c.w; if (roll < cum) return c; }
+      return COLORS[0];
+    };
+
+    // ═══ GENERATE 400 STARS — 3D positions ═══
+    const MAX_DEPTH = 1500;
+    const NUM_STARS = 400;
+
+    if (!starsRef.current) {
+      starsRef.current = Array.from({ length: NUM_STARS }, (_, i) => {
+        const c = pickColor(i);
+        return {
+          x: (((i * 7919 + 3571) % 10000) / 5000 - 1) * 1200,
+          y: (((i * 6271 + 8837) % 10000) / 5000 - 1) * 800,
+          z: ((i * 4391 + 1223) % 10000) / 10000 * MAX_DEPTH,
+          prevZ: MAX_DEPTH,
+          r: c.r, g: c.g, b: c.b,
+          isGreen: c.g === 230,
+          opacity: 0.4 + ((i * 31) % 60) / 100,
+          // Green burst properties (only for green stars)
+          burstCycle: 10 + (i % 7) * 3,
+          burstPhase: ((i * 2.9) % 10),
+        };
+      });
+    }
+
+    const stars = starsRef.current;
+    const SPEED = 0.6; // Soft ambient cruise
+    let lastTime = Date.now();
+
+    const draw = () => {
+      const w = canvas.width;
+      const h = canvas.height;
+      const now = Date.now();
+      const delta = Math.min((now - lastTime) / 16.67, 3); // normalize to ~60fps
+      lastTime = now;
+      const t = now / 1000;
+
+      // Vanishing point — slightly off-center for cinematic feel
+      const cx = w * 0.48;
+      const cy = h * 0.46;
+      const focalLength = w * 0.5;
+
+      // ═══ TRAIL FADE — previous frame persists, creating motion blur ═══
+      // Low alpha = dreamy long trails. This IS the traveling-through-space feel.
+      ctx.fillStyle = "rgba(5, 3, 2, 0.12)";
+      ctx.fillRect(0, 0, w, h);
+
+      // ═══ DRAW EACH STAR ═══
+      for (const s of stars) {
+        s.prevZ = s.z;
+
+        // Move star closer to camera
+        s.z -= SPEED * delta;
+
+        // Recycle when it passes camera
+        if (s.z <= 1) {
+          s.z = MAX_DEPTH;
+          s.prevZ = MAX_DEPTH;
+          // New random position in 3D space
+          s.x = (Math.random() - 0.5) * w * 2;
+          s.y = (Math.random() - 0.5) * h * 2;
+          continue;
+        }
+
+        // ═══ PERSPECTIVE PROJECTION — the magic ═══
+        // Divide by Z: far stars = small & centered, close stars = big & edge
+        const sx = cx + (s.x / s.z) * focalLength;
+        const sy = cy + (s.y / s.z) * focalLength;
+
+        // Off-screen? Skip
+        if (sx < -50 || sx > w + 50 || sy < -50 || sy > h + 50) continue;
+
+        // Size grows as star approaches (1/z)
+        const size = Math.max(0.3, (focalLength / s.z) * 1.5);
+
+        // Brighter when closer
+        const depthFactor = 1 - (s.z / MAX_DEPTH);
+        const alpha = s.opacity * depthFactor;
+
+        // ═══ STREAK TRAIL — line from previous to current position ═══
+        if (s.prevZ !== MAX_DEPTH && s.prevZ > 1) {
+          const prevSx = cx + (s.x / s.prevZ) * focalLength;
+          const prevSy = cy + (s.y / s.prevZ) * focalLength;
+
+          ctx.beginPath();
+          ctx.moveTo(prevSx, prevSy);
+          ctx.lineTo(sx, sy);
+          ctx.strokeStyle = `rgba(${s.r},${s.g},${s.b},${alpha * 0.5})`;
+          ctx.lineWidth = size * 0.4;
+          ctx.stroke();
+        }
+
+        // ═══ STAR DOT ═══
+        ctx.beginPath();
+        ctx.arc(sx, sy, size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${s.r},${s.g},${s.b},${alpha})`;
+        ctx.fill();
+
+        // ═══ GREEN BURST FLARE — sporadic glow on green stars ═══
+        if (s.isGreen && size > 0.8) {
+          // Sporadic burst timing
+          const cycleT = ((t + s.burstPhase) % s.burstCycle) / s.burstCycle;
+          const burstWindow = 0.15; // 15% of cycle is the burst
+          let burst = 0;
+          if (cycleT > (1 - burstWindow)) {
+            burst = Math.sin(((cycleT - (1 - burstWindow)) / burstWindow) * Math.PI);
+          }
+
+          // Constant soft green halo
+          const haloR = size * (4 + burst * 8);
+          const halo = ctx.createRadialGradient(sx, sy, 0, sx, sy, haloR);
+          halo.addColorStop(0, `rgba(0,230,118,${(0.1 + burst * 0.25) * alpha})`);
+          halo.addColorStop(0.4, `rgba(76,175,80,${(0.04 + burst * 0.12) * alpha})`);
+          halo.addColorStop(1, "transparent");
+          ctx.fillStyle = halo;
+          ctx.fillRect(sx - haloR, sy - haloR, haloR * 2, haloR * 2);
+
+          // Bright core during burst
+          if (burst > 0.1) {
+            ctx.beginPath();
+            ctx.arc(sx, sy, size * (1 + burst * 2), 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(200,230,201,${0.6 * burst * alpha})`;
+            ctx.fill();
+          }
+        }
+
+        // Soft glow for gold stars when close
+        if (!s.isGreen && size > 1.2) {
+          const gr = size * 3;
+          const glow = ctx.createRadialGradient(sx, sy, 0, sx, sy, gr);
+          glow.addColorStop(0, `rgba(${s.r},${s.g},${s.b},${alpha * 0.1})`);
+          glow.addColorStop(1, "transparent");
+          ctx.fillStyle = glow;
+          ctx.fillRect(sx - gr, sy - gr, gr * 2, gr * 2);
+        }
+      }
+
+      animId = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        zIndex: 0,
+        pointerEvents: "none",
+      }}
+    />
+  );
+}
+
+// ═══════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════
 export default function Eden() {
@@ -407,8 +603,7 @@ export default function Eden() {
         ::-webkit-scrollbar-thumb { background: rgba(197,179,88,0.2); border-radius: 4px; }
         input:focus, textarea:focus, select:focus { border-color: rgba(197,179,88,0.4) !important; box-shadow: 0 0 12px rgba(197,179,88,0.06); }
 
-        @keyframes twinkle { 0%,100%{opacity:.2}50%{opacity:.75} }
-        @keyframes slow-drift { 0%{transform:translate(0,0);opacity:0}5%{opacity:.5}25%{opacity:.35}50%{transform:translate(15px,8px);opacity:.55}75%{opacity:.3}95%{opacity:.45}100%{transform:translate(30px,15px);opacity:0} }
+        /* Starfield handled by SpaceCanvas component — pure canvas, zero DOM */
         @keyframes breathe { 0%,100%{filter:drop-shadow(0 0 20px rgba(197,179,88,.3))}50%{filter:drop-shadow(0 0 40px rgba(212,175,55,.6))} }
         @keyframes glow-pulse { 0%,100%{opacity:.4}50%{opacity:.8} }
         @keyframes fade-up { 0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)} }
@@ -422,11 +617,7 @@ export default function Eden() {
         @keyframes border-shimmer { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
         @keyframes gentle-breeze { 0%,100%{transform:rotate(0deg)}15%{transform:rotate(1.8deg)}35%{transform:rotate(-1.2deg)}55%{transform:rotate(1deg)}75%{transform:rotate(-0.8deg)} }
 
-        .twinkle-star { position:absolute;border-radius:50%;animation:twinkle ease-in-out infinite;pointer-events:none; }
-        .slow-drift-star { position:absolute;width:2px;height:2px;border-radius:50%;background:radial-gradient(circle,rgba(245,230,163,.8),rgba(212,175,55,.3),transparent);animation:slow-drift linear infinite;pointer-events:none; }
-        .slow-drift-star::before { content:'';position:absolute;left:-1px;top:-1px;width:4px;height:4px;border-radius:50%;background:radial-gradient(circle,rgba(255,248,220,.6),transparent);}
-        .green-star { background:linear-gradient(90deg,rgba(0,230,118,.8),rgba(76,175,80,.4),rgba(56,142,60,.2),transparent)!important; }
-        .green-star::before { background:radial-gradient(circle,#C8E6C9,#00E676)!important;box-shadow:0 0 8px 3px rgba(0,230,118,.7),0 0 16px 6px rgba(76,175,80,.3)!important; }
+        /* Legacy star classes removed — replaced with pure CSS box-shadow starfield */
 
         .chat-shimmer-border {
           background: linear-gradient(135deg, #8B6914, #C5B358, #F5E6A3, #D4AF37, #C5B358, #F5E6A3, #8B6914, #C5B358);
@@ -540,20 +731,16 @@ function LandingPage({ mounted, onEnter }) {
   };
 
   return (
-    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", background: "radial-gradient(ellipse at 50% 70%, #1a0f05 0%, #0a0604 40%, #050302 100%)", overflow: "hidden", position: "relative" }}>
-      {/* Static twinkling stars — no movement, just gentle opacity pulse */}
-      {Array.from({ length: 28 }).map((_, i) => <div key={`t${i}`} className="twinkle-star" style={{ top: `${3+Math.random()*75}%`, left: `${2+Math.random()*96}%`, width: `${1+Math.random()*2}px`, height: `${1+Math.random()*2}px`, background: `radial-gradient(circle,rgba(212,175,55,${.4+Math.random()*.5}),transparent)`, animationDuration: `${3+Math.random()*5}s`, animationDelay: `${Math.random()*6}s` }} />)}
-      {Array.from({ length: 8 }).map((_, i) => <div key={`tg${i}`} className="twinkle-star" style={{ top: `${10+Math.random()*60}%`, left: `${15+Math.random()*70}%`, width: `${1+Math.random()*1.5}px`, height: `${1+Math.random()*1.5}px`, background: `radial-gradient(circle,rgba(0,230,118,${.25+Math.random()*.35}),transparent)`, animationDuration: `${4+Math.random()*6}s`, animationDelay: `${Math.random()*8}s` }} />)}
+    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", background: "#050302", overflow: "hidden", position: "relative" }}>
+      {/* ═══ SPACE CANVAS — suspended animation starfield ═══ */}
+      <SpaceCanvas />
 
-      {/* Near-static drift stars — barely perceptible movement */}
-      {Array.from({ length: 6 }).map((_, i) => <div key={`s${i}`} className="slow-drift-star" style={{ top: `${8+Math.random()*55}%`, left: `${5+Math.random()*85}%`, animationDuration: `${200+Math.random()*150}s`, animationDelay: `${Math.random()*50}s`, opacity: 0 }} />)}
-
-      {/* Radial glow — shifted lower to follow the logo position */}
-      <div style={{ position: "absolute", bottom: "15%", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(197,179,88,.06) 0%, rgba(76,175,80,.01) 40%, transparent 70%)", animation: "glow-pulse 4s ease-in-out infinite", pointerEvents: "none" }} />
+      {/* Radial glow around logo area */}
+      <div style={{ position: "absolute", bottom: "15%", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle, rgba(197,179,88,.06) 0%, rgba(76,175,80,.01) 40%, transparent 70%)", animation: "glow-pulse 4s ease-in-out infinite", pointerEvents: "none", zIndex: 1 }} />
 
       {/* ═══ EDEN TITLE + CLOVER — anchored to bottom zone, clover grows UP into open sky ═══ */}
       <div style={{
-        position: "relative", cursor: "default",
+        position: "relative", cursor: "default", zIndex: 2,
         transform: mounted ? "scale(1)" : "scale(0.9)",
         opacity: mounted ? 1 : 0,
         transition: "all 1.2s cubic-bezier(0.16,1,0.3,1)",
@@ -632,7 +819,7 @@ function LandingPage({ mounted, onEnter }) {
 
       {/* ═══ ENTER OUR AI GARDEN — LARGER BUTTON ═══ */}
       <button onClick={onEnter} style={{
-        marginTop: 20, padding: "18px 56px", borderRadius: 34, cursor: "pointer",
+        marginTop: 20, padding: "18px 56px", borderRadius: 34, cursor: "pointer", zIndex: 2,
         background: "linear-gradient(135deg, rgba(76,175,80,0.14), rgba(76,175,80,0.05))",
         border: "1px solid rgba(76,175,80,0.35)", color: C.greenBright,
         fontFamily: "'Cinzel',serif", fontSize: 15, letterSpacing: 7, textTransform: "uppercase",
@@ -645,7 +832,7 @@ function LandingPage({ mounted, onEnter }) {
 
       {/* ═══ CHAT — with ANIMATED GOLD SHIMMER BORDER ═══ */}
       <div style={{
-        width: "100%", maxWidth: 850, padding: "0 24px", marginTop: 24, marginBottom: 24,
+        width: "100%", maxWidth: 850, padding: "0 24px", marginTop: 24, marginBottom: 24, zIndex: 2,
         animation: mounted ? "fade-up 1s ease-out forwards" : "none",
         animationDelay: "1.4s", opacity: mounted ? 1 : 0,
       }}>

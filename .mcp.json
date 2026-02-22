@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "eden-mcp": {
+      "command": "node",
+      "args": ["/home/Relentless/mcp-servers/eden-mcp/index.js"],
+      "env": {
+        "HF_SPACE": "AIBRUH/eden-diffusion-studio",
+        "HF_TOKEN": "${HF_TOKEN}"
+      }
+    },
+    "eve-mcp": {
+      "command": "node",
+      "args": ["/home/Relentless/mcp-servers/eve-mcp/index.js"],
+      "env": {}
+    },
+    "ssh-mcp": {
+      "command": "node",
+      "args": ["/home/Relentless/mcp-servers/ssh-mcp/index.js"],
+      "env": {}
+    }
+  }
+}

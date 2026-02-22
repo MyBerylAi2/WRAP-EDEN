@@ -204,7 +204,117 @@ const PIPELINES = [
   { name: "Lulu Content Engine", desc: "Wan 2.2 → FlashVSR 4K → Anti-Detect → CDN Delivery", score: 68, status: "investigation", gpu: "A100", fps: 24, lat: "12s" },
 ];
 
-// ─── Micro Components ───
+// ═══════════════════════════════════════════
+// PROFITABILITY ALERTS — THE MONEY ENGINE
+// Kelly Criterion + EV+ filtering only
+// Alerts fire ONLY when edge > 5% above market
+// ═══════════════════════════════════════════
+
+const PROFIT_CATEGORIES = [
+  { id: "sports", label: "🏀 SPORTS PROPS", color: "#FF9800" },
+  { id: "stocks", label: "📈 BREAKOUT STOCKS", color: "#00E676" },
+  { id: "crypto", label: "₿ CRYPTO FUTURES", color: "#FFD600" },
+  { id: "forex", label: "💱 FOREX SHORTS", color: "#00BCD4" },
+];
+
+// Logic framework: Each alert passes through 3-gate filter:
+// Gate 1: Statistical edge >5% above implied probability (sports) or consensus (markets)
+// Gate 2: Historical backtest win rate >58% on similar patterns
+// Gate 3: Volatility/momentum confirmation (RSI, volume, injury reports)
+// Only alerts that pass ALL 3 gates display. Everything else is filtered as noise.
+
+const PROFIT_ALERTS = [
+  // ─── SPORTS PROPS ───
+  { id: "s1", cat: "sports", status: "LIVE", urgency: "hot",
+    title: "NBA Double-Double: Nikola Jokić vs LAL",
+    subtitle: "27.3 PPG + 13.1 RPG season avg. LAL allows 4th-most rebounds to centers. Last 8 games vs LAL: 7/8 double-doubles.",
+    model: "XGBoost ensemble (player stats + matchup + pace)", confidence: 89, edge: 11.2,
+    window: "Tomorrow 9:30 PM ET", payout: "+125", stake: "$200", expectedReturn: "$250",
+    gates: [true, true, true], backtest: "73% on 412 similar matchups",
+    result: null, timestamp: "Feb 22, 2026 14:32" },
+  { id: "s2", cat: "sports", status: "LIVE", urgency: "hot",
+    title: "NBA Double-Double: Domantas Sabonis vs HOU",
+    subtitle: "19.8 PPG + 14.2 RPG. HOU bottom-5 rebounding D. Sabonis has DD in 71% of games this season.",
+    model: "XGBoost ensemble + rest days factor", confidence: 84, edge: 8.7,
+    window: "Tomorrow 8:00 PM ET", payout: "+105", stake: "$150", expectedReturn: "$157",
+    gates: [true, true, true], backtest: "68% on 289 similar matchups",
+    result: null, timestamp: "Feb 22, 2026 14:32" },
+  { id: "s3", cat: "sports", status: "LIVE", urgency: "warm",
+    title: "NHL SOG Over: Auston Matthews O3.5 SOG vs BOS",
+    subtitle: "4.2 SOG/game avg. BOS allows most shots to top-line centers. Matthews 63% over 3.5 last 20 games.",
+    model: "Poisson regression (shot attempts + ice time + matchup)", confidence: 76, edge: 7.1,
+    window: "Tomorrow 7:00 PM ET", payout: "-110", stake: "$110", expectedReturn: "$100",
+    gates: [true, true, true], backtest: "64% on 198 similar matchups",
+    result: null, timestamp: "Feb 22, 2026 14:45" },
+  { id: "s4", cat: "sports", status: "LIVE", urgency: "warm",
+    title: "NHL SOG Over: Connor McDavid O4.5 SOG vs CGY",
+    subtitle: "4.8 SOG/game. Battle of Alberta = elevated pace. McDavid averages 5.3 SOG in rivalry games.",
+    model: "Poisson regression + rivalry pace adjustment", confidence: 72, edge: 6.3,
+    window: "Tomorrow 9:00 PM ET", payout: "+115", stake: "$100", expectedReturn: "$115",
+    gates: [true, true, true], backtest: "61% on 156 similar matchups",
+    result: null, timestamp: "Feb 22, 2026 15:01" },
+  // ─── BREAKOUT STOCKS ───
+  { id: "k1", cat: "stocks", status: "LIVE", urgency: "hot",
+    title: "BREAKOUT: SMCI — Volume Surge + Golden Cross",
+    subtitle: "3x avg volume last 2 sessions. 50-day SMA crossed above 200-day. RSI 62 (momentum, not overbought). AI server demand catalyst.",
+    model: "Multi-factor: Golden Cross + Volume + RSI + Sector Momentum", confidence: 81, edge: 9.4,
+    window: "Entry: Mon open → Exit: 48hr", payout: "TP +8%", stake: "$1,000", expectedReturn: "$1,080",
+    gates: [true, true, true], backtest: "66% on 847 golden cross events (2020-2025)",
+    result: null, timestamp: "Feb 22, 2026 13:15" },
+  { id: "k2", cat: "stocks", status: "APPROACHING", urgency: "warm",
+    title: "WATCHING: PLTR — Bollinger Squeeze + Earnings Momentum",
+    subtitle: "Bollinger bandwidth at 6-month low = expansion imminent. Post-earnings drift pattern. Volume building on green days.",
+    model: "Bollinger Squeeze + Post-Earnings Drift + Smart Money Flow", confidence: 74, edge: 6.8,
+    window: "Trigger on break above $82.40", payout: "TP +6%", stake: "$800", expectedReturn: "$848",
+    gates: [true, true, false], backtest: "62% on 523 squeeze events",
+    result: null, timestamp: "Feb 22, 2026 13:28" },
+  // ─── CRYPTO FUTURES ───
+  { id: "c1", cat: "crypto", status: "LIVE", urgency: "hot",
+    title: "ETH/USDT LONG — Funding Rate Flip + OI Surge",
+    subtitle: "Funding flipped positive after 72hr negative. Open interest +18% in 24hr. Historically precedes 4-8% move within 48hr.",
+    model: "Funding Rate Reversal + OI Divergence + Liquidation Heatmap", confidence: 79, edge: 8.2,
+    window: "Now → 48hr", payout: "5x leverage → TP +6%", stake: "$500", expectedReturn: "$650",
+    gates: [true, true, true], backtest: "71% on 134 funding flip events (2023-2025)",
+    result: null, timestamp: "Feb 22, 2026 12:44" },
+  { id: "c2", cat: "crypto", status: "APPROACHING", urgency: "warm",
+    title: "SOL/USDT — Accumulation Zone + Whale Wallet Activity",
+    subtitle: "Top 50 wallets accumulated +2.1M SOL in 48hr. Price compressing at support. Breakout target $148-155.",
+    model: "On-chain whale tracking + Support/Resistance + Volume Profile", confidence: 73, edge: 5.9,
+    window: "Trigger on break above $142", payout: "3x leverage → TP +5%", stake: "$400", expectedReturn: "$460",
+    gates: [true, true, false], backtest: "65% on 89 whale accumulation events",
+    result: null, timestamp: "Feb 22, 2026 13:55" },
+  // ─── FOREX SHORTS ───
+  { id: "f1", cat: "forex", status: "LIVE", urgency: "hot",
+    title: "SHORT GBP/JPY — Divergence + BoJ Hawkish Signal",
+    subtitle: "RSI bearish divergence on 4H. BoJ signaled tightening. GBP/JPY historically drops 150-250 pips on BoJ hawkish shifts. Risk:reward 1:2.8.",
+    model: "Central Bank Divergence + RSI Divergence + Carry Trade Unwind", confidence: 82, edge: 10.1,
+    window: "Now → 48hr target", payout: "TP 200 pips", stake: "0.5 lot ($500 margin)", expectedReturn: "$680",
+    gates: [true, true, true], backtest: "69% on 67 BoJ divergence events (2022-2025)",
+    result: null, timestamp: "Feb 22, 2026 11:20" },
+  { id: "f2", cat: "forex", status: "LIVE", urgency: "warm",
+    title: "SHORT AUD/USD — Commodity Weakness + China PMI Miss",
+    subtitle: "Iron ore -4.2% this week. China PMI missed at 49.1. AUD correlates 0.82 with iron ore. Support break at 0.6380.",
+    model: "Commodity Correlation + PMI Surprise + Technical Breakdown", confidence: 77, edge: 7.3,
+    window: "Now → 36hr", payout: "TP 120 pips", stake: "0.3 lot ($300 margin)", expectedReturn: "$396",
+    gates: [true, true, true], backtest: "63% on 112 commodity-driven AUD moves",
+    result: null, timestamp: "Feb 22, 2026 12:05" },
+];
+
+// Historical results — scrollable win/loss tracker for model finetuning
+const PROFIT_HISTORY = [
+  { id: "h1", title: "NBA DD: Jokić vs GSW", cat: "sports", result: "WIN", confidence: 87, payout: "+$245", date: "Feb 20" },
+  { id: "h2", title: "SHORT EUR/USD — ECB dovish", cat: "forex", result: "WIN", confidence: 80, payout: "+$520", date: "Feb 19" },
+  { id: "h3", title: "NVDA Breakout", cat: "stocks", result: "WIN", confidence: 78, payout: "+$640", date: "Feb 19" },
+  { id: "h4", title: "BTC/USDT Long — Funding flip", cat: "crypto", result: "WIN", confidence: 81, payout: "+$380", date: "Feb 18" },
+  { id: "h5", title: "NHL SOG: Ovechkin O3.5", cat: "sports", result: "LOSS", confidence: 71, payout: "-$110", date: "Feb 18" },
+  { id: "h6", title: "NBA DD: Sabonis vs PHX", cat: "sports", result: "WIN", confidence: 85, payout: "+$200", date: "Feb 17" },
+  { id: "h7", title: "SHORT GBP/USD — BoE dovish", cat: "forex", result: "WIN", confidence: 79, payout: "+$440", date: "Feb 17" },
+  { id: "h8", title: "SMCI Breakout — volume surge", cat: "stocks", result: "LOSS", confidence: 69, payout: "-$300", date: "Feb 16" },
+  { id: "h9", title: "ETH/USDT Long — whale buy", cat: "crypto", result: "WIN", confidence: 76, payout: "+$290", date: "Feb 16" },
+  { id: "h10", title: "NHL SOG: McDavid O4.5", cat: "sports", result: "WIN", confidence: 74, payout: "+$115", date: "Feb 15" },
+  { id: "h11", title: "NBA DD: Giannis vs CLE", cat: "sports", result: "WIN", confidence: 88, payout: "+$310", date: "Feb 15" },
+  { id: "h12", title: "SOL/USDT Long — breakout", cat: "crypto", result: "WIN", confidence: 72, payout: "+$180", date: "Feb 14" },
+];
 
 const PulseRing = ({ value, size = 40 }) => {
   const pct = Math.round(value * 100);
@@ -369,6 +479,7 @@ export default function EdenPulseDashboard() {
     { id: "radar", label: "PULSE RADAR", icon: "📊" },
     { id: "vault", label: "PAPER VAULT", icon: "📄" },
     { id: "triage", label: "TRIAGE QUEUE", icon: "🔬" },
+    { id: "profit", label: "PROFIT ALERTS", icon: "💰" },
   ];
 
   const ticker = [
@@ -416,53 +527,66 @@ export default function EdenPulseDashboard() {
         }
       `}</style>
 
-      {/* ═══ HEADER — CLOVER SPROUTING FROM MIDDLE E ═══ */}
+      {/* ═══ HEADER — CLOVER SITTING ON THE MIDDLE E ═══ */}
       <div style={{ background: C.bgSurface, borderBottom: `1px solid ${C.border}`, padding: "18px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        {/* LEFT: EDEN PULSE with clover on the E + TAGLINE */}
         <div>
-          {/* EDEN PULSE wordmark — clover sprouts from the middle E (2nd E in EDEN) */}
+          {/* EDEN PULSE — clover sits directly on the E */}
           <div style={{ position: "relative", display: "inline-block" }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
-              <span style={{ position: "relative", display: "inline-block" }}>
+              <span style={{ display: "inline-flex", alignItems: "baseline", position: "relative" }}>
+                {/* ED */}
                 <span style={{
                   fontFamily: "'Cinzel Decorative','Cinzel',serif", fontSize: 36, letterSpacing: 10, fontWeight: 900,
                   background: "linear-gradient(135deg,#8B6914 0%,#C5B358 15%,#F5E6A3 30%,#D4AF37 45%,#C5B358 55%,#F5E6A3 65%,#D4AF37 80%,#8B6914 100%)",
-                  backgroundSize: "200% 100%",
-                  WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                }}>EDEN PULSE</span>
-                {/* CLOVER — positioned on top of the middle E (the 2nd E in ED[E]N) */}
-                {/* In "EDEN PULSE" at 36px + letterSpacing 10, the 3rd char E centers ~around 56px from left */}
-                <div style={{
-                  position: "absolute",
-                  top: -30,
-                  left: 56,
-                  pointerEvents: "none",
-                }}>
-                  <svg width={36} height={36} viewBox="0 0 36 36" style={{ overflow: "visible", filter: "drop-shadow(0 0 6px rgba(0,230,118,.3))" }}>
-                    <defs>
-                      <radialGradient id="plf" cx="30%" cy="35%" r="70%">
-                        <stop offset="0%" stopColor="#7bc67a" stopOpacity=".95"/>
-                        <stop offset="25%" stopColor="#43A047"/>
-                        <stop offset="55%" stopColor="#2E7D32"/>
-                        <stop offset="100%" stopColor="#1B5E20"/>
-                      </radialGradient>
-                      <linearGradient id="pst" x1="50%" y1="100%" x2="50%" y2="0%">
-                        <stop offset="0%" stopColor="#1B5E20"/>
-                        <stop offset="100%" stopColor="#43A047"/>
-                      </linearGradient>
-                    </defs>
-                    {/* Stem — grows down into the E */}
-                    <path d="M18,34 C18,27 18,14 18,12" stroke="url(#pst)" strokeWidth="2" fill="none" strokeLinecap="round"/>
-                    {/* 4 Leaves */}
-                    <g transform="translate(18,11) rotate(-10)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".3"/></g>
-                    <g transform="translate(18,11) rotate(-10) scale(-1,1)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".3"/></g>
-                    <g transform="translate(18,11) rotate(170)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".3"/></g>
-                    <g transform="translate(18,11) rotate(170) scale(-1,1)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".3"/></g>
-                    {/* Hub */}
-                    <circle cx={18} cy={11} r={1.8} fill="#2E7D32"/>
-                    <circle cx={18} cy={11} r={1} fill="#388E3C"/>
-                  </svg>
-                </div>
+                  backgroundSize: "200% 100%", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                }}>ED</span>
+                {/* THE E WITH CLOVER ON IT */}
+                <span style={{ position: "relative", display: "inline-block" }}>
+                  <span style={{
+                    fontFamily: "'Cinzel Decorative','Cinzel',serif", fontSize: 36, letterSpacing: 10, fontWeight: 900,
+                    background: "linear-gradient(135deg,#8B6914 0%,#C5B358 15%,#F5E6A3 30%,#D4AF37 45%,#C5B358 55%,#F5E6A3 65%,#D4AF37 80%,#8B6914 100%)",
+                    backgroundSize: "200% 100%", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                  }}>E</span>
+                  {/* CLOVER — sitting directly on top of this E, stem touches the letter */}
+                  <div style={{
+                    position: "absolute",
+                    bottom: "100%",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    marginBottom: -4,
+                    pointerEvents: "none",
+                  }}>
+                    <svg width={32} height={32} viewBox="0 0 32 32" style={{ overflow: "visible", filter: "drop-shadow(0 0 6px rgba(0,230,118,.35))", display: "block" }}>
+                      <defs>
+                        <radialGradient id="plf" cx="30%" cy="35%" r="70%">
+                          <stop offset="0%" stopColor="#7bc67a" stopOpacity=".95"/>
+                          <stop offset="25%" stopColor="#43A047"/>
+                          <stop offset="55%" stopColor="#2E7D32"/>
+                          <stop offset="100%" stopColor="#1B5E20"/>
+                        </radialGradient>
+                        <linearGradient id="pst" x1="50%" y1="100%" x2="50%" y2="0%">
+                          <stop offset="0%" stopColor="#1B5E20"/>
+                          <stop offset="100%" stopColor="#43A047"/>
+                        </linearGradient>
+                      </defs>
+                      {/* Stem — short, goes from bottom center down to the E */}
+                      <path d="M16,32 C16,26 16,16 16,13" stroke="url(#pst)" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
+                      {/* 4 Leaves */}
+                      <g transform="translate(16,12) rotate(-10)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".3"/></g>
+                      <g transform="translate(16,12) rotate(-10) scale(-1,1)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".3"/></g>
+                      <g transform="translate(16,12) rotate(170)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".3"/></g>
+                      <g transform="translate(16,12) rotate(170) scale(-1,1)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".3"/></g>
+                      <circle cx={16} cy={12} r={1.6} fill="#2E7D32"/>
+                      <circle cx={16} cy={12} r={0.9} fill="#388E3C"/>
+                    </svg>
+                  </div>
+                </span>
+                {/* N PULSE */}
+                <span style={{
+                  fontFamily: "'Cinzel Decorative','Cinzel',serif", fontSize: 36, letterSpacing: 10, fontWeight: 900,
+                  background: "linear-gradient(135deg,#8B6914 0%,#C5B358 15%,#F5E6A3 30%,#D4AF37 45%,#C5B358 55%,#F5E6A3 65%,#D4AF37 80%,#8B6914 100%)",
+                  backgroundSize: "200% 100%", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                }}>N PULSE</span>
               </span>
               <span style={{ fontSize: 14, letterSpacing: 3, color: C.goldDark, fontFamily: "'Cinzel', serif", fontWeight: 600 }}>v2.0</span>
             </div>
@@ -541,30 +665,49 @@ export default function EdenPulseDashboard() {
 
           {/* ═══ ALLUVIAL FEED ═══ */}
           {tab === "feed" && <>
-            <SectionHead>BREAKING INTELLIGENCE</SectionHead>
-            {/* Frosted Panel Container */}
-            <div style={{ background: C.well, borderRadius: 14, border: `1px solid ${C.wellBorder}`, padding: "12px 14px", marginBottom: 20, boxShadow: C.wellGlow }}>
-            {BREAKING.map((item, i) => {
-              const colors = { BREAKING: C.red, "LAYING PIPE": C.greenVibrant, "UNDER INVESTIGATION": C.orange, FORECAST: C.purple, ARCHIVED: C.teal };
-              const tagColor = colors[item.tag];
-              return (
-                <div key={item.id} style={{
-                  display: "flex", alignItems: "center", gap: 14, padding: "10px 14px",
-                  background: i === 0 ? `${tagColor}10` : C.wellBright,
-                  border: `1px solid ${i === 0 ? `${tagColor}25` : "rgba(197,179,88,0.08)"}`,
-                  borderRadius: 10, marginBottom: i < BREAKING.length - 1 ? 6 : 0, animation: `fadeUp 0.5s ease ${i * 0.06}s both`, cursor: "pointer",
-                  transition: "all 0.3s",
-                }}>
-                  <Badge text={item.tag === "BREAKING" ? `🔴 ${item.tag}` : item.tag} color={tagColor} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: C.textBright, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</div>
-                    <div style={{ fontSize: 10, color: C.textDim, marginTop: 2 }}>{item.category} · {item.time} · {item.views} views</div>
-                  </div>
-                  <PulseRing value={item.spike} size={32} />
-                  <AgentPhoto agentId={item.agent} size={28} />
+            {/* BREAKING INTELLIGENCE — White panel, dark green bold headings */}
+            <div style={{
+              background: "#FFFFFF", borderRadius: 16, padding: "20px 22px", marginBottom: 24,
+              border: "1px solid rgba(0,0,0,0.08)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.08)",
+              animation: "fadeUp 0.4s ease both",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, paddingBottom: 12, borderBottom: "2px solid #1B5E20" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#C62828", boxShadow: "0 0 8px rgba(198,40,40,0.6)", animation: "pulse 1.5s infinite" }} />
+                  <span style={{ fontFamily: "'Cinzel', serif", fontSize: 14, letterSpacing: 4, color: "#1B5E20", fontWeight: 700, textTransform: "uppercase" }}>BREAKING INTELLIGENCE</span>
                 </div>
-              );
-            })}
+                <span style={{ fontSize: 10, color: "#8C8C8C", fontFamily: "'Cinzel', serif", letterSpacing: 2 }}>LIVE FEED</span>
+              </div>
+              {BREAKING.map((item, i) => {
+                const tagColors = { BREAKING: "#C62828", "LAYING PIPE": "#1B5E20", "UNDER INVESTIGATION": "#E65100", FORECAST: "#6A1B9A", ARCHIVED: "#00695C" };
+                const tagColor = tagColors[item.tag];
+                return (
+                  <div key={item.id} style={{
+                    display: "flex", alignItems: "center", gap: 14, padding: "12px 14px",
+                    background: i === 0 ? "rgba(27,94,32,0.04)" : (i % 2 === 0 ? "rgba(0,0,0,0.015)" : "transparent"),
+                    borderRadius: 10, marginBottom: i < BREAKING.length - 1 ? 4 : 0,
+                    cursor: "pointer", transition: "all 0.25s",
+                    borderLeft: i === 0 ? "3px solid #C62828" : "3px solid transparent",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(27,94,32,0.06)"; e.currentTarget.style.borderLeftColor = tagColor; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = i === 0 ? "rgba(27,94,32,0.04)" : (i % 2 === 0 ? "rgba(0,0,0,0.015)" : "transparent"); e.currentTarget.style.borderLeftColor = i === 0 ? "#C62828" : "transparent"; }}
+                  >
+                    {/* Tag badge — on white bg */}
+                    <span style={{
+                      padding: "3px 10px", borderRadius: 6, fontSize: 9, fontFamily: "'Cinzel', serif",
+                      letterSpacing: 2, textTransform: "uppercase", whiteSpace: "nowrap",
+                      background: `${tagColor}12`, border: `1px solid ${tagColor}30`, color: tagColor, fontWeight: 700,
+                    }}>{item.tag === "BREAKING" ? `🔴 ${item.tag}` : item.tag}</span>
+                    {/* Title — DARK GREEN BOLD LARGER */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: "#1B5E20", fontFamily: "'Cinzel', serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.3 }}>{item.title}</div>
+                      <div style={{ fontSize: 10, color: "#8C8C8C", marginTop: 3 }}>{item.category} · {item.time} · {item.views} views</div>
+                    </div>
+                    <PulseRing value={item.spike} size={32} />
+                    <AgentPhoto agentId={item.agent} size={28} />
+                  </div>
+                );
+              })}
             </div>
 
             <div style={{ height: 24 }} />

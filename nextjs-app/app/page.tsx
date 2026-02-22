@@ -1516,6 +1516,8 @@ function ImageStudio() {
   const [cascade, setCascade] = useState(true); // CASCADE MODE: fast preview + auto-remaster
   const [status, setStatus] = useState(null);
   const [history, setHistory] = useState([]);
+  const [showJudge, setShowJudge] = useState(false);
+  const [imageMeta, setImageMeta] = useState(null);
   // GPU Control
   const [gpuMode, setGpuMode] = useState("zerogpu"); // "zerogpu" | "dedicated"
   const [gpuTier, setGpuTier] = useState(null); // selected hardware flavor
@@ -1631,7 +1633,7 @@ function ImageStudio() {
   };
 
   const presetKeys = ["EDEN Ultra Realism", "EDEN Cinematic", "Hyperreal", "Kling Max", "Skin Perfect", "Boudoir", "Mahogany Glamour", "The Parlor", "Diamond Room", "Portrait", "Natural", "EDEN Raw", "Studio"];
-  const backendKeys = ["Juggernaut Pro FLUX", "epiCRealism XL", "Z-Image Turbo (Fast)", "FLUX.1 Dev", "FLUX.2 Dev (4-bit)", "Eden Diffusion Studio", "CogView4"];
+  const backendKeys = ["FLUX Schnell (Fast R&D)", "FLUX Dev (Publish Quality)", "Z-Image Turbo", "CogView4", "Juggernaut Pro FLUX"];
   const resOptions = [
     { value: "1024x1024 ( 1:1 )", label: "1024 × 1024 (Square)" },
     { value: "768x1280 ( 9:16 Portrait )", label: "768 × 1280 (Portrait)" },
@@ -1653,6 +1655,7 @@ function ImageStudio() {
     setRemasterUrl(null);
     setIsRemastered(false);
     setRemastering(false);
+    setShowJudge(false);
 
     const trimmed = prompt.trim();
     const payload = { prompt: trimmed, preset, resolution: res, randomSeed: true, enhance: true, mode: "image_studio" };
@@ -1691,6 +1694,8 @@ function ImageStudio() {
           setIsRemastered(true);
           setStatus(`✅ EDEN REMASTERED · ${qualData.steps || 25} steps · FLUX Dev · Seed: ${qualData.seed || "auto"}`);
           setHistory(p => [{ url: qualData.image, prompt: trimmed, seed: qualData.seed, tag: "remastered" }, ...p].slice(0, 30));
+          setImageMeta({ url: qualData.image, prompt: trimmed, seed: qualData.seed, backend: "FLUX Dev", steps: qualData.steps || 25, created: new Date().toISOString(), type: "image" });
+          setShowJudge(true);
         } else {
           setStatus(`⚡ Schnell preview shown · Dev remaster unavailable: ${qualData.error || "backend busy"}`);
         }
@@ -1714,6 +1719,8 @@ function ImageStudio() {
           setImageUrl(data.image);
           setStatus(`✅ Generated · Seed: ${data.seed || "auto"} · ${data.steps || "?"} steps · ${data.backend || backend}`);
           setHistory(p => [{ url: data.image, prompt: trimmed, seed: data.seed }, ...p].slice(0, 30));
+          setImageMeta({ url: data.image, prompt: trimmed, seed: data.seed, backend: data.backend || backend, steps: data.steps, created: new Date().toISOString(), type: "image" });
+          setShowJudge(true);
         } else {
           // Fallback to Pollinations
           setStatus("⏳ Fallback: Pollinations FLUX...");
@@ -1730,6 +1737,19 @@ function ImageStudio() {
       }
       setLoading(false);
     }
+  };
+
+  const handleLikeImage = () => {
+    if (!imageMeta) return;
+    const gallery = loadGallery();
+    gallery.unshift({ ...imageMeta, id: `i-${Date.now()}`, portfolio: false, batch: null });
+    saveGallery(gallery);
+    setShowJudge(false);
+    setStatus("✅ Saved to Gallery");
+  };
+  const handleLeaveImage = () => { setShowJudge(false); setStatus("Render discarded"); };
+  const handleRemixImage = (item) => {
+    setPrompt(item.prompt + " — different angle, new composition, alternate setting");
   };
 
   return (
@@ -1896,13 +1916,12 @@ function ImageStudio() {
         <Card title="ERE-1 Backend">
           <Select value={backend} onChange={e => setBackend(e.target.value)} options={backendKeys.map(b => ({ value: b, label: b }))} style={{ width: "100%" }}/>
           <div style={{ fontSize: 11, fontWeight: 600, color: C.textDim, fontFamily: "'Cormorant Garamond',serif", marginTop: 6 }}>
-            {backend.includes("Juggernaut") ? "50 steps · Best skin realism" :
-             backend.includes("epiCRealism") ? "50 steps · #1 SDXL photorealism" :
-             backend.includes("Z-Image") ? "8-12 steps · Fast preview" :
-             backend.includes("FLUX.2") ? "40 steps · 32B params, 4MP" :
-             backend.includes("FLUX.1") ? "35 steps · Solid all-rounder" :
+            {backend.includes("Schnell") ? "4 steps · ~3s · Rapid R&D testing" :
+             backend.includes("Dev") ? "25 steps · ~18s · Publish quality" :
+             backend.includes("Z-Image") ? "8 steps · Fast alternative" :
              backend.includes("CogView") ? "30 steps · Scene specialist" :
-             "45 steps · Custom pipeline"}
+             backend.includes("Juggernaut") ? "30 steps · Skin realism" :
+             "Auto steps"}
           </div>
         </Card>
         <Card title="Resolution">
@@ -1936,6 +1955,9 @@ function ImageStudio() {
           {imageUrl ? (
             <>
               <img src={imageUrl} alt="Generated" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", borderRadius: 10 }}/>
+              {showJudge && imageMeta && (
+                <JudgeOverlay type="image" url={imageUrl} prompt={imageMeta.prompt} seed={imageMeta.seed} backend={imageMeta.backend} steps={imageMeta.steps} onLike={handleLikeImage} onLeave={handleLeaveImage} />
+              )}
               {/* REMASTER BADGE */}
               {isRemastered && (
                 <div style={{
@@ -1972,7 +1994,7 @@ function ImageStudio() {
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
               <div style={{ width: 40, height: 40, border: `2px solid ${C.border}`, borderTop: `2px solid ${cascade ? C.gold : C.green}`, borderRadius: "50%", animation: "spin-loader 1s linear infinite" }}/>
               <span style={{ fontSize: 14, fontWeight: 700, color: C.text, fontFamily: "'Cinzel',serif", letterSpacing: 2 }}>{cascade ? "FAST PREVIEW..." : "GENERATING..."}</span>
-              {cascade && <span style={{ fontSize: 12, color: C.textDim, fontFamily: "'Cormorant Garamond',serif" }}>Z-Image Turbo → then {backend} remaster</span>}
+              {cascade && <span style={{ fontSize: 12, color: C.textDim, fontFamily: "'Cormorant Garamond',serif" }}>Schnell 4-step → then FLUX Dev remaster</span>}
             </div>
           ) : (
             <div style={{ textAlign: "center" }}>
@@ -1995,9 +2017,218 @@ function ImageStudio() {
             </div>
           </div>
         )}
+        {/* Gallery */}
+        <GalleryPanel type="image" onRemix={handleRemixImage} />
       </div>
       {/* RIGHT — Chat Panel */}
       <StudioChatPanel context="Image Studio" />
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════
+// GALLERY SYSTEM — Shared across all studios
+// ═══════════════════════════════════════════
+const GALLERY_KEY = "eden_gallery";
+function loadGallery() {
+  try { return JSON.parse(localStorage.getItem(GALLERY_KEY) || "[]"); } catch { return []; }
+}
+function saveGallery(items) { localStorage.setItem(GALLERY_KEY, JSON.stringify(items)); }
+
+// Like/Leave judgment overlay after render
+function JudgeOverlay({ type, url, prompt, seed, backend, steps, onLike, onLeave }) {
+  return (
+    <div style={{
+      position: "absolute", bottom: 0, left: 0, right: 0, padding: "16px 20px",
+      background: "linear-gradient(transparent, rgba(0,0,0,0.92) 30%)",
+      display: "flex", alignItems: "center", gap: 10, zIndex: 10,
+    }}>
+      <button onClick={onLike} style={{
+        flex: 1, padding: "12px", borderRadius: 10, cursor: "pointer",
+        background: "linear-gradient(135deg, rgba(46,125,50,0.3), rgba(27,94,32,0.2))",
+        border: "1px solid rgba(76,175,80,0.4)", color: "#C8E6C9",
+        fontFamily: "'Cinzel',serif", fontSize: 13, fontWeight: 700, letterSpacing: 2,
+        transition: "all .2s",
+      }}>LIKE IT</button>
+      <button onClick={onLeave} style={{
+        flex: 1, padding: "12px", borderRadius: 10, cursor: "pointer",
+        background: "rgba(244,67,54,0.08)", border: "1px solid rgba(244,67,54,0.25)",
+        color: "#ef9a9a", fontFamily: "'Cinzel',serif", fontSize: 13, fontWeight: 700, letterSpacing: 2,
+        transition: "all .2s",
+      }}>LEAVE IT</button>
+    </div>
+  );
+}
+
+// Gallery panel — shows under the preview in any studio
+function GalleryPanel({ type, onRemix, onSendToFilmRoom }) {
+  const [items, setItems] = useState([]);
+  const [filter, setFilter] = useState("all"); // all | image | video | portfolio | batch
+  const [viewItem, setViewItem] = useState(null);
+  const [batchName, setBatchName] = useState("");
+  const [showBatchInput, setShowBatchInput] = useState(false);
+
+  useEffect(() => { setItems(loadGallery()); }, []);
+
+  const filtered = items.filter(i => {
+    if (filter === "all") return true;
+    if (filter === "portfolio") return i.portfolio;
+    if (filter === "batch") return i.batch;
+    return i.type === filter;
+  });
+
+  const togglePortfolio = (id) => {
+    const updated = items.map(i => i.id === id ? { ...i, portfolio: !i.portfolio } : i);
+    setItems(updated); saveGallery(updated);
+  };
+
+  const deleteItem = (id) => {
+    const updated = items.filter(i => i.id !== id);
+    setItems(updated); saveGallery(updated);
+    if (viewItem?.id === id) setViewItem(null);
+  };
+
+  const assignBatch = (id, batch) => {
+    const updated = items.map(i => i.id === id ? { ...i, batch } : i);
+    setItems(updated); saveGallery(updated);
+  };
+
+  const shareItem = async (item) => {
+    if (navigator.share) {
+      try { await navigator.share({ title: `Eden ${item.type}`, text: item.prompt, url: item.url }); } catch {}
+    } else {
+      navigator.clipboard?.writeText(item.url);
+    }
+  };
+
+  if (filtered.length === 0 && items.length === 0) return null;
+
+  return (
+    <div style={{ borderTop: `1px solid ${C.border}`, padding: "14px 0 0" }}>
+      {/* Header + Filters */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <div style={{ fontFamily: "'Cinzel',serif", fontSize: 13, fontWeight: 700, letterSpacing: 3, color: "#FFFFFF", textTransform: "uppercase" }}>
+          Gallery <span style={{ fontSize: 11, color: C.textDim, fontWeight: 600 }}>({items.length})</span>
+        </div>
+        <div style={{ display: "flex", gap: 4 }}>
+          {["all","image","video","portfolio","batch"].map(f => (
+            <button key={f} onClick={() => setFilter(f)} style={{
+              padding: "4px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, cursor: "pointer",
+              fontFamily: "'Cinzel',serif", letterSpacing: 1, textTransform: "uppercase",
+              background: filter === f ? "rgba(197,179,88,.12)" : "transparent",
+              border: `1px solid ${filter === f ? "rgba(197,179,88,.3)" : "transparent"}`,
+              color: filter === f ? C.gold : C.textDim,
+            }}>{f}</button>
+          ))}
+        </div>
+      </div>
+      {/* Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))", gap: 8, maxHeight: 280, overflowY: "auto" }}>
+        {filtered.map(item => (
+          <div key={item.id} style={{
+            position: "relative", borderRadius: 8, overflow: "hidden", cursor: "pointer",
+            border: `1px solid ${item.portfolio ? "rgba(197,179,88,.4)" : C.border}`,
+            aspectRatio: "1", transition: "all .2s",
+          }} onClick={() => setViewItem(item)}>
+            {item.type === "image" ? (
+              <img src={item.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }}/>
+            ) : (
+              <div style={{ width: "100%", height: "100%", background: "rgba(12,8,4,.8)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ fontSize: 28 }}>🎬</span>
+              </div>
+            )}
+            {/* Portfolio star */}
+            {item.portfolio && <div style={{ position: "absolute", top: 3, right: 3, fontSize: 12 }}>⭐</div>}
+            {/* Batch tag */}
+            {item.batch && <div style={{ position: "absolute", bottom: 2, left: 2, padding: "1px 4px", borderRadius: 4, background: "rgba(0,0,0,.75)", fontSize: 8, color: C.gold, fontWeight: 700 }}>{item.batch}</div>}
+          </div>
+        ))}
+      </div>
+
+      {/* Detail View Overlay */}
+      {viewItem && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999,
+          background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center",
+          padding: 40,
+        }} onClick={() => setViewItem(null)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            maxWidth: 700, width: "100%", background: "linear-gradient(180deg, #121008, #0a0704)",
+            borderRadius: 16, border: `1px solid ${C.border}`, overflow: "hidden",
+          }}>
+            {/* Preview */}
+            <div style={{ maxHeight: 400, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", background: "#000" }}>
+              {viewItem.type === "image" ? (
+                <img src={viewItem.url} alt="" style={{ maxWidth: "100%", maxHeight: 400, objectFit: "contain" }}/>
+              ) : (
+                <video src={viewItem.url} controls autoPlay loop style={{ maxWidth: "100%", maxHeight: 400 }}/>
+              )}
+            </div>
+            {/* Meta */}
+            <div style={{ padding: 20 }}>
+              <div style={{ fontSize: 11, color: C.textDim, fontFamily: "'Cormorant Garamond',serif", marginBottom: 6 }}>
+                {new Date(viewItem.created).toLocaleDateString()} at {new Date(viewItem.created).toLocaleTimeString()} · {viewItem.backend || "Unknown"} · Seed: {viewItem.seed || "auto"} · {viewItem.steps || "?"} steps
+              </div>
+              <div style={{ fontSize: 14, color: C.text, fontFamily: "'Cormorant Garamond',serif", marginBottom: 14, lineHeight: 1.6 }}>
+                {viewItem.prompt}
+              </div>
+              {/* Actions */}
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <button onClick={() => { onRemix?.(viewItem); setViewItem(null); }} style={{
+                  padding: "8px 14px", borderRadius: 8, cursor: "pointer", fontSize: 11, fontWeight: 700,
+                  fontFamily: "'Cinzel',serif", letterSpacing: 1, background: "rgba(197,179,88,.08)",
+                  border: `1px solid ${C.border}`, color: C.gold,
+                }}>RE-MIX</button>
+                <button onClick={() => togglePortfolio(viewItem.id)} style={{
+                  padding: "8px 14px", borderRadius: 8, cursor: "pointer", fontSize: 11, fontWeight: 700,
+                  fontFamily: "'Cinzel',serif", letterSpacing: 1,
+                  background: viewItem.portfolio ? "rgba(197,179,88,.15)" : "rgba(197,179,88,.04)",
+                  border: `1px solid ${viewItem.portfolio ? "rgba(197,179,88,.4)" : C.border}`,
+                  color: viewItem.portfolio ? C.gold : C.textDim,
+                }}>{viewItem.portfolio ? "★ IN PORTFOLIO" : "ADD TO PORTFOLIO"}</button>
+                <button onClick={() => shareItem(viewItem)} style={{
+                  padding: "8px 14px", borderRadius: 8, cursor: "pointer", fontSize: 11, fontWeight: 700,
+                  fontFamily: "'Cinzel',serif", letterSpacing: 1, background: "rgba(76,175,80,.08)",
+                  border: `1px solid ${C.borderGreen}`, color: C.greenBright,
+                }}>SHARE</button>
+                <button onClick={() => onSendToFilmRoom?.(viewItem)} style={{
+                  padding: "8px 14px", borderRadius: 8, cursor: "pointer", fontSize: 11, fontWeight: 700,
+                  fontFamily: "'Cinzel',serif", letterSpacing: 1, background: "rgba(197,179,88,.04)",
+                  border: `1px solid ${C.border}`, color: C.textDim,
+                }}>FILM ROOM</button>
+                <button onClick={() => setShowBatchInput(!showBatchInput)} style={{
+                  padding: "8px 14px", borderRadius: 8, cursor: "pointer", fontSize: 11, fontWeight: 700,
+                  fontFamily: "'Cinzel',serif", letterSpacing: 1, background: "rgba(197,179,88,.04)",
+                  border: `1px solid ${C.border}`, color: C.textDim,
+                }}>BATCH</button>
+                <button onClick={() => { const a = document.createElement("a"); a.href = viewItem.url; a.download = `eden-${viewItem.type}-${viewItem.id}.${viewItem.type === "video" ? "mp4" : "png"}`; a.click(); }} style={{
+                  padding: "8px 14px", borderRadius: 8, cursor: "pointer", fontSize: 11, fontWeight: 700,
+                  fontFamily: "'Cinzel',serif", letterSpacing: 1, background: "rgba(197,179,88,.04)",
+                  border: `1px solid ${C.border}`, color: C.textDim,
+                }}>DOWNLOAD</button>
+                <button onClick={() => { deleteItem(viewItem.id); setViewItem(null); }} style={{
+                  padding: "8px 14px", borderRadius: 8, cursor: "pointer", fontSize: 11, fontWeight: 700,
+                  fontFamily: "'Cinzel',serif", letterSpacing: 1, background: "rgba(244,67,54,.06)",
+                  border: "1px solid rgba(244,67,54,.2)", color: "#ef9a9a",
+                }}>DELETE</button>
+              </div>
+              {/* Batch assign */}
+              {showBatchInput && (
+                <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+                  <input value={batchName} onChange={e => setBatchName(e.target.value)} placeholder="Project name..." style={{
+                    flex: 1, padding: "8px 12px", borderRadius: 8, background: C.bgInput, border: `1px solid ${C.border}`,
+                    color: "#fff", fontSize: 13, fontFamily: "'Cormorant Garamond',serif", outline: "none",
+                  }}/>
+                  <button onClick={() => { if (batchName.trim()) { assignBatch(viewItem.id, batchName.trim()); setShowBatchInput(false); setViewItem({ ...viewItem, batch: batchName.trim() }); } }} style={{
+                    padding: "8px 14px", borderRadius: 8, cursor: "pointer", fontSize: 11, fontWeight: 700,
+                    fontFamily: "'Cinzel',serif", background: "rgba(76,175,80,.15)", border: `1px solid ${C.borderGreen}`, color: C.greenBright,
+                  }}>ASSIGN</button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2007,31 +2238,111 @@ function ImageStudio() {
 // ═══════════════════════════════════════════
 function VideoStudio() {
   const [prompt, setPrompt] = useState("");
-  const [duration, setDuration] = useState("5s");
-  const [quality, setQuality] = useState("1080p");
-  const [engine, setEngine] = useState("wan");
-  const [audio, setAudio] = useState(true);
+  const [duration, setDuration] = useState("5");
+  const [backend, setBackend] = useState("LTX-2 Turbo (Fast)");
+  const [cameraMotion, setCameraMotion] = useState("No LoRA");
   const [status, setStatus] = useState(null);
   const [videoUrl, setVideoUrl] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [videoMeta, setVideoMeta] = useState(null);
+  const [showJudge, setShowJudge] = useState(false);
 
-  const engineToBackend = { wan: "Wan 2.2 (5B)", ltx: "LTX-Video (13B)", cogview: "CogView4 Video", eden: "Eden Diffusion Studio" };
+  // GPU Control (shared pattern with Image Studio)
+  const [gpuMode, setGpuMode] = useState("zerogpu");
+  const [gpuTier, setGpuTier] = useState(null);
+  const [gpuActive, setGpuActive] = useState(false);
+  const [gpuStartTime, setGpuStartTime] = useState(null);
+  const [gpuCost, setGpuCost] = useState(0);
+  const [gpuOverlay, setGpuOverlay] = useState(false);
+  const [gpuConfirm, setGpuConfirm] = useState(null);
+  const [gpuOffConfirm, setGpuOffConfirm] = useState(false);
+  const [gpuSwitching, setGpuSwitching] = useState(false);
+  const gpuTimerRef = useRef(null);
+  const lastActivityRef = useRef(Date.now());
+
+  const GPU_TIERS = [
+    { id: "t4-small", name: "T4 Small", vram: "16 GB", price: 0.40 },
+    { id: "t4-medium", name: "T4 Medium", vram: "16 GB", price: 0.60 },
+    { id: "l4x1", name: "L4", vram: "24 GB", price: 0.80 },
+    { id: "a10g-small", name: "A10G Small", vram: "24 GB", price: 1.00 },
+    { id: "a10g-large", name: "A10G Large", vram: "24 GB", price: 1.50 },
+    { id: "l40sx1", name: "L40S", vram: "48 GB", price: 1.80 },
+    { id: "a100-large", name: "A100", vram: "80 GB", price: 2.50 },
+    { id: "a10g-largex2", name: "2x A10G", vram: "48 GB", price: 3.00 },
+    { id: "a10g-largex4", name: "4x A10G", vram: "96 GB", price: 5.00 },
+  ];
+
+  const cameraOptions = ["No LoRA","Static","Zoom In","Zoom Out","Slide Left","Slide Right","Slide Up","Slide Down"];
+  const videoBackendKeys = ["LTX-2 Turbo (Fast)", "Wan 2.2 Animate", "Wan 2.2 14B Fast"];
+
+  // Live cost ticker
+  useEffect(() => {
+    if (gpuActive && gpuStartTime && gpuTier) {
+      const tier = GPU_TIERS.find(t => t.id === gpuTier);
+      if (!tier) return;
+      gpuTimerRef.current = setInterval(() => {
+        const elapsed = (Date.now() - gpuStartTime) / 3600000;
+        setGpuCost(elapsed * tier.price);
+      }, 1000);
+      return () => clearInterval(gpuTimerRef.current);
+    }
+    return () => clearInterval(gpuTimerRef.current);
+  }, [gpuActive, gpuStartTime, gpuTier]);
+
+  // Auto-sleep
+  useEffect(() => {
+    if (!gpuActive) return;
+    const checker = setInterval(() => {
+      if (Date.now() - lastActivityRef.current > 600000) {
+        fetch("/api/gpu-control", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ hardware: "cpu-basic" }) })
+        .then(() => { setGpuActive(false); setGpuTier(null); setGpuStartTime(null); setGpuCost(0); setGpuMode("zerogpu"); });
+        clearInterval(checker);
+      }
+    }, 30000);
+    return () => clearInterval(checker);
+  }, [gpuActive]);
+
+  const activateGpu = async (tierId) => {
+    setGpuSwitching(true);
+    try {
+      const resp = await fetch("/api/gpu-control", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ hardware: tierId }) });
+      const data = await resp.json();
+      if (data.ok) {
+        setGpuTier(tierId); setGpuActive(true); setGpuStartTime(Date.now()); setGpuCost(0); setGpuMode("dedicated"); setGpuOverlay(false); setGpuConfirm(null);
+        fetch("/api/gpu-control", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sleep: 600 }) });
+      } else { setStatus(`❌ GPU switch failed: ${data.error}`); }
+    } catch (e) { setStatus(`❌ GPU error: ${e.message}`); }
+    setGpuSwitching(false);
+  };
+
+  const deactivateGpu = async () => {
+    setGpuSwitching(true);
+    try {
+      await fetch("/api/gpu-control", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ hardware: "cpu-basic" }) });
+      setGpuActive(false); setGpuTier(null); setGpuStartTime(null); setGpuCost(0); setGpuMode("zerogpu"); setGpuOffConfirm(false);
+    } catch (e) { setStatus(`❌ GPU shutdown error: ${e.message}`); }
+    setGpuSwitching(false);
+  };
 
   const generateVideo = async () => {
     if (!prompt.trim()) return;
+    lastActivityRef.current = Date.now();
     setLoading(true);
     setVideoUrl(null);
-    setStatus(`⏳ ERE-1 generating video via ${engineToBackend[engine]}...`);
+    setShowJudge(false);
+    setStatus(`⏳ ERE-1 generating video via ${backend}...`);
     try {
       const resp = await fetch("/api/generate-video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: prompt.trim(), backend: engineToBackend[engine], randomSeed: true }),
+        body: JSON.stringify({ prompt: prompt.trim(), backend, randomSeed: true, duration, cameraMotion }),
       });
       const data = await resp.json();
       if (data.video) {
         setVideoUrl(data.video);
-        setStatus(`✅ Video generated · Seed: ${data.seed || "auto"}`);
+        setVideoMeta({ url: data.video, prompt: prompt.trim(), seed: data.seed, backend: data.backend || backend, created: new Date().toISOString(), type: "video" });
+        setStatus(`✅ Video generated · ${data.backend || backend} · Seed: ${data.seed || "auto"}`);
+        setShowJudge(true);
       } else {
         setStatus(`❌ ${data.error || "Video generation failed"}`);
       }
@@ -2039,6 +2350,21 @@ function VideoStudio() {
       setStatus(`❌ ${e.message}`);
     }
     setLoading(false);
+  };
+
+  const handleLike = () => {
+    if (!videoMeta) return;
+    const gallery = loadGallery();
+    gallery.unshift({ ...videoMeta, id: `v-${Date.now()}`, portfolio: false, batch: null });
+    saveGallery(gallery);
+    setShowJudge(false);
+    setStatus("✅ Saved to Gallery");
+  };
+
+  const handleLeave = () => { setShowJudge(false); setStatus("Render discarded"); };
+
+  const handleRemix = (item) => {
+    setPrompt(item.prompt + " — different angle, new composition, alternate setting");
   };
 
   return (
@@ -2049,47 +2375,110 @@ function VideoStudio() {
           <span style={{ fontSize: 22 }}>🎬</span> Video Studio
         </div>
         <Card title="Video Prompt">
-          <Input textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Describe your video scene in detail. Include camera movement, lighting, and action..." style={{ minHeight: 120 }}/>
+          <Input textarea value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Describe your video scene in detail. Include camera movement, lighting, and action..." style={{ minHeight: 120 }} onKeyDown={e => e.key === "Enter" && e.ctrlKey && generateVideo()}/>
         </Card>
+        {/* ═══ GPU SELECTOR ═══ */}
+        <div style={{ display: "flex", gap: 6 }}>
+          <button onClick={() => { if (gpuActive) { setGpuOffConfirm(true); return; } setGpuMode("zerogpu"); }} style={{
+            flex: 1, padding: "12px 8px", borderRadius: 10, cursor: "pointer",
+            fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
+            background: gpuMode === "zerogpu" && !gpuActive ? "linear-gradient(135deg, rgba(197,179,88,0.15), rgba(197,179,88,0.06))" : "rgba(197,179,88,0.04)",
+            border: `1px solid ${gpuMode === "zerogpu" && !gpuActive ? "rgba(197,179,88,0.35)" : C.border}`,
+            color: gpuMode === "zerogpu" && !gpuActive ? C.gold : C.textDim, transition: "all 0.3s",
+          }}>ZeroGPU<div style={{ fontSize: 9, fontWeight: 600, fontFamily: "'Cormorant Garamond',serif", letterSpacing: 0, textTransform: "none", marginTop: 2, color: C.textDim }}>HF Pro · Free</div></button>
+          {gpuActive ? (
+            <button onClick={() => setGpuOffConfirm(true)} style={{
+              flex: 1.4, padding: "8px 10px", borderRadius: 10, cursor: "pointer",
+              fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, letterSpacing: 1.5, textTransform: "uppercase",
+              background: "linear-gradient(135deg, rgba(46,125,50,0.2), rgba(27,94,32,0.15))",
+              border: "1px solid rgba(76,175,80,0.4)", color: C.greenBright, transition: "all 0.3s", textAlign: "center",
+            }}>
+              <div style={{ fontSize: 14, fontWeight: 700 }}>{GPU_TIERS.find(t => t.id === gpuTier)?.name || gpuTier}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, fontFamily: "'Cormorant Garamond',serif", letterSpacing: 0, textTransform: "none", marginTop: 2, color: "#81C784" }}>
+                ${gpuCost.toFixed(4)} · ${GPU_TIERS.find(t => t.id === gpuTier)?.price.toFixed(2)}/hr
+              </div>
+            </button>
+          ) : (
+            <button onClick={() => setGpuOverlay(true)} style={{
+              flex: 1, padding: "12px 8px", borderRadius: 10, cursor: "pointer",
+              fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase",
+              background: "linear-gradient(135deg, rgba(197,179,88,0.12), rgba(197,179,88,0.04))",
+              border: `1px solid ${C.border}`, color: C.gold, transition: "all 0.3s",
+            }}>GO BIG<div style={{ fontSize: 9, fontWeight: 600, fontFamily: "'Cormorant Garamond',serif", letterSpacing: 0, textTransform: "none", marginTop: 2, color: C.textDim }}>Dedicated GPU</div></button>
+          )}
+        </div>
+        {/* GPU OFF Confirm */}
+        {gpuOffConfirm && (
+          <div style={{ padding: 14, borderRadius: 10, background: "rgba(244,67,54,0.06)", border: "1px solid rgba(244,67,54,0.2)", display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#ef9a9a", fontFamily: "'Cinzel',serif", letterSpacing: 1 }}>TURN OFF GPU?</div>
+            <div style={{ fontSize: 12, color: C.text, fontFamily: "'Cormorant Garamond',serif" }}>{GPU_TIERS.find(t => t.id === gpuTier)?.name} · Total: ${gpuCost.toFixed(4)}</div>
+            <div style={{ display: "flex", gap: 6 }}>
+              <button onClick={deactivateGpu} disabled={gpuSwitching} style={{ flex: 1, padding: "8px", borderRadius: 8, cursor: "pointer", border: "1px solid rgba(244,67,54,0.3)", background: "rgba(244,67,54,0.1)", color: "#ef9a9a", fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, letterSpacing: 1 }}>{gpuSwitching ? "..." : "YES, TURN OFF"}</button>
+              <button onClick={() => setGpuOffConfirm(false)} style={{ flex: 1, padding: "8px", borderRadius: 8, cursor: "pointer", border: `1px solid ${C.border}`, background: "rgba(197,179,88,0.04)", color: C.textDim, fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, letterSpacing: 1 }}>KEEP RUNNING</button>
+            </div>
+          </div>
+        )}
+        {/* GO BIG Overlay */}
+        {gpuOverlay && (
+          <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => { setGpuOverlay(false); setGpuConfirm(null); }}>
+            <div onClick={e => e.stopPropagation()} style={{ width: 420, maxHeight: "80vh", overflowY: "auto", background: "linear-gradient(180deg, #121008, #0a0704)", borderRadius: 16, border: `1px solid ${C.border}`, padding: 24 }}>
+              <div style={{ fontFamily: "'Cinzel',serif", fontSize: 16, fontWeight: 700, letterSpacing: 4, color: C.gold, textTransform: "uppercase", marginBottom: 4 }}>GO BIG</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: C.text, fontFamily: "'Cormorant Garamond',serif", marginBottom: 18 }}>Select dedicated GPU for maximum render quality</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {GPU_TIERS.map(tier => (
+                  <button key={tier.id} onClick={() => setGpuConfirm(tier)} style={{
+                    padding: "12px 14px", borderRadius: 10, cursor: "pointer",
+                    background: gpuConfirm?.id === tier.id ? "rgba(197,179,88,0.12)" : "rgba(197,179,88,0.03)",
+                    border: `1px solid ${gpuConfirm?.id === tier.id ? "rgba(197,179,88,0.35)" : C.border}`,
+                    display: "flex", justifyContent: "space-between", alignItems: "center", transition: "all 0.2s",
+                  }}>
+                    <div style={{ textAlign: "left" }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF", fontFamily: "'Cinzel',serif", letterSpacing: 1 }}>{tier.name}</div>
+                      <div style={{ fontSize: 11, color: C.textDim, fontFamily: "'Cormorant Garamond',serif" }}>{tier.vram} VRAM</div>
+                    </div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: C.gold, fontFamily: "'Cinzel',serif" }}>${tier.price.toFixed(2)}<span style={{ fontSize: 10, color: C.textDim }}>/hr</span></div>
+                  </button>
+                ))}
+              </div>
+              {gpuConfirm && (
+                <div style={{ marginTop: 14, padding: 14, borderRadius: 10, background: "rgba(197,179,88,0.06)", border: "1px solid rgba(197,179,88,0.2)" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: C.gold, fontFamily: "'Cinzel',serif", letterSpacing: 1, marginBottom: 6 }}>CONFIRM GPU ACTIVATION</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: C.text, fontFamily: "'Cormorant Garamond',serif", marginBottom: 10 }}>
+                    <strong>{gpuConfirm.name}</strong> ({gpuConfirm.vram}) at <strong>${gpuConfirm.price.toFixed(2)}/hr</strong><br/>Billed per minute. Auto-sleeps after 10 min idle.
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => activateGpu(gpuConfirm.id)} disabled={gpuSwitching} style={{ flex: 1, padding: "10px", borderRadius: 8, cursor: "pointer", background: "linear-gradient(135deg, rgba(46,125,50,0.3), rgba(27,94,32,0.2))", border: "1px solid rgba(76,175,80,0.4)", color: C.greenBright, fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, letterSpacing: 1.5 }}>{gpuSwitching ? "SWITCHING..." : "YES, ACTIVATE"}</button>
+                    <button onClick={() => setGpuConfirm(null)} style={{ padding: "10px 16px", borderRadius: 8, cursor: "pointer", background: "rgba(197,179,88,0.04)", border: `1px solid ${C.border}`, color: C.textDim, fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, letterSpacing: 1 }}>CANCEL</button>
+                  </div>
+                </div>
+              )}
+              <button onClick={() => { setGpuOverlay(false); setGpuConfirm(null); }} style={{ marginTop: 12, width: "100%", padding: "10px", borderRadius: 8, cursor: "pointer", background: "transparent", border: `1px solid ${C.border}`, color: C.textDim, fontFamily: "'Cinzel',serif", fontSize: 11, fontWeight: 700, letterSpacing: 2 }}>CLOSE</button>
+            </div>
+          </div>
+        )}
         <Card title="Engine">
-          <div style={{ display: "flex", gap: 6 }}>
-            {[["wan","Wan 2.2"],["ltx","LTX-Video"],["cogview","CogView4"],["eden","Eden Studio"]].map(([k,l]) => (
-              <button key={k} onClick={() => setEngine(k)} style={{
-                flex: 1, padding: "10px", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: "pointer",
-                fontFamily: "'Cormorant Garamond',serif", textAlign: "center",
-                background: engine === k ? "rgba(197,179,88,.12)" : "transparent",
-                border: `1px solid ${engine === k ? "rgba(197,179,88,.3)" : C.border}`,
-                color: engine === k ? "#FFFFFF" : C.text,
-              }}>{l}</button>
-            ))}
+          <Select value={backend} onChange={e => setBackend(e.target.value)} options={videoBackendKeys.map(b => ({ value: b, label: b }))} style={{ width: "100%" }}/>
+          <div style={{ fontSize: 11, fontWeight: 600, color: C.textDim, fontFamily: "'Cormorant Garamond',serif", marginTop: 6 }}>
+            {backend.includes("LTX") ? "~8s · Camera control · Best cinematic" :
+             backend.includes("Animate") ? "Motion blending · Style mixing" :
+             "4-step fast · Quick iteration"}
           </div>
         </Card>
         <Card title="Settings">
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <div style={{ flex: 1, minWidth: 100 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6, fontFamily: "'Cinzel',serif", letterSpacing: 1 }}>QUALITY</div>
-              <Select value={quality} onChange={e => setQuality(e.target.value)} options={[
-                { value: "720p", label: "720p (Standard)" },
-                { value: "1080p", label: "1080p (HD)" },
+              <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6, fontFamily: "'Cinzel',serif", letterSpacing: 1 }}>DURATION</div>
+              <Select value={duration} onChange={e => setDuration(e.target.value)} options={[
+                { value: "3", label: "3 seconds" },
+                { value: "5", label: "5 seconds" },
+                { value: "10", label: "10 seconds" },
+                { value: "15", label: "15 seconds" },
               ]} style={{ width: "100%" }}/>
             </div>
             <div style={{ flex: 1, minWidth: 100 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6, fontFamily: "'Cinzel',serif", letterSpacing: 1 }}>DURATION</div>
-              <Select value={duration} onChange={e => setDuration(e.target.value)} options={[
-                { value: "5s", label: "5 seconds" },
-                { value: "10s", label: "10 seconds" },
-                { value: "15s", label: "15 seconds" },
-              ]} style={{ width: "100%" }}/>
+              <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6, fontFamily: "'Cinzel',serif", letterSpacing: 1 }}>CAMERA</div>
+              <Select value={cameraMotion} onChange={e => setCameraMotion(e.target.value)} options={cameraOptions.map(c => ({ value: c, label: c }))} style={{ width: "100%" }}/>
             </div>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12 }}>
-            <button onClick={() => setAudio(!audio)} style={{
-              width: 36, height: 20, borderRadius: 10, border: "none", cursor: "pointer",
-              background: audio ? C.green : "rgba(139,115,85,.3)", transition: "all .2s", position: "relative",
-            }}>
-              <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 2, left: audio ? 18 : 2, transition: "all .2s" }}/>
-            </button>
-            <span style={{ fontSize: 14, fontWeight: 600, color: "#FFFFFF", fontFamily: "'Cormorant Garamond',serif" }}>Native Audio</span>
           </div>
         </Card>
         <Btn green onClick={generateVideo} disabled={loading || !prompt.trim()} style={{ width: "100%", padding: "16px 20px", fontSize: 15 }}>
@@ -2097,24 +2486,34 @@ function VideoStudio() {
         </Btn>
         {status && <StatusBadge text={status} type={status.startsWith("✅") ? "success" : status.startsWith("❌") ? "error" : "info"}/>}
       </div>
-      {/* CENTER — Preview */}
-      <div style={{ flex: 1, padding: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {videoUrl ? (
-          <video src={videoUrl} controls autoPlay loop style={{ maxWidth: "100%", maxHeight: "100%", borderRadius: 14, border: `1px solid ${C.border}` }} />
-        ) : loading ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-            <div style={{ width: 40, height: 40, border: `2px solid ${C.border}`, borderTop: `2px solid ${C.green}`, borderRadius: "50%", animation: "spin-loader 1s linear infinite" }}/>
-            <span style={{ fontSize: 14, fontWeight: 700, color: C.text, fontFamily: "'Cinzel',serif", letterSpacing: 2 }}>GENERATING VIDEO...</span>
-          </div>
-        ) : (
-          <div style={{ textAlign: "center", maxWidth: 400 }}>
-            <span style={{ fontSize: 48, display: "block", marginBottom: 16, opacity: .3 }}>🎬</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "#FFFFFF", fontFamily: "'Cinzel',serif", letterSpacing: 2, display: "block", marginBottom: 8 }}>VIDEO PREVIEW</span>
-            <span style={{ fontSize: 14, fontWeight: 600, color: C.text, fontFamily: "'Cormorant Garamond',serif", lineHeight: 1.6 }}>
-              Write your prompt, select engine and settings, then Generate.
-            </span>
-          </div>
-        )}
+      {/* CENTER — Preview + Gallery */}
+      <div style={{ flex: 1, padding: 20, overflowY: "auto", display: "flex", flexDirection: "column", gap: 14 }}>
+        <div style={{ flex: 1, minHeight: 400, borderRadius: 14, border: `1px solid ${C.border}`, background: "rgba(12,8,4,.6)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative" }}>
+          {videoUrl ? (
+            <>
+              <video src={videoUrl} controls autoPlay loop style={{ maxWidth: "100%", maxHeight: "100%", borderRadius: 10 }} />
+              {showJudge && videoMeta && (
+                <JudgeOverlay type="video" url={videoUrl} prompt={videoMeta.prompt} seed={videoMeta.seed} backend={videoMeta.backend} onLike={handleLike} onLeave={handleLeave} />
+              )}
+            </>
+          ) : loading ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 40, height: 40, border: `2px solid ${C.border}`, borderTop: `2px solid ${C.green}`, borderRadius: "50%", animation: "spin-loader 1s linear infinite" }}/>
+              <span style={{ fontSize: 14, fontWeight: 700, color: C.text, fontFamily: "'Cinzel',serif", letterSpacing: 2 }}>GENERATING VIDEO...</span>
+              <span style={{ fontSize: 12, color: C.textDim, fontFamily: "'Cormorant Garamond',serif" }}>{backend}</span>
+            </div>
+          ) : (
+            <div style={{ textAlign: "center", maxWidth: 400 }}>
+              <span style={{ fontSize: 48, display: "block", marginBottom: 16, opacity: .3 }}>🎬</span>
+              <span style={{ fontSize: 15, fontWeight: 700, color: "#FFFFFF", fontFamily: "'Cinzel',serif", letterSpacing: 2, display: "block", marginBottom: 8 }}>VIDEO PREVIEW</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: C.text, fontFamily: "'Cormorant Garamond',serif", lineHeight: 1.6 }}>
+                Write your prompt, select engine and settings, then Generate.
+              </span>
+            </div>
+          )}
+        </div>
+        {/* Gallery */}
+        <GalleryPanel type="video" onRemix={handleRemix} />
       </div>
       {/* RIGHT — Chat Panel */}
       <StudioChatPanel context="Video Studio" />

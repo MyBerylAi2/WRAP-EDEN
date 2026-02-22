@@ -276,10 +276,9 @@ export const IMAGE_BACKENDS: Record<string, string> = {
 // ─── VIDEO BACKENDS ─────────────────────────────────────────────────
 
 export const VIDEO_BACKENDS: Record<string, string> = {
-  "Wan 2.2 (5B)": "Wan-AI/Wan-2.2-5B",
-  "LTX-Video (13B)": "Lightricks/LTX-Video-0.9.7-dev",
-  "CogView4 Video": "THUDM/CogView4-6B",
-  "Eden Diffusion Studio": "AIBRUH/eden-diffusion-studio",
+  "LTX-2 Turbo (Fast)": "alexnasa/ltx-2-TURBO",
+  "Wan 2.2 Animate": "Wan-AI/Wan2.2-Animate",
+  "Wan 2.2 14B Fast": "r3gm/wan2-2-fp8da-aoti-preview2",
 };
 
 // ─── RESOLUTIONS ────────────────────────────────────────────────────

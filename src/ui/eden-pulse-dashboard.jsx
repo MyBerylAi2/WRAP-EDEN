@@ -385,7 +385,7 @@ export default function EdenPulseDashboard() {
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.text, fontFamily: "'Cormorant Garamond', serif" }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
         @keyframes ticker { 0% { transform: translateX(0) } 100% { transform: translateX(-50%) } }
         @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.5 } }
         @keyframes fadeUp { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
@@ -395,27 +395,61 @@ export default function EdenPulseDashboard() {
         .card-hover:hover { border-color: rgba(197,179,88,0.28) !important; transform: translateY(-2px) }
       `}</style>
 
-      {/* ═══ HEADER ═══ */}
-      <div style={{ background: C.bgSurface, borderBottom: `1px solid ${C.border}`, padding: "20px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-          <StatusDot size={16} />
+      {/* ═══ HEADER — LARGE LOGO WITH CLOVER ═══ */}
+      <div style={{ background: C.bgSurface, borderBottom: `1px solid ${C.border}`, padding: "18px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        {/* LEFT: CLOVER LOGO + EDEN PULSE + TAGLINE */}
+        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          {/* THE CLOVER — Static, from index page */}
+          <div style={{ position: "relative", width: 56, height: 56, flexShrink: 0 }}>
+            <svg width={56} height={56} viewBox="0 0 56 56" style={{ overflow: "visible", filter: "drop-shadow(0 0 8px rgba(0,230,118,.3))" }}>
+              <defs>
+                <radialGradient id="plf" cx="30%" cy="35%" r="70%">
+                  <stop offset="0%" stopColor="#7bc67a" stopOpacity=".95"/>
+                  <stop offset="25%" stopColor="#43A047"/>
+                  <stop offset="55%" stopColor="#2E7D32"/>
+                  <stop offset="100%" stopColor="#1B5E20"/>
+                </radialGradient>
+                <linearGradient id="pst" x1="50%" y1="100%" x2="50%" y2="0%">
+                  <stop offset="0%" stopColor="#1B5E20"/>
+                  <stop offset="100%" stopColor="#43A047"/>
+                </linearGradient>
+              </defs>
+              {/* Stem */}
+              <path d="M28,53 C28,43 28,22 28,19" stroke="url(#pst)" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+              {/* 4 Leaves */}
+              <g transform="translate(28,18) rotate(-10)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".4"/></g>
+              <g transform="translate(28,18) rotate(-10) scale(-1,1)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".4"/></g>
+              <g transform="translate(28,18) rotate(170)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".4"/></g>
+              <g transform="translate(28,18) rotate(170) scale(-1,1)"><path d="M0,0 C-0.5,-2.5 1,-7 3,-11 C5,-13.5 7.5,-15 10,-14.5 C12,-13.5 12.5,-11 12,-8 C11.5,-5.5 8.5,-2 5,-0.8 C2.5,0 0.5,0 0,0 Z" fill="url(#plf)" stroke="#145214" strokeWidth=".4"/></g>
+              {/* Hub */}
+              <circle cx={28} cy={18} r={2.2} fill="#2E7D32"/>
+              <circle cx={28} cy={18} r={1.3} fill="#388E3C"/>
+            </svg>
+          </div>
+          {/* EDEN PULSE text */}
           <div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-              <span style={{ fontFamily: "'Cinzel', serif", fontSize: 32, letterSpacing: 10, color: C.gold, fontWeight: 700 }}>EDEN PULSE</span>
-              <span style={{ fontSize: 16, letterSpacing: 3, color: C.goldDark, fontFamily: "'Cinzel', serif" }}>v2.0</span>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 12 }}>
+              <span style={{
+                fontFamily: "'Cinzel Decorative','Cinzel',serif", fontSize: 36, letterSpacing: 10, fontWeight: 900,
+                background: "linear-gradient(135deg,#8B6914 0%,#C5B358 15%,#F5E6A3 30%,#D4AF37 45%,#C5B358 55%,#F5E6A3 65%,#D4AF37 80%,#8B6914 100%)",
+                backgroundSize: "200% 100%",
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+              }}>EDEN PULSE</span>
+              <span style={{ fontSize: 14, letterSpacing: 3, color: C.goldDark, fontFamily: "'Cinzel', serif", fontWeight: 600 }}>v2.0</span>
             </div>
-            <div style={{ fontSize: 14, letterSpacing: 5, color: C.textDim, textTransform: "uppercase", marginTop: 4 }}>THE RELENTLESS EYE · BERYL AI LABS · RESEARCH INTELLIGENCE DIVISION</div>
+            <div style={{ fontSize: 12, letterSpacing: 5, color: "#FFFFFF", textTransform: "uppercase", marginTop: 5, fontWeight: 700, fontFamily: "'Cinzel', serif" }}>THE RELENTLESS EYE · BERYL AI LABS · RESEARCH INTELLIGENCE DIVISION</div>
           </div>
         </div>
+        {/* RIGHT: CLOCK + STATUS */}
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
           <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 15, color: C.textDim }}>{now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
-            <div style={{ fontFamily: "'Cinzel', serif", fontSize: 30, color: C.gold, letterSpacing: 4, fontWeight: 700 }}>{now.toLocaleTimeString("en-US", { hour12: false })}</div>
+            <div style={{ fontSize: 11, color: C.textDim }}>{now.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</div>
+            <div style={{ fontFamily: "'Cinzel', serif", fontSize: 24, color: C.gold, letterSpacing: 3, fontWeight: 600 }}>{now.toLocaleTimeString("en-US", { hour12: false })}</div>
           </div>
-          <div style={{ height: 48, width: 1, background: C.border }} />
-          <div style={{ padding: "10px 20px", borderRadius: 10, background: "rgba(0,230,118,0.06)", border: `1px solid rgba(0,230,118,0.15)` }}>
-            <div style={{ fontSize: 14, letterSpacing: 3, color: C.greenVibrant, fontFamily: "'Cinzel', serif", fontWeight: 700 }}>8 TEAM MEMBERS ONLINE</div>
-            <div style={{ fontSize: 12, color: C.greenBright, letterSpacing: 2, marginTop: 3 }}>1 DIRECTOR · 7 HEARTBEATS · AGENT FRAMEWORK</div>
+          <div style={{ height: 44, width: 1, background: C.border }} />
+          <div style={{ padding: "8px 16px", borderRadius: 8, background: "rgba(0,230,118,0.06)", border: `1px solid rgba(0,230,118,0.15)` }}>
+            <div style={{ fontSize: 10, letterSpacing: 2, color: C.greenVibrant, fontFamily: "'Cinzel', serif", fontWeight: 600 }}>8 TEAM MEMBERS ONLINE</div>
+            <div style={{ fontSize: 9, color: C.greenBright, letterSpacing: 1, marginTop: 2 }}>1 DIRECTOR · 7 HEARTBEATS · AGENT FRAMEWORK</div>
           </div>
         </div>
       </div>

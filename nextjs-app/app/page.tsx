@@ -2720,6 +2720,12 @@ function VideoStudio() {
   const [loading, setLoading] = useState(false);
   const [videoMeta, setVideoMeta] = useState(null);
   const [showJudge, setShowJudge] = useState(false);
+  // Render progress + stopwatch (ported from Image Studio)
+  const [renderProgress, setRenderProgress] = useState(0);
+  const [renderPhase, setRenderPhase] = useState("");
+  const [renderTimer, setRenderTimer] = useState(0);
+  const renderTimerRef = useRef(null);
+  const renderStartRef = useRef(null);
 
   // GPU Control (shared pattern with Image Studio)
   const [gpuMode, setGpuMode] = useState("zerogpu");
@@ -2747,7 +2753,7 @@ function VideoStudio() {
   ];
 
   const cameraOptions = ["No LoRA","Static","Zoom In","Zoom Out","Slide Left","Slide Right","Slide Up","Slide Down"];
-  const videoBackendKeys = ["LTX-2 Turbo (Fast)", "Wan 2.2 Animate", "Wan 2.2 14B Fast"];
+  const videoBackendKeys = ["LTX-2 Turbo (Fast)", "Wan 2.2 5B (Official)", "LongCat Video"];
 
   // Live cost ticker
   useEffect(() => {
@@ -2798,30 +2804,94 @@ function VideoStudio() {
     setGpuSwitching(false);
   };
 
+  // Helper: stop the timer and record completion time
+  const stopTimer = () => {
+    if (renderTimerRef.current) clearInterval(renderTimerRef.current);
+    const elapsed = renderStartRef.current ? (Date.now() - renderStartRef.current) / 1000 : 0;
+    return elapsed.toFixed(1);
+  };
+
   const generateVideo = async () => {
     if (!prompt.trim()) return;
     lastActivityRef.current = Date.now();
     setLoading(true);
-    setVideoUrl(null);
+    setVideoUrl(null);       // Clear previous video so progress/timer is visible
     setShowJudge(false);
+    setRenderProgress(0);
+    setRenderPhase("Initializing video pipeline...");
+    setRenderTimer(0);
+
+    // Start stopwatch
+    renderStartRef.current = Date.now();
+    if (renderTimerRef.current) clearInterval(renderTimerRef.current);
+    renderTimerRef.current = setInterval(() => {
+      if (renderStartRef.current) setRenderTimer(Math.floor((Date.now() - renderStartRef.current) / 1000));
+    }, 100);
+
     setStatus(`⏳ ERE-1 generating video via ${backend}...`);
+
     try {
+      setRenderProgress(5);
+      setRenderPhase(`Connecting to ${backend}...`);
+
+      // Simulate progress updates while waiting
+      const progressInterval = setInterval(() => {
+        setRenderProgress(prev => {
+          if (prev >= 85) return prev;
+          const increment = prev < 20 ? 3 : prev < 50 ? 2 : 1;
+          return prev + increment;
+        });
+        // Rotate blurbs
+        setRenderPhase(prev => {
+          const blurbs = [
+            "Chantrell is styling your scene...",
+            "Quality Agent checking skin tones...",
+            "Rendering cinematic frames...",
+            "Building motion dynamics...",
+            "Applying Eden Realism Engine...",
+            "Color grading in progress...",
+            "Compositing final video...",
+            `${backend} is working hard...`,
+            "Almost there — finalizing render...",
+          ];
+          const idx = blurbs.indexOf(prev);
+          return blurbs[(idx + 1) % blurbs.length];
+        });
+      }, 3000);
+
+      setRenderProgress(10);
+      setRenderPhase(`Chantrell is styling your scene...`);
+
       const resp = await fetch("/api/generate-video", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: prompt.trim(), backend, randomSeed: true, duration, cameraMotion }),
       });
+
+      clearInterval(progressInterval);
+      setRenderProgress(90);
+      setRenderPhase("Receiving video from server...");
+
       const data = await resp.json();
       if (data.video) {
+        setRenderProgress(100);
+        setRenderPhase("Video ready!");
         setVideoUrl(data.video);
         const vidItemNo = generateItemNumber("VID");
-        setVideoMeta({ url: data.video, prompt: prompt.trim(), seed: data.seed, backend: data.backend || backend, created: new Date().toISOString(), type: "video", itemNo: vidItemNo });
-        setStatus(`✅ ${vidItemNo} · Video generated · ${data.backend || backend} · Seed: ${data.seed || "auto"}`);
+        const elapsed = stopTimer();
+        setVideoMeta({ url: data.video, prompt: prompt.trim(), seed: data.seed, backend: data.backend || backend, created: new Date().toISOString(), type: "video", itemNo: vidItemNo, renderTime: elapsed, duration });
+        setStatus(`✅ ${vidItemNo} · Video generated · ${data.backend || backend} · Seed: ${data.seed || "auto"} · ${elapsed}s`);
         setShowJudge(true);
       } else {
+        stopTimer();
+        setRenderProgress(0);
+        setRenderPhase("");
         setStatus(`❌ ${data.error || "Video generation failed"}`);
       }
     } catch (e) {
+      stopTimer();
+      setRenderProgress(0);
+      setRenderPhase("");
       setStatus(`❌ ${e.message}`);
     }
     setLoading(false);
@@ -2974,10 +3044,47 @@ function VideoStudio() {
               )}
             </>
           ) : loading ? (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 40, height: 40, border: `2px solid ${C.border}`, borderTop: `2px solid ${C.green}`, borderRadius: "50%", animation: "spin-loader 1s linear infinite" }}/>
-              <span style={{ fontSize: 14, fontWeight: 700, color: C.text, fontFamily: "'Cinzel',serif", letterSpacing: 2 }}>GENERATING VIDEO...</span>
-              <span style={{ fontSize: 12, color: C.textDim, fontFamily: "'Cormorant Garamond',serif" }}>{backend}</span>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, width: "80%", maxWidth: 400 }}>
+              {/* Phase blurb */}
+              <div style={{
+                fontSize: 13, fontWeight: 600, color: C.gold, fontFamily: "'Cormorant Garamond',serif",
+                textAlign: "center", minHeight: 20, letterSpacing: 0.5,
+              }}>
+                {renderPhase}
+              </div>
+              {/* Spinner */}
+              <div style={{ width: 40, height: 40, border: `2px solid ${C.border}`, borderTop: `2px solid ${C.gold}`, borderRadius: "50%", animation: "spin-loader 1s linear infinite" }}/>
+              {/* Progress bar */}
+              <div style={{ width: "100%", height: 6, borderRadius: 3, background: "rgba(139,115,85,.15)", overflow: "hidden" }}>
+                <div style={{
+                  height: "100%", borderRadius: 3,
+                  background: `linear-gradient(90deg, ${C.gold}, ${C.green})`,
+                  width: `${renderProgress}%`,
+                  transition: "width 0.5s ease-out",
+                }}/>
+              </div>
+              {/* Percentage + Label */}
+              <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: C.gold, fontFamily: "'Cinzel',serif", letterSpacing: 1 }}>
+                  {renderProgress}%
+                </span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: C.text, fontFamily: "'Cinzel',serif", letterSpacing: 2 }}>
+                  GENERATING VIDEO
+                </span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: C.gold, fontFamily: "'Cinzel',serif", letterSpacing: 1 }}>
+                  {renderProgress}%
+                </span>
+              </div>
+              {/* Stopwatch timer */}
+              <div style={{
+                fontSize: 28, fontWeight: 700, color: "#FFFFFF", fontFamily: "'Cinzel',serif",
+                letterSpacing: 4, textAlign: "center",
+              }}>
+                {Math.floor(renderTimer / 60).toString().padStart(2, "0")}:{(renderTimer % 60).toString().padStart(2, "0")}
+              </div>
+              <span style={{ fontSize: 11, color: C.textDim, fontFamily: "'Cormorant Garamond',serif", letterSpacing: 1 }}>
+                {`Cascade: ${backend} → fallback engines`}
+              </span>
             </div>
           ) : (
             <div style={{ textAlign: "center", maxWidth: 400 }}>

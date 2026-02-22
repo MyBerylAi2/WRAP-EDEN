@@ -183,9 +183,10 @@ function edenQualityAgent(prompt: string): { realism: string; antiGloss: string 
   };
 }
 
-// ═══ EDEN GLAM AGENT — Makes every woman UNIQUE with randomized features ═══
+// ═══ CHANTRELL — Eden's Expert Stylist & Publicist ═══
+// Makes every woman UNIQUE with randomized features
 // Inspired by Essence Magazine 2024-2026, Black celebrity culture, real Black women
-function edenGlamAgent(prompt: string): string {
+function chantrell(prompt: string): string {
   const p = prompt.toLowerCase();
   const hasWoman = /woman|girl|goddess|beauty|queen|her |she /i.test(p);
   if (!hasWoman) return ""; // Only fires for female subjects
@@ -448,7 +449,7 @@ function edenGlamAgent(prompt: string): string {
   }
 
   const glamText = features.join(", ");
-  console.log(`[glam-agent] Features: ${glamText.slice(0, 300)}...`);
+  console.log(`[chantrell] Features: ${glamText.slice(0, 300)}...`);
   return glamText;
 }
 
@@ -472,8 +473,8 @@ export async function POST(req: NextRequest) {
       .replace(/\b(airbrushed|poreless|smooth skin|flawless skin|perfect skin)\b/gi, "natural textured skin")
       .replace(/\b(hyper.?realistic|ultra.?realistic)\b/gi, "photorealistic");
 
-    // ═══ EDEN GLAM AGENT — unique features for every woman ═══
-    const glamFeatures = edenGlamAgent(prompt);
+    // ═══ CHANTRELL — unique features for every woman ═══
+    const glamFeatures = chantrell(prompt);
 
     let fullPrompt = `${cleanedBase}, ${quality.realism}, ${quality.antiGloss}`;
     if (glamFeatures) fullPrompt += `, ${glamFeatures}`;

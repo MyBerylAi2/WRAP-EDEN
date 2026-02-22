@@ -275,8 +275,8 @@ export const IMAGE_BACKENDS: Record<string, string> = {
 
 export const VIDEO_BACKENDS: Record<string, string> = {
   "LTX-2 Turbo (Fast)": "alexnasa/ltx-2-TURBO",
-  "Wan 2.2 Animate": "Wan-AI/Wan2.2-Animate",
-  "Wan 2.2 14B Fast": "r3gm/wan2-2-fp8da-aoti-preview2",
+  "Wan 2.2 5B (Official)": "Wan-AI/Wan-2.2-5B",
+  "LongCat Video": "multimodalart/LongCat-Video",
 };
 
 // ─── RESOLUTIONS ────────────────────────────────────────────────────

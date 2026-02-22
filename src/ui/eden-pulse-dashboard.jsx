@@ -125,15 +125,57 @@ const BREAKING = [
   { id: 5, tag: "ARCHIVED", title: "Mei-Lin Completed 2026 Paper Vault Sync — 47 New Papers Indexed This Week", time: "1d ago", agent: "curator", priority: "medium", category: "Knowledge Base", spike: 0.55, views: "678" },
 ];
 
+// Articles with multi-author support — medical journal style
+// authors[0] = lead researcher, authors[1+] = contributors
 const ARTICLES = [
-  { id: 1, title: "SOUL v2 Drops: 1M Training Samples Now Open-Source — Amara's Full Capability Card Inside", subtitle: "The model that powers next-gen digital humans just got accessible. Archivist extracted every equation.", category: "Face Animation", agent: "archivist", time: "Today", readTime: "8 min", priority: "critical", tags: ["soul", "open-source", "lip-sync"], feasibility: 92, trending: true, gradient: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 40%, #C5B358 100%)" },
-  { id: 2, title: "Why BitNet b1.58 Changes Everything for Consumer 4D Avatars", subtitle: "70B on a single 4090 — Nia's 90-day forecast says this is the one. Prophet confidence: 87%.", category: "Quantization", agent: "prophet", time: "Today", readTime: "12 min", priority: "high", tags: ["bitnet", "quantization", "consumer-gpu"], feasibility: 78, trending: true, gradient: "linear-gradient(135deg, #6A1B9A 0%, #AB47BC 40%, #C5B358 100%)" },
-  { id: 3, title: "Pipeline Blueprint: The Sub-200ms Conversational Avatar Stack", subtitle: "Zara's masterpiece: Whisper → BitNet-3B → Chatterbox → TELLER at 25fps. Probability score: 85.", category: "Pipeline", agent: "synthesist", time: "Yesterday", readTime: "15 min", priority: "critical", tags: ["pipeline", "avatar", "sub-200ms"], feasibility: 85, trending: false, gradient: "linear-gradient(135deg, #006064 0%, #00E676 40%, #1B5E20 100%)" },
-  { id: 4, title: "TELLER vs KDTalker vs MEMO: Suki's Definitive Benchmark", subtitle: "All three through the 0.3 Deviation Rule — Priya co-signed. Only one survived.", category: "Benchmark", agent: "analyst", time: "Yesterday", readTime: "10 min", priority: "high", tags: ["benchmark", "teller", "kdtalker"], feasibility: 91, trending: true, gradient: "linear-gradient(135deg, #C62828 0%, #EF5350 40%, #FF9800 100%)" },
-  { id: 5, title: "This Week in AI: 7 Models You Need to Know — Lena's Weekly Digest", subtitle: "Vision-language to audio-driven animation — the Journalist's curated intelligence brief.", category: "Weekly Digest", agent: "journalist", time: "Feb 21", readTime: "6 min", priority: "medium", tags: ["weekly", "digest", "trending"], feasibility: null, trending: false, gradient: "linear-gradient(135deg, #E65100 0%, #FF9800 40%, #C5B358 100%)" },
-  { id: 6, title: "LoRA Stacking for Melanin-Rich Skin: Our Protocol Beats CivitAI Top 10", subtitle: "Amara extracted the technique, Priya validated against 0.3 Rule. Result: undetectable.", category: "ERE-1", agent: "archivist", time: "Feb 20", readTime: "9 min", priority: "high", tags: ["lora", "skin-texture", "melanin"], feasibility: 96, trending: false, gradient: "linear-gradient(135deg, #8B6914 0%, #C5B358 40%, #4CAF50 100%)" },
-  { id: 7, title: "Paper Vault 2026: Mei-Lin's Complete Archive Now Searchable", subtitle: "1,847 papers organized by category, date, and capability. Google Drive synced and tagged.", category: "Knowledge Base", agent: "curator", time: "Feb 19", readTime: "5 min", priority: "medium", tags: ["archive", "papers", "vault"], feasibility: null, trending: false, gradient: "linear-gradient(135deg, #00695C 0%, #26A69A 40%, #C5B358 100%)" },
-  { id: 8, title: "DANGER: MuseTalk Fork Has Silent Data Leak — Priya's Full Report", subtitle: "Sentinel flagged unauthorized telemetry in v2.3.1 — patch and risk matrix included.", category: "Security", agent: "sentinel", time: "Feb 18", readTime: "4 min", priority: "critical", tags: ["security", "musetalk", "data-leak"], feasibility: null, trending: false, gradient: "linear-gradient(135deg, #880E4F 0%, #EC407A 40%, #C62828 100%)" },
+  { id: 1, title: "SOUL v2 Drops: 1M Training Samples Now Open-Source — Full Capability Card and Pipeline Impact Analysis",
+    subtitle: "The model that powers next-gen digital humans just got accessible to everyone. Complete technical extraction with compatibility assessment and production readiness scoring.",
+    category: "Face Animation", authors: ["archivist", "analyst", "sentinel"], time: "Feb 22, 2026", readTime: "8 min", priority: "critical",
+    tags: ["soul", "open-source", "lip-sync", "1M-samples", "face-anim"], feasibility: 92, trending: true, cited: 12,
+    journal: "Eden Pulse Intelligence Report", volume: "Vol. 2, No. 47",
+    gradient: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 40%, #C5B358 100%)" },
+  { id: 2, title: "Why BitNet b1.58 Changes Everything for Consumer 4D Avatars: A 90-Day Forecast",
+    subtitle: "70B LLM parameter-count on a single RTX 4090 with 15GB headroom for diffusion pipelines. Comprehensive adoption curve analysis with market impact projections.",
+    category: "Quantization", authors: ["prophet", "synthesist"], time: "Feb 22, 2026", readTime: "12 min", priority: "high",
+    tags: ["bitnet", "quantization", "consumer-gpu", "4090", "forecast"], feasibility: 78, trending: true, cited: 8,
+    journal: "Eden Pulse Forecast Bulletin", volume: "Vol. 2, No. 46",
+    gradient: "linear-gradient(135deg, #6A1B9A 0%, #AB47BC 40%, #C5B358 100%)" },
+  { id: 3, title: "Pipeline Blueprint: The Sub-200ms Conversational Avatar Stack — Design, Testing, and Validation",
+    subtitle: "Whisper-Turbo → BitNet-3B → Chatterbox → TELLER at 25fps. Full architecture blueprint with component-level latency breakdown and probability scoring.",
+    category: "Pipeline", authors: ["synthesist", "analyst", "sentinel"], time: "Feb 21, 2026", readTime: "15 min", priority: "critical",
+    tags: ["pipeline", "real-time", "avatar", "sub-200ms", "blueprint"], feasibility: 85, trending: false, cited: 15,
+    journal: "Eden Pulse Technical Report", volume: "Vol. 2, No. 45",
+    gradient: "linear-gradient(135deg, #006064 0%, #00E676 40%, #1B5E20 100%)" },
+  { id: 4, title: "TELLER vs KDTalker vs MEMO: Definitive Benchmark Under Eden's 0.3 Deviation Rule",
+    subtitle: "Systematic head-to-head comparison across LSE-D, LSE-C, SyncNet, CSIM, and FID metrics. Only one model survived the 'Real as Fuck' standard.",
+    category: "Benchmark", authors: ["analyst", "sentinel"], time: "Feb 21, 2026", readTime: "10 min", priority: "high",
+    tags: ["benchmark", "teller", "kdtalker", "memo", "0.3-rule"], feasibility: 91, trending: true, cited: 22,
+    journal: "Eden Pulse Benchmark Series", volume: "Vol. 2, No. 44",
+    gradient: "linear-gradient(135deg, #C62828 0%, #EF5350 40%, #FF9800 100%)" },
+  { id: 5, title: "This Week in AI: 7 Models That Dropped You Need to Know — Weekly Intelligence Digest",
+    subtitle: "From vision-language architectures to audio-driven animation engines — curated intelligence brief covering HuggingFace trending, arXiv drops, and GitHub releases.",
+    category: "Weekly Digest", authors: ["journalist", "curator", "archivist"], time: "Feb 21, 2026", readTime: "6 min", priority: "medium",
+    tags: ["weekly", "digest", "trending", "huggingface"], feasibility: null, trending: false, cited: 5,
+    journal: "Eden Pulse Weekly", volume: "Issue 18",
+    gradient: "linear-gradient(135deg, #E65100 0%, #FF9800 40%, #C5B358 100%)" },
+  { id: 6, title: "LoRA Stacking for Melanin-Rich Skin Texture: Eden Protocol Outperforms CivitAI Top 10",
+    subtitle: "Realistic Skin Texture LoRA + Eden Protocol achieves undetectable AI imagery across all major forensic detection tools. Full lab results with 0.3 Rule validation.",
+    category: "ERE-1", authors: ["archivist", "sentinel"], time: "Feb 20, 2026", readTime: "9 min", priority: "high",
+    tags: ["lora", "skin-texture", "melanin", "ere-1", "anti-detect"], feasibility: 96, trending: false, cited: 18,
+    journal: "Eden Realism Engine Technical Note", volume: "ERE-TN-007",
+    gradient: "linear-gradient(135deg, #8B6914 0%, #C5B358 40%, #4CAF50 100%)" },
+  { id: 7, title: "Paper Vault 2026: Complete Research Archive — Taxonomy, Indexing, and Search Architecture",
+    subtitle: "1,847 papers organized across 156 tags with capability card cross-referencing. Google Drive bi-directional sync operational.",
+    category: "Knowledge Base", authors: ["curator", "archivist"], time: "Feb 19, 2026", readTime: "5 min", priority: "medium",
+    tags: ["archive", "papers", "vault", "taxonomy"], feasibility: null, trending: false, cited: 3,
+    journal: "Eden Pulse Internal Memo", volume: "Memo 2026-019",
+    gradient: "linear-gradient(135deg, #00695C 0%, #26A69A 40%, #C5B358 100%)" },
+  { id: 8, title: "SECURITY ADVISORY: MuseTalk v2.3.1 Silent Telemetry Leak — Full Risk Matrix and Remediation",
+    subtitle: "Unauthorized data exfiltration detected in popular open-source fork. Complete threat analysis, affected versions, and immediate patch instructions.",
+    category: "Security", authors: ["sentinel", "analyst", "director"], time: "Feb 18, 2026", readTime: "4 min", priority: "critical",
+    tags: ["security", "musetalk", "data-leak", "advisory"], feasibility: null, trending: false, cited: 31,
+    journal: "Eden Pulse Security Advisory", volume: "SEC-2026-003",
+    gradient: "linear-gradient(135deg, #880E4F 0%, #EC407A 40%, #C62828 100%)" },
 ];
 
 const TRENDING = [
@@ -197,6 +239,111 @@ const StatusDot = ({ color = C.greenVibrant, size = 8 }) => (
 const SectionHead = ({ children }) => (
   <div style={{ fontFamily: "'Cinzel', serif", fontSize: 10, letterSpacing: 4, color: C.textDim, textTransform: "uppercase", marginBottom: 18, paddingBottom: 8, borderBottom: `1px solid ${C.border}` }}>{children}</div>
 );
+
+// ─── JOURNAL-STYLE BYLINE (Like NEJM / The Lancet / Nature) ───
+const JournalByline = ({ authorIds, size = "full", journal, volume, time }) => {
+  const authors = authorIds.map(id => ALL_TEAM.find(x => x.id === id)).filter(Boolean);
+  if (!authors.length) return null;
+  const lead = authors[0];
+  const contribs = authors.slice(1);
+
+  if (size === "compact") {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex", marginRight: -4 }}>
+          {authors.map((a, i) => (
+            <div key={a.id} style={{ width: 24, height: 24, borderRadius: "50%", overflow: "hidden", border: `2px solid ${C.bg}`, marginLeft: i > 0 ? -8 : 0, zIndex: authors.length - i, position: "relative" }}>
+              <img src={a.photo} alt={a.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+          ))}
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 10, color: C.textBright, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {lead.name.replace("Dr. ", "")}{contribs.length > 0 && <span style={{ color: C.textDim }}> et al.</span>}
+          </div>
+          <div style={{ fontSize: 8, color: C.textDim }}>{time}</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Full journal byline — NEJM style
+  return (
+    <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 14, marginTop: 14 }}>
+      {/* Journal line */}
+      {journal && (
+        <div style={{ fontSize: 9, letterSpacing: 2, color: C.goldDark, fontFamily: "'Cinzel', serif", textTransform: "uppercase", marginBottom: 10 }}>
+          {journal} {volume && <span style={{ color: C.textDim }}>· {volume}</span>}
+        </div>
+      )}
+      {/* Author photos row */}
+      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+        {authors.map((a, i) => (
+          <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 40, height: 40, borderRadius: "50%", overflow: "hidden", border: `2px solid ${a.color}35`, boxShadow: `0 0 10px ${a.color}10` }}>
+              <img src={a.photo} alt={a.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 12, color: C.textBright, fontWeight: 500 }}>
+                {a.name}
+                {i === 0 && <span style={{ fontSize: 8, color: C.gold, marginLeft: 6, fontFamily: "'Cinzel', serif", letterSpacing: 1, verticalAlign: "super" }}>LEAD</span>}
+              </div>
+              <div style={{ fontSize: 9, color: a.color, fontFamily: "'Cinzel', serif", letterSpacing: 1 }}>{a.title}</div>
+              <div style={{ fontSize: 9, color: C.textDim }}>{a.phd}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Affiliation */}
+      <div style={{ fontSize: 9, color: C.textDim, marginTop: 8, fontStyle: "italic" }}>
+        Eden Pulse Research Division, Beryl AI Labs, The Eden Project · {time}
+      </div>
+    </div>
+  );
+};
+
+// ─── Article Card Byline (for grid cards — medium size) ───
+const CardByline = ({ authorIds, time, readTime, cited }) => {
+  const authors = authorIds.map(id => ALL_TEAM.find(x => x.id === id)).filter(Boolean);
+  if (!authors.length) return null;
+  const lead = authors[0];
+
+  return (
+    <div style={{ marginTop: 10 }}>
+      {/* Author row with overlapping photos */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ display: "flex" }}>
+          {authors.map((a, i) => (
+            <div key={a.id} title={`${a.name} — ${a.title}`} style={{
+              width: 26, height: 26, borderRadius: "50%", overflow: "hidden",
+              border: `2px solid ${C.bg}`, marginLeft: i > 0 ? -8 : 0,
+              zIndex: authors.length - i, position: "relative",
+            }}>
+              <img src={a.photo} alt={a.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
+          ))}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 10, color: C.textBright, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {lead.name}
+            {authors.length > 1 && <span style={{ color: C.textDim, fontStyle: "italic" }}>{` + ${authors.length - 1} more`}</span>}
+          </div>
+          <div style={{ fontSize: 8, color: lead.color, fontFamily: "'Cinzel', serif", letterSpacing: 1 }}>{lead.title} · {lead.phd?.split(",")[0]}</div>
+        </div>
+      </div>
+      {/* Journal metadata */}
+      <div style={{ display: "flex", gap: 10, marginTop: 6, alignItems: "center" }}>
+        <span style={{ fontSize: 9, color: C.textDim }}>{time}</span>
+        <span style={{ fontSize: 9, color: C.textDim }}>·</span>
+        <span style={{ fontSize: 9, color: C.textDim }}>{readTime}</span>
+        {cited && <>
+          <span style={{ fontSize: 9, color: C.textDim }}>·</span>
+          <span style={{ fontSize: 9, color: C.gold, fontFamily: "'Cinzel', serif" }}>⊕ {cited} cited</span>
+        </>}
+      </div>
+    </div>
+  );
+};
 
 // ─── MAIN DASHBOARD ───
 
@@ -332,21 +479,51 @@ export default function EdenPulseDashboard() {
 
             <div style={{ height: 24 }} />
             <SectionHead>FEATURED INTELLIGENCE</SectionHead>
-            {/* HERO */}
-            <div style={{ background: ARTICLES[0].gradient, borderRadius: 16, padding: 30, marginBottom: 24, border: `1px solid rgba(197,179,88,0.15)`, position: "relative", overflow: "hidden", cursor: "pointer", animation: "fadeUp 0.6s ease both" }}>
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(8,5,3,0.96) 0%, rgba(8,5,3,0.4) 40%, transparent 100%)" }} />
+            {/* HERO — Journal Style */}
+            <div style={{ background: ARTICLES[0].gradient, borderRadius: 16, padding: 32, marginBottom: 24, border: `1px solid rgba(197,179,88,0.15)`, position: "relative", overflow: "hidden", cursor: "pointer", animation: "fadeUp 0.6s ease both" }}>
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(8,5,3,0.97) 0%, rgba(8,5,3,0.6) 35%, rgba(8,5,3,0.2) 100%)" }} />
               <div style={{ position: "relative", zIndex: 1 }}>
-                <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+                <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
                   <Badge text={ARTICLES[0].priority} color={C.red} />
                   <Badge text={ARTICLES[0].category} color={C.goldBright} />
-                  <Badge text="🔥 TRENDING" color={C.greenVibrant} />
+                  {ARTICLES[0].trending && <Badge text="🔥 TRENDING" color={C.greenVibrant} />}
+                  {ARTICLES[0].feasibility && <div style={{ marginLeft: "auto" }}><PulseRing value={ARTICLES[0].feasibility / 100} size={52} /></div>}
                 </div>
                 <div style={{ fontFamily: "'Cinzel', serif", fontSize: 22, fontWeight: 600, color: "#fff", lineHeight: 1.25, marginBottom: 10, maxWidth: "85%" }}>{ARTICLES[0].title}</div>
-                <div style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", fontStyle: "italic", marginBottom: 16, maxWidth: "80%" }}>{ARTICLES[0].subtitle}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <AgentPhoto agentId={ARTICLES[0].agent} size={28} />
-                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>{AGENTS.find(a => a.id === ARTICLES[0].agent)?.name} · {ARTICLES[0].readTime} · {ARTICLES[0].time}</span>
-                  {ARTICLES[0].feasibility && <div style={{ marginLeft: "auto" }}><PulseRing value={ARTICLES[0].feasibility / 100} size={48} /></div>}
+                <div style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", fontStyle: "italic", marginBottom: 6, maxWidth: "80%", lineHeight: 1.5 }}>{ARTICLES[0].subtitle}</div>
+                {/* JOURNAL BYLINE — Full NEJM Style */}
+                <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 14, marginTop: 14 }}>
+                  <div style={{ fontSize: 9, letterSpacing: 2, color: "rgba(245,230,163,0.5)", fontFamily: "'Cinzel', serif", textTransform: "uppercase", marginBottom: 10 }}>
+                    {ARTICLES[0].journal} · {ARTICLES[0].volume}
+                  </div>
+                  <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                    {ARTICLES[0].authors.map(id => ALL_TEAM.find(x => x.id === id)).filter(Boolean).map((a, i) => (
+                      <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ width: 42, height: 42, borderRadius: "50%", overflow: "hidden", border: `2px solid rgba(255,255,255,0.2)`, boxShadow: "0 0 12px rgba(0,0,0,0.5)" }}>
+                          <img src={a.photo} alt={a.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 12, color: "#fff", fontWeight: 500 }}>
+                            {a.name}
+                            {i === 0 && <span style={{ fontSize: 7, color: C.goldBright, marginLeft: 6, fontFamily: "'Cinzel', serif", letterSpacing: 1, verticalAlign: "super", background: "rgba(197,179,88,0.2)", padding: "1px 5px", borderRadius: 3 }}>LEAD RESEARCHER</span>}
+                          </div>
+                          <div style={{ fontSize: 9, color: a.color, fontFamily: "'Cinzel', serif", letterSpacing: 1 }}>{a.title}</div>
+                          <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)" }}>{a.phd}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", gap: 12, marginTop: 10, alignItems: "center" }}>
+                    <span style={{ fontSize: 9, color: "rgba(255,255,255,0.3)" }}>Eden Pulse Research Division, Beryl AI Labs</span>
+                    <span style={{ fontSize: 9, color: "rgba(255,255,255,0.2)" }}>·</span>
+                    <span style={{ fontSize: 9, color: "rgba(255,255,255,0.3)" }}>{ARTICLES[0].time}</span>
+                    <span style={{ fontSize: 9, color: "rgba(255,255,255,0.2)" }}>·</span>
+                    <span style={{ fontSize: 9, color: "rgba(255,255,255,0.3)" }}>{ARTICLES[0].readTime} read</span>
+                    {ARTICLES[0].cited && <>
+                      <span style={{ fontSize: 9, color: "rgba(255,255,255,0.2)" }}>·</span>
+                      <span style={{ fontSize: 9, color: C.goldBright, fontFamily: "'Cinzel', serif" }}>⊕ Cited by {ARTICLES[0].cited} reports</span>
+                    </>}
+                  </div>
                 </div>
               </div>
             </div>
@@ -367,14 +544,11 @@ export default function EdenPulseDashboard() {
                       <Badge text={a.category} color={C.goldBright} />
                     </div>
                   </div>
-                  <div style={{ padding: "11px 13px 13px" }}>
+                  <div style={{ padding: "11px 13px 14px" }}>
                     <div style={{ fontFamily: "'Cinzel', serif", fontSize: 12.5, fontWeight: 600, color: C.textBright, lineHeight: 1.3, marginBottom: 5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{a.title}</div>
-                    <div style={{ fontSize: 11, color: C.textDim, lineHeight: 1.4, marginBottom: 8, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{a.subtitle}</div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <AgentPhoto agentId={a.agent} size={22} />
-                      <span style={{ fontSize: 10, color: C.textDim }}>{ALL_TEAM.find(x => x.id === a.agent)?.name?.split(" ").slice(-1)}</span>
-                      <span style={{ fontSize: 10, color: C.textDim, marginLeft: "auto" }}>{a.readTime}</span>
-                    </div>
+                    <div style={{ fontSize: 11, color: C.textDim, lineHeight: 1.4, marginBottom: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{a.subtitle}</div>
+                    {/* JOURNAL BYLINE — Medical Journal Card Style */}
+                    <CardByline authorIds={a.authors} time={a.time} readTime={a.readTime} cited={a.cited} />
                   </div>
                 </div>
               ))}

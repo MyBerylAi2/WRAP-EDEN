@@ -226,24 +226,157 @@ ANTI_DETECTION_KEYWORDS = [
 
 ---
 
-## 5. THE MASTER NEGATIVE PROMPT
+## 5. THE 100 NEGATIVE KEYWORDS (TOP LAYER — ALWAYS ACTIVE)
+
+This is the TOP LAYER logic of ERE-1. These 100 negatives fire on EVERY generation, no exceptions. They are the first line of defense against AI slop.
 
 ```python
-EDEN_NEGATIVE = """
-oily skin, sweaty skin, wet skin, specular highlights on skin,
-shiny forehead, glossy cheeks, dewy finish, highlighted skin,
-metallic skin sheen, reflective skin surface, moisture on face,
-airbrushed, poreless, flawless skin, beauty filter, smooth skin,
-plastic texture, waxy appearance, silicone look, mannequin,
-CGI, 3d render, digital art, cartoon, anime, illustration,
-oversaturated, Instagram filter, TikTok filter, face app,
-perfect symmetry, unreal engine, octane render, blender,
-video game, clay render, doll, action figure, deepfake,
-soap opera effect, 60fps, motion smoothing, HDR bloom,
-ring light reflection in eyes, catchlight too perfect,
-identical pore pattern, repeating texture artifacts,
-hands with wrong finger count, text artifacts, watermark
-"""
+EDEN_NEGATIVE_100 = [
+    # ── SKIN SURFACE VIOLATIONS (1-20) ──
+    "oily skin",                        # 1
+    "sweaty skin",                      # 2
+    "wet skin",                         # 3
+    "specular highlights on skin",      # 4
+    "shiny forehead",                   # 5
+    "glossy cheeks",                    # 6
+    "dewy finish",                      # 7
+    "metallic skin sheen",             # 8
+    "reflective skin surface",         # 9
+    "moisture on face",                # 10
+    "airbrushed",                      # 11
+    "poreless",                        # 12
+    "flawless skin",                   # 13
+    "beauty filter",                   # 14
+    "smooth skin",                     # 15
+    "plastic texture",                 # 16
+    "waxy appearance",                 # 17
+    "silicone look",                   # 18
+    "mannequin skin",                  # 19
+    "skin smoothing algorithm",        # 20
+
+    # ── RENDERING / STYLE VIOLATIONS (21-40) ──
+    "CGI",                             # 21
+    "3d render",                       # 22
+    "digital art",                     # 23
+    "cartoon",                         # 24
+    "anime",                           # 25
+    "illustration",                    # 26
+    "octane render",                   # 27
+    "unreal engine",                   # 28
+    "blender render",                  # 29
+    "vray",                            # 30
+    "cinema4d",                        # 31
+    "clay render",                     # 32
+    "cel shaded",                      # 33
+    "stylized",                        # 34
+    "video game graphics",             # 35
+    "doll",                            # 36
+    "action figure",                   # 37
+    "toy",                             # 38
+    "animated",                        # 39
+    "concept art",                     # 40
+
+    # ── FILTER / POST-PROCESSING VIOLATIONS (41-55) ──
+    "oversaturated",                   # 41
+    "Instagram filter",                # 42
+    "TikTok filter",                   # 43
+    "Snapchat filter",                 # 44
+    "face app",                        # 45
+    "beauty cam",                      # 46
+    "beauty mode",                     # 47
+    "HDR bloom",                       # 48
+    "over-processed",                  # 49
+    "digital noise reduction",         # 50
+    "too sharp",                       # 51
+    "excessive sharpening",            # 52
+    "glamour shot",                    # 53
+    "soft focus filter",               # 54
+    "high-key lighting overkill",      # 55
+
+    # ── AI DETECTION TELLS (56-75) ──
+    "perfect symmetry",                # 56
+    "identical pore pattern",          # 57
+    "repeating texture artifacts",     # 58
+    "deepfake",                        # 59
+    "uncanny valley",                  # 60
+    "synthetic",                       # 61
+    "AI generated",                    # 62
+    "neural texture artifacts",        # 63
+    "diffusion noise remnants",        # 64
+    "latent grid patterns",            # 65
+    "quantization banding",            # 66
+    "hands with wrong finger count",   # 67
+    "extra fingers",                   # 68
+    "fused fingers",                   # 69
+    "missing fingers",                 # 70
+    "ring light reflection in eyes",   # 71
+    "catchlight too perfect",          # 72
+    "deepfake seams",                  # 73
+    "generated image",                 # 74
+    "synthetic human",                 # 75
+
+    # ── MOTION / VIDEO VIOLATIONS (76-85) ──
+    "soap opera effect",               # 76
+    "60fps",                           # 77
+    "motion smoothing",                # 78
+    "temporal flickering",             # 79
+    "frame interpolation artifacts",   # 80
+    "unnatural camera movement",       # 81
+    "perfectly smooth gradients",      # 82
+    "banding in shadows",              # 83
+    "aliasing",                        # 84
+    "compression macroblocks",         # 85
+
+    # ── LIGHTING VIOLATIONS (86-92) ──
+    "flat lighting",                   # 86
+    "harsh CGI shadows",               # 87
+    "artificial bloom",                # 88
+    "fake lens flare",                 # 89
+    "ring light only",                 # 90
+    "fluorescent lighting",            # 91
+    "volumetric god rays artifact",    # 92
+
+    # ── METADATA / OVERLAY VIOLATIONS (93-100) ──
+    "watermark",                       # 93
+    "text artifacts",                  # 94
+    "logo",                            # 95
+    "subtitles",                       # 96
+    "signature",                       # 97
+    "UI elements",                     # 98
+    "border frame",                    # 99
+    "timestamp",                       # 100
+]
+
+# Compiled string for pipeline injection
+EDEN_NEGATIVE = ", ".join(EDEN_NEGATIVE_100)
+```
+
+### How the 100 Negatives Layer Into the Pipeline
+
+```
+┌──────────────────────────────────────────────────────────┐
+│              ERE-1 NEGATIVE PROMPT STACK                  │
+├──────────────────────────────────────────────────────────┤
+│                                                            │
+│  TOP LAYER (Always Active — 100 Keywords)                  │
+│  ┌──────────────────────────────────────────────────┐     │
+│  │  EDEN_NEGATIVE_100 — fires on EVERY generation    │     │
+│  │  Skin (20) + Render (20) + Filter (15) +          │     │
+│  │  AI Tells (20) + Motion (10) + Light (7) +        │     │
+│  │  Metadata (8) = 100 total                         │     │
+│  └────────────────────┬─────────────────────────────┘     │
+│                       │                                    │
+│  CONDITIONAL LAYER (Smart Engine — Section 6)              │
+│  ┌────────────────────▼─────────────────────────────┐     │
+│  │  + face_body negatives (if human detected)        │     │
+│  │  + melanin_skin negatives (if dark skin detected) │     │
+│  │  + lulu_hall negatives (if 1920s scene detected)  │     │
+│  │  + custom user negatives (from UI input)          │     │
+│  └──────────────────────────────────────────────────┘     │
+│                                                            │
+│  FINAL = TOP LAYER + CONDITIONAL + USER INPUT              │
+│                                                            │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ---

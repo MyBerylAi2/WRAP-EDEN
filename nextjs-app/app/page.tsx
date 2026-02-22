@@ -85,9 +85,12 @@ function PromptGenerator({ onGenerate, mediaType = "image" }) {
     { id: "spicy", label: "SPICY", desc: "Hardcore · Full explicit · Lulu tier", color: "#EF5350", icon: "🌶️" },
   ];
 
+  const [error, setError] = useState(null);
+
   const handleTier = async (tier) => {
     setGenerating(true);
     setShow(false);
+    setError(null);
     try {
       const resp = await fetch("/api/generate-prompt", {
         method: "POST",
@@ -97,8 +100,12 @@ function PromptGenerator({ onGenerate, mediaType = "image" }) {
       const data = await resp.json();
       if (data.prompt) {
         onGenerate(data.prompt);
+      } else {
+        setError(data.error || "No prompt returned");
       }
-    } catch {}
+    } catch (e) {
+      setError(e.message || "Network error");
+    }
     setGenerating(false);
     setContext("");
     setShowContext(false);
@@ -120,6 +127,12 @@ function PromptGenerator({ onGenerate, mediaType = "image" }) {
           <><span style={{ fontSize: 16 }}>✨</span> Prompt Generator</>
         )}
       </button>
+
+      {error && (
+        <div style={{ padding: "8px 12px", borderRadius: 8, background: "rgba(244,67,54,0.08)", border: "1px solid rgba(244,67,54,0.2)", fontSize: 12, color: "#ef9a9a", fontFamily: "'Cormorant Garamond',serif" }}>
+          Prompt gen error: {error}
+        </div>
+      )}
 
       {show && (
         <div style={{

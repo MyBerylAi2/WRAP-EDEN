@@ -30,6 +30,11 @@ export async function POST(req: NextRequest) {
       ? `Generate a ${mediaType || "image"} prompt based on this concept: ${context}. Apply the EDEN standard and ${tier === "ice" ? "keep it completely SFW" : tier === "mild" ? "make it sensual but not explicit" : "go full hardcore explicit"}.`
       : `Generate a creative ${mediaType || "image"} prompt featuring a stunning African American woman. Apply the full EDEN standard. ${tier === "ice" ? "Scene: choose from romantic dinner, fashion editorial, golden hour portrait, luxury penthouse, beach sunset, art gallery opening, or rooftop cityscape." : tier === "mild" ? "Scene: choose from late-night doorstep goodbye, slow dance at home, morning-after embrace in kitchen, bathtub with partner fully clothed leaning in, or hotel balcony with city lights." : "Scene: choose from living room floor after dinner, shower together, bedroom morning session, hotel suite, kitchen counter, balcony at night, or bath together. Full explicit detail."}`;
 
+    // Llama 3.3 70B for spicy (most permissive), Qwen 72B for ice/mild
+    const model = tier === "spicy"
+      ? "meta-llama/Llama-3.3-70B-Instruct"
+      : "Qwen/Qwen2.5-72B-Instruct";
+
     const resp = await fetch("https://router.huggingface.co/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -37,7 +42,7 @@ export async function POST(req: NextRequest) {
         Authorization: `Bearer ${HF_TOKEN}`,
       },
       body: JSON.stringify({
-        model: "huihui-ai/Qwen2.5-72B-Instruct-abliterated",
+        model,
         messages: [
           { role: "system", content: system },
           { role: "user", content: userMsg },

@@ -17,6 +17,13 @@ const C = {
   pink: "#EC407A", teal: "#26A69A",
   border: "rgba(197,179,88,0.12)", borderGreen: "rgba(76,175,80,0.15)",
   text: "#E8DCC8", textDim: "#8B7355", textBright: "#F5F0E8",
+  // Light Wells — strategic brightness zones
+  well: "rgba(245,240,230,0.035)",        // Frosted glass panel base
+  wellBright: "rgba(245,240,230,0.06)",    // Elevated reading zone
+  wellGold: "rgba(197,179,88,0.05)",       // Gold-tinted warm panel
+  wellBorder: "rgba(197,179,88,0.18)",     // Visible gold border for panels
+  wellGlow: "0 0 30px rgba(197,179,88,0.06), inset 0 1px 0 rgba(245,240,230,0.05)",  // Ambient glow
+  wellGlowStrong: "0 0 40px rgba(197,179,88,0.09), inset 0 1px 0 rgba(245,240,230,0.08)", // Feature glow
 };
 
 // ═══════════════════════════════════════
@@ -237,7 +244,10 @@ const StatusDot = ({ color = C.greenVibrant, size = 8 }) => (
 );
 
 const SectionHead = ({ children }) => (
-  <div style={{ fontFamily: "'Cinzel', serif", fontSize: 10, letterSpacing: 4, color: C.textDim, textTransform: "uppercase", marginBottom: 18, paddingBottom: 8, borderBottom: `1px solid ${C.border}` }}>{children}</div>
+  <div style={{ fontFamily: "'Cinzel', serif", fontSize: 10, letterSpacing: 4, color: C.gold, textTransform: "uppercase", marginBottom: 18, paddingBottom: 10, borderBottom: `1px solid ${C.wellBorder}`, position: "relative" }}>
+    {children}
+    <div style={{ position: "absolute", bottom: -1, left: 0, width: 60, height: 2, background: `linear-gradient(to right, ${C.gold}, transparent)`, borderRadius: 1 }} />
+  </div>
 );
 
 // ─── JOURNAL-STYLE BYLINE (Like NEJM / The Lancet / Nature) ───
@@ -411,7 +421,7 @@ export default function EdenPulseDashboard() {
       </div>
 
       {/* ═══ DIRECTOR BAR ═══ */}
-      <div style={{ background: "rgba(197,179,88,0.04)", borderBottom: `1px solid ${C.border}`, padding: "12px 28px", display: "flex", alignItems: "center", gap: 16 }}>
+      <div style={{ background: C.wellGold, borderBottom: `1px solid ${C.wellBorder}`, padding: "12px 28px", display: "flex", alignItems: "center", gap: 16 }}>
         <AgentPhoto agentId="director" size={48} />
         <div style={{ flex: 1 }}>
           <span style={{ fontFamily: "'Cinzel', serif", fontSize: 16, letterSpacing: 4, color: C.gold, fontWeight: 600 }}>DEPARTMENT DIRECTOR</span>
@@ -457,16 +467,20 @@ export default function EdenPulseDashboard() {
           {/* ═══ ALLUVIAL FEED ═══ */}
           {tab === "feed" && <>
             <SectionHead>BREAKING INTELLIGENCE</SectionHead>
+            {/* Frosted Panel Container */}
+            <div style={{ background: C.well, borderRadius: 14, border: `1px solid ${C.wellBorder}`, padding: "12px 14px", marginBottom: 20, boxShadow: C.wellGlow }}>
             {BREAKING.map((item, i) => {
               const colors = { BREAKING: C.red, "LAYING PIPE": C.greenVibrant, "UNDER INVESTIGATION": C.orange, FORECAST: C.purple, ARCHIVED: C.teal };
+              const tagColor = colors[item.tag];
               return (
                 <div key={item.id} style={{
                   display: "flex", alignItems: "center", gap: 14, padding: "10px 14px",
-                  background: i === 0 ? "rgba(239,83,80,0.04)" : "rgba(197,179,88,0.01)",
-                  border: `1px solid ${i === 0 ? "rgba(239,83,80,0.12)" : C.border}`,
-                  borderRadius: 10, marginBottom: 6, animation: `fadeUp 0.5s ease ${i * 0.06}s both`, cursor: "pointer",
+                  background: i === 0 ? `${tagColor}10` : C.wellBright,
+                  border: `1px solid ${i === 0 ? `${tagColor}25` : "rgba(197,179,88,0.08)"}`,
+                  borderRadius: 10, marginBottom: i < BREAKING.length - 1 ? 6 : 0, animation: `fadeUp 0.5s ease ${i * 0.06}s both`, cursor: "pointer",
+                  transition: "all 0.3s",
                 }}>
-                  <Badge text={item.tag === "BREAKING" ? `🔴 ${item.tag}` : item.tag} color={colors[item.tag]} />
+                  <Badge text={item.tag === "BREAKING" ? `🔴 ${item.tag}` : item.tag} color={tagColor} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 500, color: C.textBright, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</div>
                     <div style={{ fontSize: 10, color: C.textDim, marginTop: 2 }}>{item.category} · {item.time} · {item.views} views</div>
@@ -476,6 +490,7 @@ export default function EdenPulseDashboard() {
                 </div>
               );
             })}
+            </div>
 
             <div style={{ height: 24 }} />
             <SectionHead>FEATURED INTELLIGENCE</SectionHead>
@@ -532,8 +547,9 @@ export default function EdenPulseDashboard() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
               {ARTICLES.slice(1).map((a, i) => (
                 <div key={a.id} className="card-hover" style={{
-                  background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 14,
+                  background: C.wellBright, border: `1px solid ${C.wellBorder}`, borderRadius: 14,
                   overflow: "hidden", cursor: "pointer", transition: "all 0.35s", animation: `fadeUp 0.5s ease ${(i+1)*0.06}s both`,
+                  boxShadow: C.wellGlow,
                 }}>
                   <div style={{ height: 105, background: a.gradient, position: "relative" }}>
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(18,12,8,0.65) 0%, transparent 55%)" }} />
@@ -544,7 +560,7 @@ export default function EdenPulseDashboard() {
                       <Badge text={a.category} color={C.goldBright} />
                     </div>
                   </div>
-                  <div style={{ padding: "11px 13px 14px" }}>
+                  <div style={{ padding: "11px 13px 14px", background: C.well }}>
                     <div style={{ fontFamily: "'Cinzel', serif", fontSize: 12.5, fontWeight: 600, color: C.textBright, lineHeight: 1.3, marginBottom: 5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{a.title}</div>
                     <div style={{ fontSize: 11, color: C.textDim, lineHeight: 1.4, marginBottom: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{a.subtitle}</div>
                     {/* JOURNAL BYLINE — Medical Journal Card Style */}
@@ -558,10 +574,10 @@ export default function EdenPulseDashboard() {
           {/* ═══ THE HEARTBEATS ═══ */}
           {tab === "team" && <>
             <SectionHead>DEPARTMENT LEADERSHIP</SectionHead>
-            {/* DIRECTOR CARD */}
-            <div style={{ background: "rgba(197,179,88,0.03)", border: `2px solid ${C.gold}25`, borderRadius: 18, padding: 26, marginBottom: 28, display: "grid", gridTemplateColumns: "110px 1fr 220px", gap: 24, alignItems: "center", animation: "fadeUp 0.5s ease both" }}>
+            {/* DIRECTOR CARD — Gold Light Well */}
+            <div style={{ background: C.wellBright, border: `2px solid ${C.gold}35`, borderRadius: 18, padding: 26, marginBottom: 28, display: "grid", gridTemplateColumns: "110px 1fr 220px", gap: 24, alignItems: "center", animation: "fadeUp 0.5s ease both", boxShadow: C.wellGlowStrong }}>
               <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
-                <div style={{ width: 96, height: 96, borderRadius: "50%", overflow: "hidden", border: `3px solid ${C.gold}50`, boxShadow: `0 0 30px ${C.gold}15` }}>
+                <div style={{ width: 96, height: 96, borderRadius: "50%", overflow: "hidden", border: `3px solid ${C.gold}60`, boxShadow: `0 0 35px ${C.gold}20` }}>
                   <img src={DIRECTOR.photo} alt={DIRECTOR.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
                 <StatusDot size={8} />
@@ -590,12 +606,13 @@ export default function EdenPulseDashboard() {
             <SectionHead>THE 7 HEARTBEATS — RESEARCH AGENTS</SectionHead>
             {AGENTS.map((a, i) => (
               <div key={a.id} style={{
-                background: C.bgCard, border: `1px solid ${a.color}20`, borderRadius: 16, padding: 22, marginBottom: 14,
+                background: C.wellBright, border: `1px solid ${a.color}30`, borderRadius: 16, padding: 22, marginBottom: 14,
                 display: "grid", gridTemplateColumns: "90px 1fr 200px", gap: 22, alignItems: "center",
                 animation: `fadeUp 0.5s ease ${(i+1)*0.08}s both`, transition: "all 0.3s",
+                boxShadow: `0 0 28px ${a.color}08, inset 0 1px 0 rgba(245,240,230,0.04)`,
               }}>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                  <div style={{ width: 76, height: 76, borderRadius: "50%", overflow: "hidden", border: `2px solid ${a.color}35`, boxShadow: `0 0 20px ${a.color}10` }}>
+                  <div style={{ width: 76, height: 76, borderRadius: "50%", overflow: "hidden", border: `2px solid ${a.color}45`, boxShadow: `0 0 24px ${a.color}18` }}>
                     <img src={a.photo} alt={a.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   </div>
                   <StatusDot size={6} />
@@ -638,8 +655,9 @@ export default function EdenPulseDashboard() {
               const sc = { production: C.greenVibrant, validated: C.gold, testing: C.cyan, investigation: C.orange };
               return (
                 <div key={i} style={{
-                  background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 14, padding: 20, marginBottom: 12,
+                  background: C.well, border: `1px solid ${C.wellBorder}`, borderRadius: 14, padding: 20, marginBottom: 12,
                   display: "flex", alignItems: "center", gap: 20, animation: `fadeUp 0.5s ease ${i*0.08}s both`,
+                  boxShadow: C.wellGlow,
                 }}>
                   <PulseRing value={p.score / 100} size={60} />
                   <div style={{ flex: 1 }}>
@@ -668,8 +686,9 @@ export default function EdenPulseDashboard() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               {TRENDING.map((m, i) => (
                 <div key={i} style={{
-                  background: C.bgCard, border: `1px solid ${C.border}`, borderRadius: 12, padding: 16,
+                  background: i < 3 ? C.wellBright : C.well, border: `1px solid ${i < 3 ? C.wellBorder : C.border}`, borderRadius: 12, padding: 16,
                   display: "flex", alignItems: "center", gap: 14, animation: `fadeUp 0.4s ease ${i*0.05}s both`, cursor: "pointer",
+                  boxShadow: i < 3 ? C.wellGlow : "none",
                 }}>
                   <span style={{ fontFamily: "'Cinzel', serif", fontSize: 16, color: i < 3 ? C.gold : C.textDim, fontWeight: 700, width: 22 }}>#{i+1}</span>
                   <PulseRing value={m.spike} size={46} />
@@ -708,8 +727,9 @@ export default function EdenPulseDashboard() {
             <SectionHead>TRIAGE QUEUE — PIPELINES AWAITING LAB CONFIRMATION</SectionHead>
             {PIPELINES.filter(p => p.score >= 80).map((p, i) => (
               <div key={i} style={{
-                background: C.bgCard, border: `1px solid rgba(0,230,118,0.1)`, borderRadius: 12, padding: 18, marginBottom: 10,
+                background: C.well, border: `1px solid rgba(0,230,118,0.15)`, borderRadius: 12, padding: 18, marginBottom: 10,
                 display: "flex", alignItems: "center", gap: 16, animation: `fadeUp 0.4s ease ${i*0.1}s both`,
+                boxShadow: "0 0 20px rgba(0,230,118,0.04)",
               }}>
                 <PulseRing value={p.score/100} size={48} />
                 <div style={{ flex: 1 }}>
@@ -723,53 +743,59 @@ export default function EdenPulseDashboard() {
           </>}
         </div>
 
-        {/* ═══ RIGHT SIDEBAR ═══ */}
-        <div style={{ borderLeft: `1px solid ${C.border}`, background: "rgba(12,8,4,0.4)", padding: "18px 16px", overflowY: "auto", maxHeight: "calc(100vh - 185px)" }}>
+        {/* ═══ RIGHT SIDEBAR — Light Well Panels ═══ */}
+        <div style={{ borderLeft: `1px solid ${C.wellBorder}`, background: "linear-gradient(180deg, rgba(197,179,88,0.03) 0%, rgba(12,8,4,0.6) 100%)", padding: "18px 16px", overflowY: "auto", maxHeight: "calc(100vh - 185px)" }}>
 
-          {/* TEAM STATUS */}
-          <div style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, color: C.textDim, marginBottom: 10 }}>TEAM STATUS</div>
-          <div style={{ display: "grid", gap: 3, marginBottom: 20 }}>
-            {ALL_TEAM.map(a => (
-              <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 6px", borderRadius: 5, background: a.id === "director" ? "rgba(197,179,88,0.03)" : "transparent" }}>
-                <StatusDot size={5} />
-                <AgentPhoto agentId={a.id} size={20} />
-                <span style={{ fontSize: 10, color: a.color, fontFamily: "'Cinzel', serif", flex: 1 }}>{a.id === "director" ? "👑 DIRECTOR" : a.title}</span>
-                <span style={{ fontSize: 8, color: C.greenBright }}>{a.last_scan}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* TRENDING */}
-          <div style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, color: C.textDim, marginBottom: 10 }}>TRENDING (NIA'S RADAR)</div>
-          <div style={{ display: "grid", gap: 2, marginBottom: 20 }}>
-            {TRENDING.slice(0, 6).map((m, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 6px" }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: i < 3 ? C.gold : C.textDim, width: 14, fontFamily: "'Cinzel', serif" }}>{i+1}</span>
-                <span style={{ fontSize: 11, color: C.text, flex: 1 }}>{m.name}</span>
-                <span style={{ fontSize: 9, color: m.dir === "up" ? C.greenVibrant : m.dir === "down" ? C.red : C.gold, fontFamily: "'Cinzel', serif" }}>
-                  {m.dir === "up" ? "▲" : m.dir === "down" ? "▼" : "●"}{m.chg}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* TOP PIPES */}
-          <div style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, color: C.textDim, marginBottom: 10 }}>TOP PIPELINES (ZARA'S)</div>
-          <div style={{ display: "grid", gap: 5, marginBottom: 20 }}>
-            {PIPELINES.filter(p => p.score >= 80).slice(0, 3).map((p, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderRadius: 7, background: "rgba(197,179,88,0.02)", border: `1px solid ${C.border}` }}>
-                <PulseRing value={p.score/100} size={30} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 10, color: C.textBright, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
-                  <div style={{ fontSize: 9, color: C.textDim }}>{p.gpu} · {p.lat}</div>
+          {/* TEAM STATUS — Frosted Panel */}
+          <div style={{ background: C.well, borderRadius: 10, border: `1px solid ${C.wellBorder}`, padding: "10px 10px 8px", marginBottom: 16, boxShadow: C.wellGlow }}>
+            <div style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, color: C.gold, marginBottom: 8 }}>TEAM STATUS</div>
+            <div style={{ display: "grid", gap: 2 }}>
+              {ALL_TEAM.map(a => (
+                <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 6px", borderRadius: 5, background: a.id === "director" ? C.wellGold : "transparent" }}>
+                  <StatusDot size={5} />
+                  <AgentPhoto agentId={a.id} size={20} />
+                  <span style={{ fontSize: 10, color: a.color, fontFamily: "'Cinzel', serif", flex: 1 }}>{a.id === "director" ? "👑 DIRECTOR" : a.title}</span>
+                  <span style={{ fontSize: 8, color: C.greenBright }}>{a.last_scan}</span>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          {/* WEEKLY */}
-          <div style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, color: C.textDim, marginBottom: 10 }}>THIS WEEK</div>
-          <div style={{ background: "rgba(197,179,88,0.02)", borderRadius: 8, padding: 12, border: `1px solid ${C.border}`, marginBottom: 20 }}>
+          {/* TRENDING — Frosted Panel */}
+          <div style={{ background: C.well, borderRadius: 10, border: `1px solid ${C.wellBorder}`, padding: "10px 10px 8px", marginBottom: 16, boxShadow: C.wellGlow }}>
+            <div style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, color: C.gold, marginBottom: 8 }}>TRENDING (NIA'S RADAR)</div>
+            <div style={{ display: "grid", gap: 1 }}>
+              {TRENDING.slice(0, 6).map((m, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 6px", borderRadius: 4, background: i < 3 ? C.wellGold : "transparent" }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: i < 3 ? C.gold : C.textDim, width: 14, fontFamily: "'Cinzel', serif" }}>{i+1}</span>
+                  <span style={{ fontSize: 11, color: i < 3 ? C.textBright : C.text, flex: 1 }}>{m.name}</span>
+                  <span style={{ fontSize: 9, color: m.dir === "up" ? C.greenVibrant : m.dir === "down" ? C.red : C.gold, fontFamily: "'Cinzel', serif" }}>
+                    {m.dir === "up" ? "▲" : m.dir === "down" ? "▼" : "●"}{m.chg}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* TOP PIPES — Frosted Panel */}
+          <div style={{ background: C.well, borderRadius: 10, border: `1px solid ${C.wellBorder}`, padding: "10px 10px 8px", marginBottom: 16, boxShadow: C.wellGlow }}>
+            <div style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, color: C.gold, marginBottom: 8 }}>TOP PIPELINES (ZARA'S)</div>
+            <div style={{ display: "grid", gap: 5 }}>
+              {PIPELINES.filter(p => p.score >= 80).slice(0, 3).map((p, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 8px", borderRadius: 7, background: C.wellBright, border: `1px solid rgba(197,179,88,0.1)` }}>
+                  <PulseRing value={p.score/100} size={30} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 10, color: C.textBright, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</div>
+                    <div style={{ fontSize: 9, color: C.textDim }}>{p.gpu} · {p.lat}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* WEEKLY — Bright Panel */}
+          <div style={{ background: C.wellBright, borderRadius: 10, border: `1px solid ${C.wellBorder}`, padding: "10px 12px", marginBottom: 16, boxShadow: C.wellGlowStrong }}>
+            <div style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, color: C.gold, marginBottom: 8 }}>THIS WEEK</div>
             {[
               { l: "Papers (Amara)", v: "47", c: C.gold },
               { l: "Models (Amara)", v: "23", c: C.gold },
@@ -780,26 +806,28 @@ export default function EdenPulseDashboard() {
               { l: "Archived (Mei-Lin)", v: "47", c: C.teal },
               { l: "Quality Checks (Priya)", v: "203", c: C.pink },
             ].map((s, i, a) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "3px 0", borderBottom: i < a.length - 1 ? `1px solid rgba(197,179,88,0.05)` : "none" }}>
-                <span style={{ fontSize: 10, color: C.textDim }}>{s.l}</span>
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", borderBottom: i < a.length - 1 ? `1px solid rgba(197,179,88,0.06)` : "none" }}>
+                <span style={{ fontSize: 10, color: C.text }}>{s.l}</span>
                 <span style={{ fontSize: 11, fontFamily: "'Cinzel', serif", color: s.c, fontWeight: 600 }}>{s.v}</span>
               </div>
             ))}
           </div>
 
-          {/* ACTIONS */}
-          <div style={{ display: "grid", gap: 7 }}>
-            <button style={{ width: "100%", padding: "11px 14px", borderRadius: 9, cursor: "pointer", fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, background: "linear-gradient(135deg, rgba(0,230,118,0.1), rgba(0,230,118,0.04))", border: "1px solid rgba(0,230,118,0.2)", color: C.greenVibrant, animation: "glow 4s infinite" }}>⚡ SEND TO TRIAGE</button>
-            <button style={{ width: "100%", padding: "9px 14px", borderRadius: 9, cursor: "pointer", fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, background: "rgba(197,179,88,0.04)", border: `1px solid ${C.border}`, color: C.gold }}>📊 WEEKLY REPORT (LENA)</button>
-            <button style={{ width: "100%", padding: "9px 14px", borderRadius: 9, cursor: "pointer", fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, background: "rgba(171,71,188,0.05)", border: "1px solid rgba(171,71,188,0.15)", color: C.purple }}>🔮 PROPHET FORECAST (NIA)</button>
-            <button style={{ width: "100%", padding: "9px 14px", borderRadius: 9, cursor: "pointer", fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, background: "rgba(236,64,122,0.05)", border: "1px solid rgba(236,64,122,0.12)", color: C.pink }}>🛡️ SECURITY SCAN (PRIYA)</button>
+          {/* ACTIONS — Elevated */}
+          <div style={{ background: C.well, borderRadius: 10, border: `1px solid ${C.wellBorder}`, padding: 10, marginBottom: 16, boxShadow: C.wellGlow }}>
+            <div style={{ display: "grid", gap: 6 }}>
+              <button style={{ width: "100%", padding: "11px 14px", borderRadius: 9, cursor: "pointer", fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, background: "linear-gradient(135deg, rgba(0,230,118,0.12), rgba(0,230,118,0.04))", border: "1px solid rgba(0,230,118,0.25)", color: C.greenVibrant, animation: "glow 4s infinite" }}>⚡ SEND TO TRIAGE</button>
+              <button style={{ width: "100%", padding: "9px 14px", borderRadius: 9, cursor: "pointer", fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, background: C.wellGold, border: `1px solid ${C.wellBorder}`, color: C.gold }}>📊 WEEKLY REPORT (LENA)</button>
+              <button style={{ width: "100%", padding: "9px 14px", borderRadius: 9, cursor: "pointer", fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, background: "rgba(171,71,188,0.06)", border: "1px solid rgba(171,71,188,0.18)", color: C.purple }}>🔮 PROPHET FORECAST (NIA)</button>
+              <button style={{ width: "100%", padding: "9px 14px", borderRadius: 9, cursor: "pointer", fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, background: "rgba(236,64,122,0.06)", border: "1px solid rgba(236,64,122,0.15)", color: C.pink }}>🛡️ SECURITY SCAN (PRIYA)</button>
+            </div>
           </div>
 
-          {/* FLOW */}
-          <div style={{ marginTop: 18, padding: 12, borderRadius: 8, background: "rgba(197,179,88,0.015)", border: `1px solid ${C.border}` }}>
-            <div style={{ fontFamily: "'Cinzel', serif", fontSize: 8, letterSpacing: 3, color: C.textDim, marginBottom: 6 }}>EDEN ECOSYSTEM</div>
+          {/* ECOSYSTEM FLOW */}
+          <div style={{ padding: 12, borderRadius: 8, background: C.wellGold, border: `1px solid ${C.wellBorder}` }}>
+            <div style={{ fontFamily: "'Cinzel', serif", fontSize: 8, letterSpacing: 3, color: C.gold, marginBottom: 6 }}>EDEN ECOSYSTEM</div>
             {["📡 PULSE → Intelligence (Wendy)", "🔬 TRIAGE → Validation (Lab)", "🎨 STUDIO → Production", "🔱 DEPLOYMENT → Revenue"].map((s, i) => (
-              <div key={i} style={{ fontSize: 10, color: i === 0 ? C.gold : C.textDim, padding: "2px 4px" }}>{s}</div>
+              <div key={i} style={{ fontSize: 10, color: i === 0 ? C.gold : C.text, padding: "2px 4px" }}>{s}</div>
             ))}
           </div>
         </div>

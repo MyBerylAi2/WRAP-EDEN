@@ -1656,7 +1656,7 @@ function ImageStudio() {
   useEffect(() => {
     if (!gpuActive) return;
     const checker = setInterval(() => {
-      if (Date.now() - lastActivityRef.current > 600000) { // 10 min
+      if (Date.now() - lastActivityRef.current > 240000) { // 4 min
         // Auto-sleep GPU
         fetch("/api/gpu-control", {
           method: "POST",
@@ -1696,7 +1696,7 @@ function ImageStudio() {
         fetch("/api/gpu-control", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sleep: 600 }),
+          body: JSON.stringify({ sleep: 240 }),
         });
       } else {
         setStatus(`❌ GPU switch failed: ${data.error}`);
@@ -1971,7 +1971,7 @@ function ImageStudio() {
                   <div style={{ fontSize: 13, fontWeight: 700, color: C.gold, fontFamily: "'Cinzel',serif", letterSpacing: 1, marginBottom: 6 }}>CONFIRM GPU ACTIVATION</div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: C.text, fontFamily: "'Cormorant Garamond',serif", marginBottom: 10 }}>
                     <strong>{gpuConfirm.name}</strong> ({gpuConfirm.vram}) at <strong>${gpuConfirm.price.toFixed(2)}/hr</strong>
-                    <br/>Billed per minute. Auto-sleeps after 10 min idle.
+                    <br/>Billed per minute. Auto-sleeps after 4 min idle.
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <button onClick={() => activateGpu(gpuConfirm.id)} disabled={gpuSwitching} style={{
@@ -2389,7 +2389,7 @@ function VideoStudio() {
   useEffect(() => {
     if (!gpuActive) return;
     const checker = setInterval(() => {
-      if (Date.now() - lastActivityRef.current > 600000) {
+      if (Date.now() - lastActivityRef.current > 240000) { // 4 min
         fetch("/api/gpu-control", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ hardware: "cpu-basic" }) })
         .then(() => { setGpuActive(false); setGpuTier(null); setGpuStartTime(null); setGpuCost(0); setGpuMode("zerogpu"); });
         clearInterval(checker);
@@ -2405,7 +2405,7 @@ function VideoStudio() {
       const data = await resp.json();
       if (data.ok) {
         setGpuTier(tierId); setGpuActive(true); setGpuStartTime(Date.now()); setGpuCost(0); setGpuMode("dedicated"); setGpuOverlay(false); setGpuConfirm(null);
-        fetch("/api/gpu-control", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sleep: 600 }) });
+        fetch("/api/gpu-control", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sleep: 240 }) });
       } else { setStatus(`❌ GPU switch failed: ${data.error}`); }
     } catch (e) { setStatus(`❌ GPU error: ${e.message}`); }
     setGpuSwitching(false);
@@ -2541,7 +2541,7 @@ function VideoStudio() {
                 <div style={{ marginTop: 14, padding: 14, borderRadius: 10, background: "rgba(197,179,88,0.06)", border: "1px solid rgba(197,179,88,0.2)" }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: C.gold, fontFamily: "'Cinzel',serif", letterSpacing: 1, marginBottom: 6 }}>CONFIRM GPU ACTIVATION</div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: C.text, fontFamily: "'Cormorant Garamond',serif", marginBottom: 10 }}>
-                    <strong>{gpuConfirm.name}</strong> ({gpuConfirm.vram}) at <strong>${gpuConfirm.price.toFixed(2)}/hr</strong><br/>Billed per minute. Auto-sleeps after 10 min idle.
+                    <strong>{gpuConfirm.name}</strong> ({gpuConfirm.vram}) at <strong>${gpuConfirm.price.toFixed(2)}/hr</strong><br/>Billed per minute. Auto-sleeps after 4 min idle.
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <button onClick={() => activateGpu(gpuConfirm.id)} disabled={gpuSwitching} style={{ flex: 1, padding: "10px", borderRadius: 8, cursor: "pointer", background: "linear-gradient(135deg, rgba(46,125,50,0.3), rgba(27,94,32,0.2))", border: "1px solid rgba(76,175,80,0.4)", color: C.greenBright, fontFamily: "'Cinzel',serif", fontSize: 12, fontWeight: 700, letterSpacing: 1.5 }}>{gpuSwitching ? "SWITCHING..." : "YES, ACTIVATE"}</button>

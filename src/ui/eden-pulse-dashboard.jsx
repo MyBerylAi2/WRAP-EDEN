@@ -393,6 +393,27 @@ export default function EdenPulseDashboard() {
         * { box-sizing:border-box; margin:0; padding:0 }
         ::-webkit-scrollbar { width:5px } ::-webkit-scrollbar-thumb { background:rgba(197,179,88,0.12); border-radius:3px }
         .card-hover:hover { border-color: rgba(197,179,88,0.28) !important; transform: translateY(-2px) }
+        .pulse-tab { position: relative; overflow: hidden; }
+        .pulse-tab::after {
+          content: '';
+          position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+          background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.5) 50%, transparent 100%);
+          transition: left 0.4s ease;
+        }
+        .pulse-tab:hover::after { left: 100%; }
+        .pulse-tab:hover {
+          background: linear-gradient(135deg, #D4AF37 0%, #F5E6A3 35%, #C5B358 65%, #D4AF37 100%) !important;
+          box-shadow: 0 4px 20px rgba(197,179,88,0.5) !important;
+          border-color: #F5E6A3 !important;
+          transform: translateY(-1px);
+        }
+        .pulse-tab-active::after {
+          animation: tabFlash 2.5s ease-in-out infinite;
+        }
+        @keyframes tabFlash {
+          0%, 100% { left: -100%; }
+          50% { left: 100%; }
+        }
       `}</style>
 
       {/* ═══ HEADER — LARGE LOGO WITH CLOVER ═══ */}
@@ -479,16 +500,28 @@ export default function EdenPulseDashboard() {
         </div>
       </div>
 
-      {/* ═══ TABS ═══ */}
-      <div style={{ display: "flex", borderBottom: `1px solid ${C.border}`, background: "rgba(12,8,4,0.6)" }}>
+      {/* ═══ TABS — Gold buttons, dark green bold text, hover flash ═══ */}
+      <div style={{ display: "flex", borderBottom: `1px solid ${C.border}`, background: "rgba(12,8,4,0.6)", padding: "6px 8px", gap: 6 }}>
         {tabs.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} style={{
-            padding: "14px 24px", background: tab === t.id ? "rgba(197,179,88,0.04)" : "none", border: "none", cursor: "pointer",
-            fontFamily: "'Cinzel', serif", fontSize: 14, letterSpacing: 4, textTransform: "uppercase",
-            color: tab === t.id ? C.gold : C.textDim,
-            borderBottom: tab === t.id ? `3px solid ${C.gold}` : "3px solid transparent",
-            transition: "all 0.3s", display: "flex", alignItems: "center", gap: 6,
-          }}><span style={{ fontSize: 16 }}>{t.icon}</span>{t.label}</button>
+          <button key={t.id} onClick={() => setTab(t.id)}
+            className={`pulse-tab${tab === t.id ? " pulse-tab-active" : ""}`}
+            style={{
+              padding: "12px 22px",
+              background: tab === t.id
+                ? "linear-gradient(135deg, #C5B358 0%, #F5E6A3 40%, #D4AF37 70%, #C5B358 100%)"
+                : "linear-gradient(135deg, #8B6914 0%, #C5B358 30%, #D4AF37 60%, #8B6914 100%)",
+              border: tab === t.id ? "2px solid #F5E6A3" : "1px solid rgba(197,179,88,0.35)",
+              borderRadius: 8, cursor: "pointer",
+              fontFamily: "'Cinzel', serif", fontSize: 12, letterSpacing: 3, textTransform: "uppercase",
+              fontWeight: 700,
+              color: "#1B5E20",
+              display: "flex", alignItems: "center", gap: 6,
+              position: "relative", overflow: "hidden",
+              boxShadow: tab === t.id ? "0 2px 12px rgba(197,179,88,0.35)" : "0 1px 4px rgba(0,0,0,0.3)",
+              transition: "all 0.3s ease",
+            }}>
+            <span style={{ fontSize: 14 }}>{t.icon}</span>{t.label}
+          </button>
         ))}
       </div>
 

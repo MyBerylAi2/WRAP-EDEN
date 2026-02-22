@@ -465,6 +465,79 @@ const CardByline = ({ authorIds, time, readTime, cited }) => {
   );
 };
 
+// ─── GLOBAL NAV BAR ───
+
+const NAV_ITEMS = [
+  { id: "home", label: "HOME", icon: "🏠", href: "/" },
+  { id: "studio", label: "IMAGE STUDIO", icon: "🖼️", href: "/image-studio" },
+  { id: "eve", label: "EVE 4D", icon: "🎭", href: "/eve-4d" },
+  { id: "pulse", label: "EDEN PULSE", icon: "📡", href: "/eden-pulse", active: true },
+  { id: "files", label: "FILES", icon: "📁", href: "/files" },
+  { id: "settings", label: "SETTINGS", icon: "⚙️", href: "/settings" },
+];
+
+const GlobalNav = ({ position }) => (
+  <nav style={{
+    display: "flex", alignItems: "center", justifyContent: "space-between",
+    padding: "8px 24px",
+    background: position === "top"
+      ? "linear-gradient(180deg, rgba(12,8,4,0.98) 0%, rgba(8,5,3,0.95) 100%)"
+      : "linear-gradient(0deg, rgba(12,8,4,0.98) 0%, rgba(8,5,3,0.95) 100%)",
+    borderBottom: position === "top" ? "1px solid rgba(197,179,88,0.15)" : "none",
+    borderTop: position === "bottom" ? "1px solid rgba(197,179,88,0.15)" : "none",
+  }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <svg width="22" height="22" viewBox="0 0 80 80">
+        <circle cx="40" cy="40" r="6" fill="#2E7D32"/>
+        <ellipse cx="40" cy="22" rx="10" ry="16" fill="#4CAF50" transform="rotate(0,40,40)"/>
+        <ellipse cx="40" cy="22" rx="10" ry="16" fill="#66BB6A" transform="rotate(90,40,40)"/>
+        <ellipse cx="40" cy="22" rx="10" ry="16" fill="#4CAF50" transform="rotate(180,40,40)"/>
+        <ellipse cx="40" cy="22" rx="10" ry="16" fill="#66BB6A" transform="rotate(270,40,40)"/>
+      </svg>
+      <span style={{ fontFamily: "'Cinzel', serif", fontSize: 13, letterSpacing: 4, color: "#C5B358", fontWeight: 700 }}>THE EDEN PROJECT</span>
+    </div>
+    <div style={{ display: "flex", gap: 4 }}>
+      {NAV_ITEMS.map(item => (
+        <a key={item.id} href={item.href} style={{
+          padding: "8px 16px", borderRadius: 6, textDecoration: "none",
+          fontFamily: "'Cinzel', serif", fontSize: 10, letterSpacing: 3, fontWeight: 700,
+          color: item.active ? "#1B5E20" : "#8B7355",
+          background: item.active ? "linear-gradient(135deg, #C5B358, #F5E6A3, #D4AF37)" : "transparent",
+          border: item.active ? "1px solid #F5E6A3" : "1px solid transparent",
+          transition: "all 0.3s", display: "flex", alignItems: "center", gap: 6,
+        }}>
+          <span style={{ fontSize: 12 }}>{item.icon}</span>{item.label}
+        </a>
+      ))}
+    </div>
+    <span style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, color: "rgba(197,179,88,0.4)" }}>BERYL AI LABS</span>
+  </nav>
+);
+
+// ─── AUTONOMOUS CYCLE SCHEDULE ───
+
+const SCAN_SCHEDULE = [
+  { agent: "archivist", source: "arXiv API", freq: "Every 6h", color: C.gold },
+  { agent: "archivist", source: "HuggingFace Models", freq: "Every 2h", color: C.gold },
+  { agent: "archivist", source: "GitHub Trending", freq: "Every 12h", color: C.gold },
+  { agent: "prophet", source: "HF Trending API", freq: "Hourly", color: C.purple },
+  { agent: "synthesist", source: "Compatibility Check", freq: "Every 4h", color: C.greenVibrant },
+  { agent: "curator", source: "Paper Vault Sync", freq: "Every 4h", color: C.teal },
+  { agent: "curator", source: "Google Drive Sync", freq: "Every 8h", color: C.teal },
+  { agent: "sentinel", source: "Security Scan", freq: "Every 2h", color: C.pink },
+  { agent: "director", source: "Dept Review", freq: "Daily 8am", color: C.gold },
+  { agent: "journalist", source: "Weekly Digest", freq: "Fri 6pm", color: C.orange },
+];
+
+const POST_PUBLISH_STEPS = [
+  { step: "SENTINEL validates", detail: "0.3 Rule · Anti-AI detect · Security scan", color: C.pink, icon: "🛡️" },
+  { step: "CURATOR archives", detail: "Paper Vault + tags + Google Drive sync", color: C.teal, icon: "📚" },
+  { step: "PROPHET recalculates", detail: "Spike probability for related models", color: C.purple, icon: "🔮" },
+  { step: "IF feasibility ≥ 75%", detail: "SYNTHESIST → blueprint · ANALYST → compat · → TRIAGE", color: C.greenVibrant, icon: "⚗️" },
+  { step: "IF priority = critical", detail: "DIRECTOR notified → genesis note · BREAKING updated", color: C.red, icon: "🔴" },
+  { step: "ALL AGENTS", detail: "Check for new assignments (next scan cycle)", color: C.gold, icon: "🔄" },
+];
+
 // ─── MAIN DASHBOARD ───
 
 export default function EdenPulseDashboard() {
@@ -526,6 +599,9 @@ export default function EdenPulseDashboard() {
           50% { left: 100%; }
         }
       `}</style>
+
+      {/* ═══ TOP GLOBAL NAV ═══ */}
+      <GlobalNav position="top" />
 
       {/* ═══ HEADER — CLOVER SITTING ON THE MIDDLE E ═══ */}
       <div style={{ background: C.bgSurface, borderBottom: `1px solid ${C.border}`, padding: "18px 32px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -658,10 +734,10 @@ export default function EdenPulseDashboard() {
       </div>
 
       {/* ═══ CONTENT ═══ */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", minHeight: "calc(100vh - 185px)" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px" }}>
 
         {/* LEFT */}
-        <div style={{ padding: 24, overflowY: "auto", maxHeight: "calc(100vh - 185px)" }}>
+        <div style={{ padding: 24 }}>
 
           {/* ═══ ALLUVIAL FEED ═══ */}
           {tab === "feed" && <>
@@ -1050,6 +1126,92 @@ export default function EdenPulseDashboard() {
           </div>
         </div>
       </div>
+    </div>
+
+      {/* ═══ AUTONOMOUS RESEARCH CYCLES — Baked-in operational rhythm ═══ */}
+      <div style={{ padding: "32px 28px", borderTop: `1px solid ${C.border}` }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+
+          {/* LEFT — Scan Schedule */}
+          <div style={{
+            background: "#FFFFFF", borderRadius: 14, padding: "20px 22px",
+            border: "1px solid rgba(0,0,0,0.08)", boxShadow: "0 4px 24px rgba(0,0,0,0.15)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, paddingBottom: 12, borderBottom: "2px solid #1B5E20" }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#00E676", boxShadow: "0 0 8px rgba(0,230,118,0.6)", animation: "pulse 1.5s infinite" }} />
+              <span style={{ fontFamily: "'Cinzel', serif", fontSize: 13, letterSpacing: 3, color: "#1B5E20", fontWeight: 700 }}>AUTONOMOUS SCAN SCHEDULE</span>
+            </div>
+            {SCAN_SCHEDULE.map((s, i) => {
+              const agent = s.agent === "director" ? DIRECTOR : AGENTS.find(a => a.id === s.agent);
+              return (
+                <div key={i} style={{
+                  display: "flex", alignItems: "center", gap: 12, padding: "8px 10px",
+                  background: i % 2 === 0 ? "rgba(27,94,32,0.03)" : "transparent",
+                  borderRadius: 8,
+                }}>
+                  {agent && <AgentPhoto agentId={s.agent} size={22} />}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#1B5E20", fontFamily: "'Cinzel', serif" }}>{s.source}</div>
+                    <div style={{ fontSize: 9, color: "#8C8C8C", textTransform: "uppercase" }}>{s.agent}</div>
+                  </div>
+                  <span style={{
+                    padding: "3px 10px", borderRadius: 6, fontSize: 10, fontFamily: "'Cinzel', serif",
+                    background: `${s.color}15`, border: `1px solid ${s.color}30`, color: s.color, fontWeight: 700, letterSpacing: 1,
+                  }}>{s.freq}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* RIGHT — Post-Publish Autonomous Pipeline */}
+          <div style={{
+            background: "#FFFFFF", borderRadius: 14, padding: "20px 22px",
+            border: "1px solid rgba(0,0,0,0.08)", boxShadow: "0 4px 24px rgba(0,0,0,0.15)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, paddingBottom: 12, borderBottom: "2px solid #1B5E20" }}>
+              <span style={{ fontSize: 14 }}>🔄</span>
+              <span style={{ fontFamily: "'Cinzel', serif", fontSize: 13, letterSpacing: 3, color: "#1B5E20", fontWeight: 700 }}>POST-ARTICLE AUTONOMOUS PIPELINE</span>
+            </div>
+            <div style={{ fontSize: 11, color: "#666", marginBottom: 14, fontStyle: "italic" }}>After every article is published, the following executes with zero human intervention:</div>
+            {POST_PUBLISH_STEPS.map((s, i) => (
+              <div key={i} style={{
+                display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 10px",
+                borderLeft: `3px solid ${s.color}`,
+                background: i % 2 === 0 ? "rgba(27,94,32,0.03)" : "transparent",
+                borderRadius: "0 8px 8px 0", marginBottom: 4,
+              }}>
+                <span style={{ fontSize: 16, lineHeight: 1 }}>{s.icon}</span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#1B5E20", fontFamily: "'Cinzel', serif" }}>{s.step}</div>
+                  <div style={{ fontSize: 10, color: "#8C8C8C", marginTop: 2 }}>{s.detail}</div>
+                </div>
+              </div>
+            ))}
+            <div style={{
+              marginTop: 14, padding: "10px 14px", borderRadius: 8,
+              background: "linear-gradient(135deg, rgba(27,94,32,0.06), rgba(27,94,32,0.02))",
+              border: "1px solid rgba(27,94,32,0.15)",
+            }}>
+              <div style={{ fontSize: 10, color: "#1B5E20", fontFamily: "'Cinzel', serif", fontWeight: 700, letterSpacing: 2 }}>DAILY CAPACITY</div>
+              <div style={{ fontSize: 11, color: "#666", marginTop: 4 }}>~100-200 research items/day · ~3-5 min per item · Sequential model loading · $0-5/day total cost</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ FOOTER BRAND ═══ */}
+      <div style={{ padding: "20px 28px", borderTop: `1px solid ${C.border}`, textAlign: "center" }}>
+        <div style={{ fontFamily: "'Cinzel', serif", fontSize: 10, letterSpacing: 4, color: C.textDim }}>
+          EDEN PULSE v2.0 · THE RELENTLESS EYE · BERYL AI LABS · THE EDEN PROJECT · © 2026
+        </div>
+        <div style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, color: "rgba(139,113,85,0.5)", marginTop: 4 }}>
+          "We don't summarize. We extract. We simulate. We improve." · "Own the Science."
+        </div>
+      </div>
+
+      {/* ═══ BOTTOM GLOBAL NAV ═══ */}
+      <GlobalNav position="bottom" />
+
     </div>
   );
 }

@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Client } from "@gradio/client";
-import { IMAGE_BACKENDS, EDEN_PRESETS, EDEN_NEGATIVE } from "@/lib/data";
+import { IMAGE_BACKENDS, EDEN_PRESETS, buildSmartNegative, injectPositiveKeywords } from "@/lib/data";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { prompt, preset, backend, resolution, steps, seed, randomSeed, enhance, negative } = body;
+    const { prompt, preset, backend, resolution, steps, seed, randomSeed, enhance, negative, mode } = body;
 
+    // ERE-1: Inject positive keywords based on prompt content + mode
+    let fullPrompt = injectPositiveKeywords(prompt, mode || "image_studio", preset);
     const presetText = EDEN_PRESETS[preset as keyof typeof EDEN_PRESETS] || "";
-    let fullPrompt = presetText ? `${prompt}, ${presetText}` : prompt;
+    if (presetText) fullPrompt = `${fullPrompt}, ${presetText}`;
     if (enhance) fullPrompt = `(masterpiece, best quality, extremely detailed), ${fullPrompt}`;
-    const fullNeg = negative ? `${negative}, ${EDEN_NEGATIVE}` : EDEN_NEGATIVE;
+
+    // ERE-1: Smart Negative Engine — auto-detects subject and injects conditionals
+    const fullNeg = buildSmartNegative(prompt, negative || undefined);
 
     const spaceId = IMAGE_BACKENDS[backend as keyof typeof IMAGE_BACKENDS] || "Tongyi-MAI/Z-Image-Turbo";
     const actualSeed = randomSeed ? Math.floor(Math.random() * 2 ** 32) : seed;

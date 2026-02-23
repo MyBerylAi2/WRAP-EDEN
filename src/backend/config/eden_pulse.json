@@ -1,0 +1,21 @@
+{
+  "name": "Eden Pulse",
+  "version": "2.0.0",
+  "organization": "Beryl AI Labs",
+  "project": "The Eden Project",
+  "research_topics": [
+    "face animation talking head",
+    "text to speech neural",
+    "diffusion model image generation", 
+    "avatar real-time streaming",
+    "lip sync audio driven",
+    "video generation model",
+    "quantization LLM efficient"
+  ],
+  "heartbeat_schedule": {
+    "archivist_scan": "every 6 hours",
+    "curator_trending": "every 4 hours",
+    "journalist_publish": "daily",
+    "sentinel_audit": "weekly"
+  }
+}

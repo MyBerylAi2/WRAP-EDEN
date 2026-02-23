@@ -798,6 +798,151 @@ export default function EdenPulseDashboard() {
             </div>
             </div>
 
+            {/* ═══ PROFIT ALERTS — ALWAYS VISIBLE · THE MONEY ENGINE ═══ */}
+            <div style={{ margin: "28px 0", animation: "fadeUp 0.5s ease both" }}>
+              {/* Header bar */}
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16,
+                padding: "14px 20px", borderRadius: "14px 14px 0 0",
+                background: "linear-gradient(135deg, #1a1510 0%, #2d1f0e 40%, #3d2a12 70%, #4a3518 100%)",
+                border: "1px solid rgba(197,179,88,0.2)", borderBottom: "2px solid #C5B358",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ fontSize: 28 }}>💰</span>
+                  <div>
+                    <span style={{
+                      fontFamily: "'Cinzel Decorative','Cinzel',serif", fontSize: 20, letterSpacing: 4, fontWeight: 900,
+                      background: "linear-gradient(135deg, #00E676 0%, #69F0AE 30%, #00E676 60%, #B9F6CA 100%)",
+                      WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                    }}>PROFIT ALERTS</span>
+                    <div style={{ fontSize: 9, letterSpacing: 3, color: "rgba(197,179,88,0.5)", fontFamily: "'Cinzel', serif", marginTop: 2 }}>KELLY CRITERION · EV+ FILTERED · 3-GATE VERIFIED</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  {/* Win rate badge */}
+                  <div style={{ textAlign: "center", padding: "6px 14px", borderRadius: 10, background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.2)" }}>
+                    <div style={{ fontSize: 20, fontFamily: "'Cinzel', serif", color: C.greenVibrant, fontWeight: 700 }}>83%</div>
+                    <div style={{ fontSize: 8, color: "rgba(0,230,118,0.6)", letterSpacing: 2 }}>WIN RATE</div>
+                  </div>
+                  {/* Streak */}
+                  <div style={{ textAlign: "center", padding: "6px 14px", borderRadius: 10, background: "rgba(255,214,0,0.06)", border: "1px solid rgba(255,214,0,0.15)" }}>
+                    <div style={{ fontSize: 20, fontFamily: "'Cinzel', serif", color: "#FFD600", fontWeight: 700 }}>🔥 7W</div>
+                    <div style={{ fontSize: 8, color: "rgba(255,214,0,0.6)", letterSpacing: 2 }}>STREAK</div>
+                  </div>
+                  {/* Total P&L */}
+                  <div style={{ textAlign: "center", padding: "6px 14px", borderRadius: 10, background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.2)" }}>
+                    <div style={{ fontSize: 20, fontFamily: "'Cinzel', serif", color: C.greenVibrant, fontWeight: 700 }}>+$2,865</div>
+                    <div style={{ fontSize: 8, color: "rgba(0,230,118,0.6)", letterSpacing: 2 }}>7-DAY P&L</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Category visual cards — 4 columns with rich imagery */}
+              <div style={{
+                display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3,
+                background: "rgba(197,179,88,0.08)", borderRadius: "0 0 0 0", padding: 3,
+              }}>
+                {PROFIT_CATEGORIES.map(cat => {
+                  const alerts = PROFIT_ALERTS.filter(a => a.cat === cat.id && a.urgency === "hot");
+                  const catIcons = { sports: "🏀", stocks: "📈", crypto: "₿", forex: "💱" };
+                  const catBgs = {
+                    sports: "linear-gradient(135deg, #1a0f00 0%, #3d2200 30%, #FF9800 120%)",
+                    stocks: "linear-gradient(135deg, #001a0d 0%, #003d1a 30%, #00E676 120%)",
+                    crypto: "linear-gradient(135deg, #1a1500 0%, #3d3000 30%, #FFD600 120%)",
+                    forex: "linear-gradient(135deg, #001a1a 0%, #003d3d 30%, #00BCD4 120%)",
+                  };
+                  return (
+                    <div key={cat.id} style={{
+                      background: catBgs[cat.id], borderRadius: 12, padding: "16px 18px",
+                      position: "relative", overflow: "hidden", cursor: "pointer",
+                      minHeight: 140, transition: "transform 0.2s",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.01)"}
+                    onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+                    >
+                      {/* Large background icon */}
+                      <div style={{ position: "absolute", top: -10, right: -10, fontSize: 90, opacity: 0.06, lineHeight: 1 }}>{catIcons[cat.id]}</div>
+
+                      {/* Category header */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                        <span style={{ fontSize: 22 }}>{catIcons[cat.id]}</span>
+                        <span style={{ fontFamily: "'Cinzel', serif", fontSize: 12, letterSpacing: 3, color: cat.color, fontWeight: 700 }}>{cat.label}</span>
+                        {alerts.length > 0 && (
+                          <span style={{
+                            marginLeft: "auto", padding: "2px 8px", borderRadius: 6, fontSize: 9,
+                            background: "rgba(198,40,40,0.15)", border: "1px solid rgba(198,40,40,0.3)",
+                            color: "#EF5350", fontWeight: 700, fontFamily: "'Cinzel', serif", letterSpacing: 2,
+                            animation: "pulse 1.5s infinite",
+                          }}>🔴 {alerts.length} HOT</span>
+                        )}
+                      </div>
+
+                      {/* Top alert for this category */}
+                      {alerts[0] && (
+                        <div style={{ position: "relative", zIndex: 1 }}>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "#F5F0E8", fontFamily: "'Cinzel', serif", lineHeight: 1.3, marginBottom: 6 }}>{alerts[0].title}</div>
+                          <div style={{ fontSize: 11, color: "rgba(245,240,232,0.55)", lineHeight: 1.4, marginBottom: 10, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{alerts[0].subtitle}</div>
+
+                          {/* Stats row */}
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <PulseRing value={alerts[0].confidence / 100} size={36} />
+                            <div>
+                              <div style={{ fontSize: 10, color: cat.color, fontFamily: "'Cinzel', serif", fontWeight: 700 }}>{alerts[0].payout}</div>
+                              <div style={{ fontSize: 9, color: "rgba(245,240,232,0.4)" }}>Edge: +{alerts[0].edge}%</div>
+                            </div>
+                            <div style={{ marginLeft: "auto", textAlign: "right" }}>
+                              <div style={{ fontSize: 11, color: C.greenVibrant, fontWeight: 700 }}>{alerts[0].expectedReturn}</div>
+                              <div style={{ fontSize: 9, color: "rgba(245,240,232,0.4)" }}>{alerts[0].window}</div>
+                            </div>
+                            {/* 3 Gates visual */}
+                            <div style={{ display: "flex", gap: 3, marginLeft: 8 }}>
+                              {alerts[0].gates.map((g, gi) => (
+                                <div key={gi} style={{
+                                  width: 10, height: 10, borderRadius: 3,
+                                  background: g ? C.greenVibrant : "rgba(255,255,255,0.1)",
+                                  boxShadow: g ? `0 0 6px ${C.greenVibrant}50` : "none",
+                                }} title={`Gate ${gi + 1}: ${g ? "PASS" : "PENDING"}`} />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Recent Results ticker — scrolling faces + wins/losses */}
+              <div style={{
+                marginTop: 3, padding: "10px 18px",
+                background: "linear-gradient(135deg, rgba(12,8,4,0.95) 0%, rgba(18,12,8,0.9) 100%)",
+                borderRadius: "0 0 14px 14px",
+                border: "1px solid rgba(197,179,88,0.1)", borderTop: "none",
+                display: "flex", alignItems: "center", gap: 16, overflow: "hidden",
+              }}>
+                <span style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, color: C.goldDark, whiteSpace: "nowrap" }}>RECENT:</span>
+                <div style={{ display: "flex", gap: 12, overflow: "hidden" }}>
+                  {PROFIT_HISTORY.slice(0, 8).map(h => {
+                    const isWin = h.result === "WIN";
+                    const catEmoji = { sports: "🏀", stocks: "📈", crypto: "₿", forex: "💱" };
+                    return (
+                      <div key={h.id} style={{
+                        display: "flex", alignItems: "center", gap: 6, padding: "4px 10px",
+                        borderRadius: 8, whiteSpace: "nowrap",
+                        background: isWin ? "rgba(0,230,118,0.06)" : "rgba(239,83,80,0.06)",
+                        border: `1px solid ${isWin ? "rgba(0,230,118,0.15)" : "rgba(239,83,80,0.15)"}`,
+                      }}>
+                        <span style={{ fontSize: 12 }}>{catEmoji[h.cat]}</span>
+                        <span style={{ fontSize: 10, color: isWin ? C.greenVibrant : C.red, fontWeight: 700 }}>{isWin ? "✓" : "✗"}</span>
+                        <span style={{ fontSize: 10, color: C.text, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis" }}>{h.title}</span>
+                        <span style={{ fontSize: 10, color: isWin ? C.greenVibrant : C.red, fontWeight: 600 }}>{h.payout}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
             <div style={{ height: 24 }} />
             <SectionHead>FEATURED INTELLIGENCE</SectionHead>
             {/* HERO — Journal Style */}
@@ -851,16 +996,46 @@ export default function EdenPulseDashboard() {
 
             <SectionHead>LATEST REPORTS</SectionHead>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              {ARTICLES.slice(1).map((a, i) => (
+              {ARTICLES.slice(1).map((a, i) => {
+                const catVisuals = {
+                  "Quantization": { icon: "⚡", emoji2: "🧠" },
+                  "Pipeline": { icon: "🔧", emoji2: "⚙️" },
+                  "Benchmark": { icon: "📊", emoji2: "🏆" },
+                  "Weekly Digest": { icon: "📰", emoji2: "🌐" },
+                  "ERE-1": { icon: "🎨", emoji2: "✨" },
+                  "Knowledge Base": { icon: "📚", emoji2: "🗂️" },
+                  "Security": { icon: "🛡️", emoji2: "🔒" },
+                  "Face Animation": { icon: "🎭", emoji2: "👤" },
+                };
+                const vis = catVisuals[a.category] || { icon: "📄", emoji2: "🔬" };
+                return (
                 <div key={a.id} className="card-hover" style={{
                   background: C.wellBright, border: `1px solid ${C.wellBorder}`, borderRadius: 14,
                   overflow: "hidden", cursor: "pointer", transition: "all 0.35s", animation: `fadeUp 0.5s ease ${(i+1)*0.06}s both`,
                   boxShadow: C.wellGlow,
                 }}>
-                  <div style={{ height: 105, background: a.gradient, position: "relative" }}>
+                  <div style={{ height: 115, background: a.gradient, position: "relative", overflow: "hidden" }}>
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(18,12,8,0.65) 0%, transparent 55%)" }} />
-                    {a.feasibility && <div style={{ position: "absolute", top: 8, left: 8 }}><PulseRing value={a.feasibility/100} size={28} /></div>}
-                    {a.trending && <div style={{ position: "absolute", top: 8, right: 8 }}><Badge text="🔥" color={C.greenVibrant} /></div>}
+                    {/* Large themed visual icon */}
+                    <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -55%)", fontSize: 52, opacity: 0.2, filter: "blur(1px)" }}>{vis.icon}</div>
+                    <div style={{ position: "absolute", bottom: 14, right: 14, fontSize: 34, opacity: 0.15 }}>{vis.emoji2}</div>
+                    {/* Author faces floating on thumbnail */}
+                    <div style={{ position: "absolute", top: 8, right: 8, display: "flex" }}>
+                      {a.authors.slice(0, 3).map((aid, ai) => {
+                        const agent = ALL_TEAM.find(x => x.id === aid);
+                        return agent ? (
+                          <div key={aid} style={{
+                            width: 28, height: 28, borderRadius: "50%", overflow: "hidden",
+                            border: "2px solid rgba(8,5,3,0.8)", marginLeft: ai > 0 ? -8 : 0,
+                            zIndex: 3 - ai, boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
+                          }}>
+                            <img src={agent.photo} alt={agent.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          </div>
+                        ) : null;
+                      })}
+                    </div>
+                    {a.feasibility && <div style={{ position: "absolute", top: 8, left: 8 }}><PulseRing value={a.feasibility/100} size={30} /></div>}
+                    {a.trending && <div style={{ position: "absolute", bottom: 36, right: 8 }}><Badge text="🔥 TRENDING" color={C.greenVibrant} /></div>}
                     <div style={{ position: "absolute", bottom: 8, left: 8, display: "flex", gap: 4 }}>
                       <Badge text={a.priority} color={{ critical: C.red, high: C.orange, medium: C.gold }[a.priority]} />
                       <Badge text={a.category} color={C.goldBright} />
@@ -873,7 +1048,7 @@ export default function EdenPulseDashboard() {
                     <CardByline authorIds={a.authors} time={a.time} readTime={a.readTime} cited={a.cited} />
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           </>}
 

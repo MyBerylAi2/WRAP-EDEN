@@ -33,7 +33,7 @@ const C = {
 const DIRECTOR = {
   id: "director", name: "Dr. Wendy Okonkwo", title: "DIRECTOR",
   role: "Director of Eden Pulse", specialty: "Department oversight, research strategy, pipeline governance, investor genesis notes, cross-agent coordination",
-  color: C.gold, photo: "/portraits/wendy_okonkwo_director.png",
+  color: C.gold, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/wendy_okonkwo_director.png",
   model: "Claude API (Opus)", phd: "AI Research Strategy, Carnegie Mellon",
   status: "active", uptime: "99.9%", last_scan: "always on",
   stat1: { label: "Directives Issued", value: "412" },
@@ -46,7 +46,7 @@ const AGENTS = [
   {
     id: "archivist", name: "Dr. Amara Okafor", title: "THE ARCHIVIST",
     role: "Excavator of Truth", specialty: "Paper extraction, model card analysis, quantization specs, safetensors metadata, arxiv deep-dive, capability card generation",
-    color: C.gold, photo: "/portraits/amara_okafor_archivist.png",
+    color: C.gold, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/amara_okafor_archivist.png",
     model: "Qwen/Qwen2.5-3B-Instruct", phd: "Computational Linguistics, MIT",
     status: "active", uptime: "99.7%", last_scan: "12 min ago",
     stat1: { label: "Papers Processed", value: "847" },
@@ -57,7 +57,7 @@ const AGENTS = [
   {
     id: "analyst", name: "Dr. Suki Tanaka", title: "THE ANALYST",
     role: "Engineer of Logic", specialty: "Compatibility graphs, VRAM feasibility, risk matrices, failure mode analysis, cross-model alignment testing",
-    color: C.cyan, photo: "/portraits/suki_tanaka_analyst.png",
+    color: C.cyan, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/suki_tanaka_analyst.png",
     model: "microsoft/Phi-3.5-mini-instruct", phd: "Systems Engineering, Stanford",
     status: "active", uptime: "99.4%", last_scan: "8 min ago",
     stat1: { label: "Compatibility Tests", value: "1,203" },
@@ -68,7 +68,7 @@ const AGENTS = [
   {
     id: "prophet", name: "Dr. Nia Mensah", title: "THE PROPHET",
     role: "The Future-Seer", specialty: "Trend prediction, adoption curves, GPU cost forecasting, hype cycle positioning, market impact analysis",
-    color: C.purple, photo: "/portraits/nia_mensah_prophet.png",
+    color: C.purple, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/nia_mensah_prophet.png",
     model: "Qwen/Qwen2.5-3B-Instruct", phd: "Predictive Analytics, Oxford",
     status: "active", uptime: "99.1%", last_scan: "22 min ago",
     stat1: { label: "Predictions Made", value: "156" },
@@ -79,7 +79,7 @@ const AGENTS = [
   {
     id: "synthesist", name: "Dr. Zara Petrov", title: "THE SYNTHESIST",
     role: "The Inventor", specialty: "Pipeline blueprints, model merges, hybrid architectures, probability scoring, component optimization",
-    color: C.greenVibrant, photo: "/portraits/zara_petrov_synthesist.png",
+    color: C.greenVibrant, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/zara_petrov_synthesist.png",
     model: "Qwen/Qwen2.5-Coder-3B-Instruct", phd: "Multimodal AI Systems, ETH Zurich",
     status: "active", uptime: "99.8%", last_scan: "5 min ago",
     stat1: { label: "Pipelines Created", value: "89" },
@@ -90,7 +90,7 @@ const AGENTS = [
   {
     id: "journalist", name: "Dr. Lena Adeyemi", title: "THE JOURNALIST",
     role: "Voice of Eden", specialty: "Intelligence reports, article writing, triage payloads, master prompts, stakeholder communications, weekly digests",
-    color: C.orange, photo: "/portraits/lena_adeyemi_journalist.png",
+    color: C.orange, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/lena_adeyemi_journalist.png",
     model: "Qwen/Qwen2.5-3B-Instruct", phd: "Science Communication, Columbia",
     status: "active", uptime: "99.5%", last_scan: "3 min ago",
     stat1: { label: "Articles Written", value: "234" },
@@ -101,7 +101,7 @@ const AGENTS = [
   {
     id: "curator", name: "Dr. Mei-Lin Chen", title: "THE CURATOR",
     role: "Keeper of Knowledge", specialty: "Knowledge base management, paper vault organization, Google Drive sync, taxonomy and tagging, research archive maintenance",
-    color: C.teal, photo: "/portraits/mei_lin_chen_curator.png",
+    color: C.teal, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/mei_lin_chen_curator.png",
     model: "Qwen/Qwen2.5-3B-Instruct", phd: "Information Science, UC Berkeley",
     status: "active", uptime: "99.6%", last_scan: "15 min ago",
     stat1: { label: "Papers Archived", value: "1,847" },
@@ -112,7 +112,7 @@ const AGENTS = [
   {
     id: "sentinel", name: "Dr. Priya Sharma", title: "THE SENTINEL",
     role: "Guardian of Quality", specialty: "0.3 Deviation Rule enforcement, anti-AI detection, security scanning, data leak monitoring, benchmark verification",
-    color: C.pink, photo: "/portraits/priya_sharma_sentinel.png",
+    color: C.pink, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/priya_sharma_sentinel.png",
     model: "microsoft/Phi-3.5-mini-instruct", phd: "Cybersecurity & AI Safety, IIT Delhi",
     status: "active", uptime: "99.3%", last_scan: "2 min ago",
     stat1: { label: "Quality Checks", value: "2,103" },
@@ -140,48 +140,56 @@ const ARTICLES = [
     category: "Face Animation", authors: ["archivist", "analyst", "sentinel"], time: "Feb 22, 2026", readTime: "8 min", priority: "critical",
     tags: ["soul", "open-source", "lip-sync", "1M-samples", "face-anim"], feasibility: 92, trending: true, cited: 12,
     journal: "Eden Pulse Intelligence Report", volume: "Vol. 2, No. 47",
+    thumb: "/thumbnails/thumb_soul_v2.jpg",
     gradient: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 40%, #C5B358 100%)" },
   { id: 2, title: "Why BitNet b1.58 Changes Everything for Consumer 4D Avatars: A 90-Day Forecast",
     subtitle: "70B LLM parameter-count on a single RTX 4090 with 15GB headroom for diffusion pipelines. Comprehensive adoption curve analysis with market impact projections.",
     category: "Quantization", authors: ["prophet", "synthesist"], time: "Feb 22, 2026", readTime: "12 min", priority: "high",
     tags: ["bitnet", "quantization", "consumer-gpu", "4090", "forecast"], feasibility: 78, trending: true, cited: 8,
     journal: "Eden Pulse Forecast Bulletin", volume: "Vol. 2, No. 46",
+    thumb: "/thumbnails/thumb_bitnet.jpg",
     gradient: "linear-gradient(135deg, #6A1B9A 0%, #AB47BC 40%, #C5B358 100%)" },
   { id: 3, title: "Pipeline Blueprint: The Sub-200ms Conversational Avatar Stack — Design, Testing, and Validation",
     subtitle: "Whisper-Turbo → BitNet-3B → Chatterbox → TELLER at 25fps. Full architecture blueprint with component-level latency breakdown and probability scoring.",
     category: "Pipeline", authors: ["synthesist", "analyst", "sentinel"], time: "Feb 21, 2026", readTime: "15 min", priority: "critical",
     tags: ["pipeline", "real-time", "avatar", "sub-200ms", "blueprint"], feasibility: 85, trending: false, cited: 15,
     journal: "Eden Pulse Technical Report", volume: "Vol. 2, No. 45",
+    thumb: "/thumbnails/thumb_pipeline.jpg",
     gradient: "linear-gradient(135deg, #006064 0%, #00E676 40%, #1B5E20 100%)" },
   { id: 4, title: "TELLER vs KDTalker vs MEMO: Definitive Benchmark Under Eden's 0.3 Deviation Rule",
     subtitle: "Systematic head-to-head comparison across LSE-D, LSE-C, SyncNet, CSIM, and FID metrics. Only one model survived the 'Real as Fuck' standard.",
     category: "Benchmark", authors: ["analyst", "sentinel"], time: "Feb 21, 2026", readTime: "10 min", priority: "high",
     tags: ["benchmark", "teller", "kdtalker", "memo", "0.3-rule"], feasibility: 91, trending: true, cited: 22,
     journal: "Eden Pulse Benchmark Series", volume: "Vol. 2, No. 44",
+    thumb: "/thumbnails/thumb_benchmark.jpg",
     gradient: "linear-gradient(135deg, #C62828 0%, #EF5350 40%, #FF9800 100%)" },
   { id: 5, title: "This Week in AI: 7 Models That Dropped You Need to Know — Weekly Intelligence Digest",
     subtitle: "From vision-language architectures to audio-driven animation engines — curated intelligence brief covering HuggingFace trending, arXiv drops, and GitHub releases.",
     category: "Weekly Digest", authors: ["journalist", "curator", "archivist"], time: "Feb 21, 2026", readTime: "6 min", priority: "medium",
     tags: ["weekly", "digest", "trending", "huggingface"], feasibility: null, trending: false, cited: 5,
     journal: "Eden Pulse Weekly", volume: "Issue 18",
+    thumb: "/thumbnails/thumb_weekly_digest.jpg",
     gradient: "linear-gradient(135deg, #E65100 0%, #FF9800 40%, #C5B358 100%)" },
   { id: 6, title: "LoRA Stacking for Melanin-Rich Skin Texture: Eden Protocol Outperforms CivitAI Top 10",
     subtitle: "Realistic Skin Texture LoRA + Eden Protocol achieves undetectable AI imagery across all major forensic detection tools. Full lab results with 0.3 Rule validation.",
     category: "ERE-1", authors: ["archivist", "sentinel"], time: "Feb 20, 2026", readTime: "9 min", priority: "high",
     tags: ["lora", "skin-texture", "melanin", "ere-1", "anti-detect"], feasibility: 96, trending: false, cited: 18,
     journal: "Eden Realism Engine Technical Note", volume: "ERE-TN-007",
+    thumb: "/thumbnails/thumb_lora_skin.jpg",
     gradient: "linear-gradient(135deg, #8B6914 0%, #C5B358 40%, #4CAF50 100%)" },
   { id: 7, title: "Paper Vault 2026: Complete Research Archive — Taxonomy, Indexing, and Search Architecture",
     subtitle: "1,847 papers organized across 156 tags with capability card cross-referencing. Google Drive bi-directional sync operational.",
     category: "Knowledge Base", authors: ["curator", "archivist"], time: "Feb 19, 2026", readTime: "5 min", priority: "medium",
     tags: ["archive", "papers", "vault", "taxonomy"], feasibility: null, trending: false, cited: 3,
     journal: "Eden Pulse Internal Memo", volume: "Memo 2026-019",
+    thumb: "/thumbnails/thumb_paper_vault.jpg",
     gradient: "linear-gradient(135deg, #00695C 0%, #26A69A 40%, #C5B358 100%)" },
   { id: 8, title: "SECURITY ADVISORY: MuseTalk v2.3.1 Silent Telemetry Leak — Full Risk Matrix and Remediation",
     subtitle: "Unauthorized data exfiltration detected in popular open-source fork. Complete threat analysis, affected versions, and immediate patch instructions.",
     category: "Security", authors: ["sentinel", "analyst", "director"], time: "Feb 18, 2026", readTime: "4 min", priority: "critical",
     tags: ["security", "musetalk", "data-leak", "advisory"], feasibility: null, trending: false, cited: 31,
     journal: "Eden Pulse Security Advisory", volume: "SEC-2026-003",
+    thumb: "/thumbnails/thumb_security.jpg",
     gradient: "linear-gradient(135deg, #880E4F 0%, #EC407A 40%, #C62828 100%)" },
 ];
 
@@ -205,115 +213,117 @@ const PIPELINES = [
 ];
 
 // ═══════════════════════════════════════════
-// PROFITABILITY ALERTS — THE MONEY ENGINE
-// Kelly Criterion + EV+ filtering only
-// Alerts fire ONLY when edge > 5% above market
+// PROFIT ENGINE — GLM-5 POWERED
+// 85% PROBABILITY FLOOR · 72-HOUR WINDOWS · $20 STAKES
+// Black Swan Factor Calculated Into Every Alert
 // ═══════════════════════════════════════════
+// ARCHITECTURE:
+// GLM-5 (744B MoE, 40B active, $1/M in, $3.20/M out)
+// ├─ TRADING DIVISION
+// │  ├─ Forex Scanner (central bank divergence + RSI + carry trade models)
+// │  ├─ Crypto Futures (funding rate + OI + whale wallet + liquidation heatmap)
+// │  └─ Low-Cap Stock Breakouts (golden cross + volume surge + sector momentum)
+// └─ SPORTS DIVISION
+//    ├─ NBA Parlay Engine (player props + matchup + pace + rest days)
+//    ├─ NHL Parlay Engine (SOG + ice time + goalie matchup + rivalry factor)
+//    └─ MLB Parlay Engine (pitcher K-rate + bullpen fatigue + park factors) [COMING SOON]
+//
+// FLOW: GLM-5 scans → custom models score → 85% floor filter → ALERT fires
+//       → 72hr countdown starts → window closes → auto WIN/LOSS
+//       → LOSS → anomaly/awful analysis → model learns
+//       → WIN → scenario template created → pattern watch activated
+//
+// DEFAULT STAKE: $20 per alert (theoretical tracking)
+// SOME DAYS = ZERO ALERTS. That's the discipline.
+
+const PROFIT_DIVISIONS = [
+  { id: "trading", label: "📈 TRADING", color: "#00E676",
+    models: ["Forex Scanner", "Crypto Futures", "Low-Cap Breakouts"] },
+  { id: "sports", label: "🏀 SPORTS", color: "#FF9800",
+    models: ["NBA Parlays", "NHL Parlays", "MLB Parlays (Coming Soon)"] },
+];
 
 const PROFIT_CATEGORIES = [
-  { id: "sports", label: "🏀 SPORTS PROPS", color: "#FF9800" },
-  { id: "stocks", label: "📈 BREAKOUT STOCKS", color: "#00E676" },
-  { id: "crypto", label: "₿ CRYPTO FUTURES", color: "#FFD600" },
-  { id: "forex", label: "💱 FOREX SHORTS", color: "#00BCD4" },
+  { id: "forex", label: "💱 FOREX", color: "#00BCD4", division: "trading" },
+  { id: "crypto", label: "₿ CRYPTO FUTURES", color: "#FFD600", division: "trading" },
+  { id: "stocks", label: "📈 LOW-CAP BREAKOUTS", color: "#00E676", division: "trading" },
+  { id: "nba", label: "🏀 NBA PARLAYS", color: "#FF9800", division: "sports" },
+  { id: "nhl", label: "🏒 NHL PARLAYS", color: "#42A5F5", division: "sports" },
+  { id: "mlb", label: "⚾ MLB PARLAYS", color: "#EF5350", division: "sports", comingSoon: true },
 ];
 
-// Logic framework: Each alert passes through 3-gate filter:
-// Gate 1: Statistical edge >5% above implied probability (sports) or consensus (markets)
-// Gate 2: Historical backtest win rate >58% on similar patterns
-// Gate 3: Volatility/momentum confirmation (RSI, volume, injury reports)
-// Only alerts that pass ALL 3 gates display. Everything else is filtered as noise.
-
+// ACTIVE ALERTS — only posted when GLM-5 + custom models agree ≥85% probability
+// Each alert has a 72-hour countdown window
+// openedAt = when alert fired, closesAt = 72hr later, result = null until window closes
 const PROFIT_ALERTS = [
-  // ─── SPORTS PROPS ───
-  { id: "s1", cat: "sports", status: "LIVE", urgency: "hot",
-    title: "NBA Double-Double: Nikola Jokić vs LAL",
-    subtitle: "27.3 PPG + 13.1 RPG season avg. LAL allows 4th-most rebounds to centers. Last 8 games vs LAL: 7/8 double-doubles.",
-    model: "XGBoost ensemble (player stats + matchup + pace)", confidence: 89, edge: 11.2,
-    window: "Tomorrow 9:30 PM ET", payout: "+125", stake: "$200", expectedReturn: "$250",
-    gates: [true, true, true], backtest: "73% on 412 similar matchups",
-    result: null, timestamp: "Feb 22, 2026 14:32" },
-  { id: "s2", cat: "sports", status: "LIVE", urgency: "hot",
-    title: "NBA Double-Double: Domantas Sabonis vs HOU",
-    subtitle: "19.8 PPG + 14.2 RPG. HOU bottom-5 rebounding D. Sabonis has DD in 71% of games this season.",
-    model: "XGBoost ensemble + rest days factor", confidence: 84, edge: 8.7,
-    window: "Tomorrow 8:00 PM ET", payout: "+105", stake: "$150", expectedReturn: "$157",
-    gates: [true, true, true], backtest: "68% on 289 similar matchups",
-    result: null, timestamp: "Feb 22, 2026 14:32" },
-  { id: "s3", cat: "sports", status: "LIVE", urgency: "warm",
-    title: "NHL SOG Over: Auston Matthews O3.5 SOG vs BOS",
-    subtitle: "4.2 SOG/game avg. BOS allows most shots to top-line centers. Matthews 63% over 3.5 last 20 games.",
-    model: "Poisson regression (shot attempts + ice time + matchup)", confidence: 76, edge: 7.1,
-    window: "Tomorrow 7:00 PM ET", payout: "-110", stake: "$110", expectedReturn: "$100",
-    gates: [true, true, true], backtest: "64% on 198 similar matchups",
-    result: null, timestamp: "Feb 22, 2026 14:45" },
-  { id: "s4", cat: "sports", status: "LIVE", urgency: "warm",
-    title: "NHL SOG Over: Connor McDavid O4.5 SOG vs CGY",
-    subtitle: "4.8 SOG/game. Battle of Alberta = elevated pace. McDavid averages 5.3 SOG in rivalry games.",
-    model: "Poisson regression + rivalry pace adjustment", confidence: 72, edge: 6.3,
-    window: "Tomorrow 9:00 PM ET", payout: "+115", stake: "$100", expectedReturn: "$115",
-    gates: [true, true, true], backtest: "61% on 156 similar matchups",
-    result: null, timestamp: "Feb 22, 2026 15:01" },
-  // ─── BREAKOUT STOCKS ───
-  { id: "k1", cat: "stocks", status: "LIVE", urgency: "hot",
-    title: "BREAKOUT: SMCI — Volume Surge + Golden Cross",
-    subtitle: "3x avg volume last 2 sessions. 50-day SMA crossed above 200-day. RSI 62 (momentum, not overbought). AI server demand catalyst.",
-    model: "Multi-factor: Golden Cross + Volume + RSI + Sector Momentum", confidence: 81, edge: 9.4,
-    window: "Entry: Mon open → Exit: 48hr", payout: "TP +8%", stake: "$1,000", expectedReturn: "$1,080",
-    gates: [true, true, true], backtest: "66% on 847 golden cross events (2020-2025)",
-    result: null, timestamp: "Feb 22, 2026 13:15" },
-  { id: "k2", cat: "stocks", status: "APPROACHING", urgency: "warm",
-    title: "WATCHING: PLTR — Bollinger Squeeze + Earnings Momentum",
-    subtitle: "Bollinger bandwidth at 6-month low = expansion imminent. Post-earnings drift pattern. Volume building on green days.",
-    model: "Bollinger Squeeze + Post-Earnings Drift + Smart Money Flow", confidence: 74, edge: 6.8,
-    window: "Trigger on break above $82.40", payout: "TP +6%", stake: "$800", expectedReturn: "$848",
-    gates: [true, true, false], backtest: "62% on 523 squeeze events",
-    result: null, timestamp: "Feb 22, 2026 13:28" },
-  // ─── CRYPTO FUTURES ───
-  { id: "c1", cat: "crypto", status: "LIVE", urgency: "hot",
+  // ─── TRADING ───
+  { id: "t1", cat: "forex", division: "trading", confidence: 91,
+    title: "SHORT GBP/JPY — BoJ Hawkish Divergence",
+    thesis: "RSI bearish divergence on 4H. BoJ signaled tightening cycle. GBP/JPY historically drops 150-250 pips on hawkish shifts. Carry trade unwind in progress.",
+    models: ["Central Bank Divergence Model", "RSI Momentum Scanner", "Carry Trade Unwind Detector"],
+    blackSwan: "UK snap election risk factored at 3.2% — contained",
+    stake: 20, targetReturn: 34,
+    openedAt: "2026-02-22T14:00:00Z", closesAt: "2026-02-25T14:00:00Z",
+    result: null },
+  { id: "t2", cat: "crypto", division: "trading", confidence: 88,
     title: "ETH/USDT LONG — Funding Rate Flip + OI Surge",
-    subtitle: "Funding flipped positive after 72hr negative. Open interest +18% in 24hr. Historically precedes 4-8% move within 48hr.",
-    model: "Funding Rate Reversal + OI Divergence + Liquidation Heatmap", confidence: 79, edge: 8.2,
-    window: "Now → 48hr", payout: "5x leverage → TP +6%", stake: "$500", expectedReturn: "$650",
-    gates: [true, true, true], backtest: "71% on 134 funding flip events (2023-2025)",
-    result: null, timestamp: "Feb 22, 2026 12:44" },
-  { id: "c2", cat: "crypto", status: "APPROACHING", urgency: "warm",
-    title: "SOL/USDT — Accumulation Zone + Whale Wallet Activity",
-    subtitle: "Top 50 wallets accumulated +2.1M SOL in 48hr. Price compressing at support. Breakout target $148-155.",
-    model: "On-chain whale tracking + Support/Resistance + Volume Profile", confidence: 73, edge: 5.9,
-    window: "Trigger on break above $142", payout: "3x leverage → TP +5%", stake: "$400", expectedReturn: "$460",
-    gates: [true, true, false], backtest: "65% on 89 whale accumulation events",
-    result: null, timestamp: "Feb 22, 2026 13:55" },
-  // ─── FOREX SHORTS ───
-  { id: "f1", cat: "forex", status: "LIVE", urgency: "hot",
-    title: "SHORT GBP/JPY — Divergence + BoJ Hawkish Signal",
-    subtitle: "RSI bearish divergence on 4H. BoJ signaled tightening. GBP/JPY historically drops 150-250 pips on BoJ hawkish shifts. Risk:reward 1:2.8.",
-    model: "Central Bank Divergence + RSI Divergence + Carry Trade Unwind", confidence: 82, edge: 10.1,
-    window: "Now → 48hr target", payout: "TP 200 pips", stake: "0.5 lot ($500 margin)", expectedReturn: "$680",
-    gates: [true, true, true], backtest: "69% on 67 BoJ divergence events (2022-2025)",
-    result: null, timestamp: "Feb 22, 2026 11:20" },
-  { id: "f2", cat: "forex", status: "LIVE", urgency: "warm",
-    title: "SHORT AUD/USD — Commodity Weakness + China PMI Miss",
-    subtitle: "Iron ore -4.2% this week. China PMI missed at 49.1. AUD correlates 0.82 with iron ore. Support break at 0.6380.",
-    model: "Commodity Correlation + PMI Surprise + Technical Breakdown", confidence: 77, edge: 7.3,
-    window: "Now → 36hr", payout: "TP 120 pips", stake: "0.3 lot ($300 margin)", expectedReturn: "$396",
-    gates: [true, true, true], backtest: "63% on 112 commodity-driven AUD moves",
-    result: null, timestamp: "Feb 22, 2026 12:05" },
+    thesis: "Funding flipped positive after 72hr negative. Open interest +18% in 24hr. Liquidation heatmap shows $1.2B longs above $2,800. Historically precedes 4-8% move.",
+    models: ["Funding Rate Reversal Model", "OI Divergence Scanner", "Liquidation Heatmap Analyzer"],
+    blackSwan: "SEC enforcement action risk factored at 2.8% — contained",
+    stake: 20, targetReturn: 32,
+    openedAt: "2026-02-22T12:00:00Z", closesAt: "2026-02-25T12:00:00Z",
+    result: null },
+  { id: "t3", cat: "stocks", division: "trading", confidence: 86,
+    title: "BREAKOUT: SMCI — Golden Cross + 3x Volume",
+    thesis: "50-day SMA crossed above 200-day. 3x avg volume last 2 sessions. RSI 62 (momentum, not overbought). AI server demand catalyst from NVDA earnings beat.",
+    models: ["Golden Cross Detector", "Volume Surge Scanner", "Sector Momentum Model"],
+    blackSwan: "Tariff escalation risk on server imports factored at 4.1% — borderline",
+    stake: 20, targetReturn: 28,
+    openedAt: "2026-02-22T13:30:00Z", closesAt: "2026-02-25T13:30:00Z",
+    result: null },
+  // ─── SPORTS ───
+  { id: "s1", cat: "nba", division: "sports", confidence: 89,
+    title: "NBA 3-LEG PARLAY: Jokić DD + Sabonis DD + DEN ML",
+    thesis: "Jokić 7/8 DDs vs LAL. Sabonis 71% DD rate, HOU bottom-5 reb D. DEN 12-3 at home vs West. Combined parlay +650.",
+    models: ["Player Prop XGBoost", "Matchup Pace Model", "Rest Day Factor"],
+    blackSwan: "Injury scratch risk factored — monitoring pregame warmups",
+    stake: 20, targetReturn: 150,
+    openedAt: "2026-02-22T14:30:00Z", closesAt: "2026-02-25T14:30:00Z",
+    result: null },
+  { id: "s2", cat: "nhl", division: "sports", confidence: 87,
+    title: "NHL 2-LEG PARLAY: Matthews O3.5 SOG + McDavid O4.5 SOG",
+    thesis: "Matthews 4.2 SOG/game, BOS allows most shots to centers. McDavid 5.3 SOG in rivalry games. Battle of Alberta = elevated pace.",
+    models: ["Poisson Shot Regression", "Goalie Matchup Model", "Rivalry Pace Adjuster"],
+    blackSwan: "Back-to-back fatigue risk factored at 1.9% — negligible",
+    stake: 20, targetReturn: 62,
+    openedAt: "2026-02-22T15:00:00Z", closesAt: "2026-02-25T15:00:00Z",
+    result: null },
 ];
 
-// Historical results — scrollable win/loss tracker for model finetuning
+// RESOLVED ALERTS — auto-updated at window close
+// Losses → studied for anomaly/awful analysis → model improves
+// Wins → converted to scenario templates → pattern watch reactivated
 const PROFIT_HISTORY = [
-  { id: "h1", title: "NBA DD: Jokić vs GSW", cat: "sports", result: "WIN", confidence: 87, payout: "+$245", date: "Feb 20" },
-  { id: "h2", title: "SHORT EUR/USD — ECB dovish", cat: "forex", result: "WIN", confidence: 80, payout: "+$520", date: "Feb 19" },
-  { id: "h3", title: "NVDA Breakout", cat: "stocks", result: "WIN", confidence: 78, payout: "+$640", date: "Feb 19" },
-  { id: "h4", title: "BTC/USDT Long — Funding flip", cat: "crypto", result: "WIN", confidence: 81, payout: "+$380", date: "Feb 18" },
-  { id: "h5", title: "NHL SOG: Ovechkin O3.5", cat: "sports", result: "LOSS", confidence: 71, payout: "-$110", date: "Feb 18" },
-  { id: "h6", title: "NBA DD: Sabonis vs PHX", cat: "sports", result: "WIN", confidence: 85, payout: "+$200", date: "Feb 17" },
-  { id: "h7", title: "SHORT GBP/USD — BoE dovish", cat: "forex", result: "WIN", confidence: 79, payout: "+$440", date: "Feb 17" },
-  { id: "h8", title: "SMCI Breakout — volume surge", cat: "stocks", result: "LOSS", confidence: 69, payout: "-$300", date: "Feb 16" },
-  { id: "h9", title: "ETH/USDT Long — whale buy", cat: "crypto", result: "WIN", confidence: 76, payout: "+$290", date: "Feb 16" },
-  { id: "h10", title: "NHL SOG: McDavid O4.5", cat: "sports", result: "WIN", confidence: 74, payout: "+$115", date: "Feb 15" },
-  { id: "h11", title: "NBA DD: Giannis vs CLE", cat: "sports", result: "WIN", confidence: 88, payout: "+$310", date: "Feb 15" },
-  { id: "h12", title: "SOL/USDT Long — breakout", cat: "crypto", result: "WIN", confidence: 72, payout: "+$180", date: "Feb 14" },
+  { id: "h1", title: "NBA: Jokić DD + DEN ML", cat: "nba", result: "WIN", confidence: 87, stake: 20, payout: 36, date: "Feb 20",
+    analysis: "Pattern confirmed: Jokić vs weak rebounding teams at home = 87% DD rate" },
+  { id: "h2", title: "SHORT EUR/USD — ECB Dovish", cat: "forex", result: "WIN", confidence: 89, stake: 20, payout: 31, date: "Feb 19",
+    analysis: "Scenario template created: ECB dovish + USD strength = 180-pip move" },
+  { id: "h3", title: "SMCI Golden Cross", cat: "stocks", result: "WIN", confidence: 86, stake: 20, payout: 28, date: "Feb 19",
+    analysis: "Pattern confirmed: AI sector golden cross + 2x volume = 6-8% breakout" },
+  { id: "h4", title: "BTC Funding Flip Long", cat: "crypto", result: "WIN", confidence: 88, stake: 20, payout: 34, date: "Feb 18",
+    analysis: "Scenario template created: 72hr negative → positive flip + OI surge = 5% move" },
+  { id: "h5", title: "NHL: Ovechkin O3.5 SOG", cat: "nhl", result: "LOSS", confidence: 85, stake: 20, payout: -20, date: "Feb 18",
+    analysis: "⚠️ ANOMALY: Ovechkin pulled at 8min 2P (undisclosed lower body). Black Swan — unforeseeable. Model integrity intact." },
+  { id: "h6", title: "NBA: Sabonis DD vs PHX", cat: "nba", result: "WIN", confidence: 90, stake: 20, payout: 28, date: "Feb 17",
+    analysis: "Pattern confirmed: Sabonis vs bottom-10 reb D = 89% DD. Scenario watch active." },
+  { id: "h7", title: "SHORT GBP/USD — BoE Dovish", cat: "forex", result: "WIN", confidence: 91, stake: 20, payout: 38, date: "Feb 17",
+    analysis: "Pattern confirmed: BoE dovish surprise + technical breakdown = 200+ pips" },
+  { id: "h8", title: "PLTR Bollinger Squeeze", cat: "stocks", result: "LOSS", confidence: 85, stake: 20, payout: -20, date: "Feb 16",
+    analysis: "⚠️ AWFUL: Squeeze resolved downward. Model missed insider selling signal. PATCH: Added SEC Form 4 scanner to breakout model." },
+  { id: "h9", title: "ETH Whale Accumulation", cat: "crypto", result: "WIN", confidence: 87, stake: 20, payout: 30, date: "Feb 16",
+    analysis: "Pattern confirmed: Top-50 wallet accumulation >2M = breakout within 48hr" },
+  { id: "h10", title: "NHL: McDavid O4.5 Rivalry", cat: "nhl", result: "WIN", confidence: 86, stake: 20, payout: 26, date: "Feb 15",
+    analysis: "Scenario template created: McDavid in rivalry games + pace >3.1 = 78% over" },
 ];
 
 const PulseRing = ({ value, size = 40 }) => {
@@ -338,6 +348,34 @@ const PulseRing = ({ value, size = 40 }) => {
 const Badge = ({ text, color }) => (
   <span style={{ padding: "3px 10px", borderRadius: 6, fontSize: 9, fontFamily: "'Cinzel', serif", letterSpacing: 2, textTransform: "uppercase", background: `${color}18`, border: `1px solid ${color}33`, color, whiteSpace: "nowrap" }}>{text}</span>
 );
+
+// 72-HOUR COUNTDOWN CLOCK — ticks in real-time
+const Countdown72 = ({ closesAt }) => {
+  const [now, setNow] = React.useState(Date.now());
+  React.useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+  const closes = new Date(closesAt).getTime();
+  const remaining = Math.max(0, closes - now);
+  const hrs = Math.floor(remaining / 3600000);
+  const mins = Math.floor((remaining % 3600000) / 60000);
+  const secs = Math.floor((remaining % 60000) / 1000);
+  const pct = Math.max(0, remaining / (72 * 3600000));
+  const isUrgent = hrs < 6;
+  const isClosed = remaining <= 0;
+  const color = isClosed ? C.textDim : isUrgent ? C.red : hrs < 24 ? C.orange : C.greenVibrant;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 10px", borderRadius: 8, background: `${color}10`, border: `1px solid ${color}25` }}>
+      <span style={{ fontSize: 14 }}>{isClosed ? "🏁" : isUrgent ? "⏰" : "⏱️"}</span>
+      <div>
+        <div style={{ fontFamily: "'Cinzel', serif", fontSize: 14, color, fontWeight: 700, letterSpacing: 2, fontVariantNumeric: "tabular-nums" }}>
+          {isClosed ? "CLOSED" : `${String(hrs).padStart(2,"0")}:${String(mins).padStart(2,"0")}:${String(secs).padStart(2,"0")}`}
+        </div>
+        <div style={{ width: 80, height: 3, borderRadius: 2, background: `${color}15`, marginTop: 2 }}>
+          <div style={{ width: `${pct * 100}%`, height: "100%", borderRadius: 2, background: color, transition: "width 1s linear" }} />
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AgentPhoto = ({ agentId, size = 32 }) => {
   const a = ALL_TEAM.find(x => x.id === agentId) || AGENTS[0];
@@ -574,6 +612,7 @@ export default function EdenPulseDashboard() {
         @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.5 } }
         @keyframes fadeUp { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
         @keyframes glow { 0%,100% { box-shadow:0 0 8px rgba(197,179,88,0.08) } 50% { box-shadow:0 0 20px rgba(197,179,88,0.18) } }
+        @keyframes sirenPulse { 0% { transform: scale(1) rotate(-8deg); filter: drop-shadow(0 0 6px rgba(0,230,118,0.5)) hue-rotate(0deg); } 100% { transform: scale(1.15) rotate(8deg); filter: drop-shadow(0 0 14px rgba(0,230,118,0.9)) hue-rotate(40deg); } }
         * { box-sizing:border-box; margin:0; padding:0 }
         ::-webkit-scrollbar { width:5px } ::-webkit-scrollbar-thumb { background:rgba(197,179,88,0.12); border-radius:3px }
         .card-hover:hover { border-color: rgba(197,179,88,0.28) !important; transform: translateY(-2px) }
@@ -597,6 +636,17 @@ export default function EdenPulseDashboard() {
         @keyframes tabFlash {
           0%, 100% { left: -100%; }
           50% { left: 100%; }
+        }
+        @keyframes sirenSpin {
+          0% { transform: rotate(-8deg); filter: brightness(1) drop-shadow(0 0 8px rgba(0,230,118,0.4)); }
+          25% { transform: rotate(8deg); filter: brightness(1.3) drop-shadow(0 0 16px rgba(0,230,118,0.7)); }
+          50% { transform: rotate(-8deg); filter: brightness(1) drop-shadow(0 0 8px rgba(0,230,118,0.4)); }
+          75% { transform: rotate(8deg); filter: brightness(1.4) drop-shadow(0 0 20px rgba(0,230,118,0.8)); }
+          100% { transform: rotate(-8deg); filter: brightness(1) drop-shadow(0 0 8px rgba(0,230,118,0.4)); }
+        }
+        @keyframes sirenGlow {
+          0%, 100% { box-shadow: 0 0 12px rgba(0,230,118,0.2), 0 0 24px rgba(0,230,118,0.1); }
+          50% { box-shadow: 0 0 20px rgba(0,230,118,0.5), 0 0 40px rgba(0,230,118,0.25), 0 0 60px rgba(0,230,118,0.1); }
         }
       `}</style>
 
@@ -741,56 +791,223 @@ export default function EdenPulseDashboard() {
 
           {/* ═══ ALLUVIAL FEED ═══ */}
           {tab === "feed" && <>
-            {/* BREAKING INTELLIGENCE — White panel, dark green bold headings */}
+            {/* BREAKING INTELLIGENCE — Dark-to-light gradient, gold border */}
             <div style={{
-              background: "#FFFFFF", borderRadius: 16, padding: "20px 22px", marginBottom: 24,
-              border: "1px solid rgba(0,0,0,0.08)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.08)",
+              background: "linear-gradient(180deg, #080503 0%, #1a1510 15%, #2d2518 30%, #4a3d2e 50%, #8B7355 70%, #C5B358 85%, #F5F0E8 95%, #FFFFFF 100%)",
+              borderRadius: 16, padding: 3, marginBottom: 24,
+              boxShadow: "0 4px 30px rgba(197,179,88,0.25), 0 0 60px rgba(197,179,88,0.08)",
               animation: "fadeUp 0.4s ease both",
             }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, paddingBottom: 12, borderBottom: "2px solid #1B5E20" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#C62828", boxShadow: "0 0 8px rgba(198,40,40,0.6)", animation: "pulse 1.5s infinite" }} />
-                  <span style={{ fontFamily: "'Cinzel', serif", fontSize: 14, letterSpacing: 4, color: "#1B5E20", fontWeight: 700, textTransform: "uppercase" }}>BREAKING INTELLIGENCE</span>
+            <div style={{
+              background: "linear-gradient(180deg, rgba(8,5,3,0.99) 0%, rgba(12,8,4,0.97) 25%, rgba(18,12,8,0.95) 45%, rgba(30,22,14,0.88) 60%, rgba(60,45,28,0.7) 75%, rgba(197,179,88,0.15) 88%, #FFFFFF 100%)",
+              borderRadius: 14, padding: "24px 26px",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, paddingBottom: 16, borderBottom: "2px solid #C5B358" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 14, height: 14, borderRadius: "50%", background: "#C62828", boxShadow: "0 0 12px rgba(198,40,40,0.7)", animation: "pulse 1.5s infinite" }} />
+                  <span style={{
+                    fontFamily: "'Cinzel Decorative','Cinzel',serif", fontSize: 26, letterSpacing: 5, fontWeight: 900, textTransform: "uppercase",
+                    background: "linear-gradient(135deg, #F5E6A3 0%, #C5B358 30%, #D4AF37 60%, #8B6914 100%)",
+                    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                  }}>BREAKING INTELLIGENCE</span>
                 </div>
-                <span style={{ fontSize: 10, color: "#8C8C8C", fontFamily: "'Cinzel', serif", letterSpacing: 2 }}>LIVE FEED</span>
+                <span style={{ fontSize: 14, color: "#C5B358", fontFamily: "'Cinzel', serif", letterSpacing: 3, fontWeight: 700 }}>LIVE FEED</span>
               </div>
               {BREAKING.map((item, i) => {
                 const tagColors = { BREAKING: "#C62828", "LAYING PIPE": "#1B5E20", "UNDER INVESTIGATION": "#E65100", FORECAST: "#6A1B9A", ARCHIVED: "#00695C" };
                 const tagColor = tagColors[item.tag];
+                const totalItems = BREAKING.length;
+                const isLight = i >= Math.floor(totalItems * 0.7);
                 return (
                   <div key={item.id} style={{
-                    display: "flex", alignItems: "center", gap: 14, padding: "12px 14px",
-                    background: i === 0 ? "rgba(27,94,32,0.04)" : (i % 2 === 0 ? "rgba(0,0,0,0.015)" : "transparent"),
-                    borderRadius: 10, marginBottom: i < BREAKING.length - 1 ? 4 : 0,
+                    display: "flex", alignItems: "center", gap: 14, padding: "14px 16px",
+                    background: i === 0 ? "rgba(197,179,88,0.08)" : (isLight ? "rgba(27,94,32,0.04)" : "rgba(245,230,163,0.04)"),
+                    borderRadius: 10, marginBottom: i < totalItems - 1 ? 5 : 0,
                     cursor: "pointer", transition: "all 0.25s",
-                    borderLeft: i === 0 ? "3px solid #C62828" : "3px solid transparent",
+                    borderLeft: i === 0 ? "4px solid #C62828" : "4px solid transparent",
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(27,94,32,0.06)"; e.currentTarget.style.borderLeftColor = tagColor; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = i === 0 ? "rgba(27,94,32,0.04)" : (i % 2 === 0 ? "rgba(0,0,0,0.015)" : "transparent"); e.currentTarget.style.borderLeftColor = i === 0 ? "#C62828" : "transparent"; }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(197,179,88,0.12)"; e.currentTarget.style.borderLeftColor = tagColor; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = i === 0 ? "rgba(197,179,88,0.08)" : (isLight ? "rgba(27,94,32,0.04)" : "rgba(245,230,163,0.04)"); e.currentTarget.style.borderLeftColor = i === 0 ? "#C62828" : "transparent"; }}
                   >
-                    {/* Tag badge — on white bg */}
+                    {/* Tag badge */}
                     <span style={{
-                      padding: "3px 10px", borderRadius: 6, fontSize: 9, fontFamily: "'Cinzel', serif",
+                      padding: "5px 14px", borderRadius: 6, fontSize: 12, fontFamily: "'Cinzel', serif",
                       letterSpacing: 2, textTransform: "uppercase", whiteSpace: "nowrap",
-                      background: `${tagColor}12`, border: `1px solid ${tagColor}30`, color: tagColor, fontWeight: 700,
+                      background: `${tagColor}12`, border: `1px solid ${tagColor}30`, color: isLight ? tagColor : tagColor, fontWeight: 700,
                     }}>{item.tag === "BREAKING" ? `🔴 ${item.tag}` : item.tag}</span>
-                    {/* Title — DARK GREEN BOLD LARGER */}
+                    {/* Title + metadata */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: "#1B5E20", fontFamily: "'Cinzel', serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.3 }}>{item.title}</div>
-                      <div style={{ fontSize: 10, color: "#8C8C8C", marginTop: 3 }}>{item.category} · {item.time} · {item.views} views</div>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: isLight ? "#1B5E20" : "#F5E6A3", fontFamily: "'Cinzel', serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.3, transition: "color 0.3s" }}>{item.title}</div>
+                      <div style={{ fontSize: 13, color: isLight ? "#8C8C8C" : "rgba(197,179,88,0.6)", marginTop: 4, fontWeight: 500 }}>{item.category} · {item.time} · {item.views} views</div>
                     </div>
-                    <PulseRing value={item.spike} size={32} />
-                    <AgentPhoto agentId={item.agent} size={28} />
+                    <PulseRing value={item.spike} size={36} />
+                    <AgentPhoto agentId={item.agent} size={32} />
                   </div>
                 );
               })}
+            </div>
+            </div>
+
+            {/* ═══ PROFIT ENGINE — GLM-5 POWERED · 85% FLOOR · 72HR WINDOWS ═══ */}
+            <div style={{ margin: "28px 0", animation: "fadeUp 0.5s ease both" }}>
+              {/* Header bar */}
+              {(() => {
+                const wins = PROFIT_HISTORY.filter(h => h.result === "WIN").length;
+                const total = PROFIT_HISTORY.length;
+                const winRate = Math.round((wins / total) * 100);
+                const streak = (() => { let s = 0; for (const h of PROFIT_HISTORY) { if (h.result === "WIN") s++; else break; } return s; })();
+                const totalPL = PROFIT_HISTORY.reduce((s, h) => s + (h.result === "WIN" ? h.payout : -h.stake), 0);
+                return (
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 0,
+                padding: "14px 20px", borderRadius: "14px 14px 0 0",
+                background: "linear-gradient(135deg, #1a1510 0%, #2d1f0e 40%, #3d2a12 70%, #4a3518 100%)",
+                border: "1px solid rgba(197,179,88,0.2)", borderBottom: "2px solid #C5B358",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ fontSize: 28 }}>💰</span>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <span style={{
+                        fontFamily: "'Cinzel Decorative','Cinzel',serif", fontSize: 20, letterSpacing: 4, fontWeight: 900,
+                        background: "linear-gradient(135deg, #00E676 0%, #69F0AE 30%, #00E676 60%, #B9F6CA 100%)",
+                        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                      }}>PROFIT ENGINE</span>
+                      <span style={{
+                        display: "inline-block", marginLeft: 12, fontSize: 20,
+                        animation: "sirenPulse 1s ease-in-out infinite alternate",
+                        filter: "drop-shadow(0 0 8px rgba(0,230,118,0.6))",
+                      }}>🚨</span>
+                    </div>
+                    <div style={{ fontSize: 9, letterSpacing: 3, color: "rgba(197,179,88,0.5)", fontFamily: "'Cinzel', serif", marginTop: 2 }}>GLM-5 POWERED · 85% FLOOR · $20 STAKES · BLACK SWAN FACTORED</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ textAlign: "center", padding: "6px 12px", borderRadius: 10, background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.2)" }}>
+                    <div style={{ fontSize: 18, fontFamily: "'Cinzel', serif", color: C.greenVibrant, fontWeight: 700 }}>{winRate}%</div>
+                    <div style={{ fontSize: 7, color: "rgba(0,230,118,0.6)", letterSpacing: 2 }}>WIN RATE</div>
+                  </div>
+                  <div style={{ textAlign: "center", padding: "6px 12px", borderRadius: 10, background: "rgba(255,214,0,0.06)", border: "1px solid rgba(255,214,0,0.15)" }}>
+                    <div style={{ fontSize: 18, fontFamily: "'Cinzel', serif", color: "#FFD600", fontWeight: 700 }}>🔥{streak}W</div>
+                    <div style={{ fontSize: 7, color: "rgba(255,214,0,0.6)", letterSpacing: 2 }}>STREAK</div>
+                  </div>
+                  <div style={{ textAlign: "center", padding: "6px 12px", borderRadius: 10, background: totalPL >= 0 ? "rgba(0,230,118,0.08)" : "rgba(239,83,80,0.08)", border: `1px solid ${totalPL >= 0 ? "rgba(0,230,118,0.2)" : "rgba(239,83,80,0.2)"}` }}>
+                    <div style={{ fontSize: 18, fontFamily: "'Cinzel', serif", color: totalPL >= 0 ? C.greenVibrant : C.red, fontWeight: 700 }}>{totalPL >= 0 ? "+" : ""}${Math.abs(totalPL)}</div>
+                    <div style={{ fontSize: 7, color: totalPL >= 0 ? "rgba(0,230,118,0.6)" : "rgba(239,83,80,0.6)", letterSpacing: 2 }}>THEORETICAL P&L</div>
+                  </div>
+                </div>
+              </div>
+                );
+              })()}
+
+              {/* LIVE ALERTS with 72-hour countdown clocks */}
+              <div style={{ background: "rgba(12,8,4,0.95)", padding: "16px 18px", borderLeft: "1px solid rgba(197,179,88,0.1)", borderRight: "1px solid rgba(197,179,88,0.1)" }}>
+                {PROFIT_ALERTS.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                    <div style={{ fontSize: 40, marginBottom: 12 }}>🔇</div>
+                    <div style={{ fontFamily: "'Cinzel', serif", fontSize: 16, color: C.goldDark, letterSpacing: 3, marginBottom: 6 }}>NO ALERTS TODAY</div>
+                    <div style={{ fontSize: 12, color: C.textDim }}>Nothing meets the 85% floor. That's the discipline.</div>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {/* Division headers + alerts */}
+                    {PROFIT_DIVISIONS.map(div => {
+                      const divAlerts = PROFIT_ALERTS.filter(a => a.division === div.id);
+                      if (divAlerts.length === 0) return null;
+                      const catEmojis = { forex: "💱", crypto: "₿", stocks: "📈", nba: "🏀", nhl: "🏒", mlb: "⚾" };
+                      return (
+                        <div key={div.id}>
+                          <div style={{ fontSize: 9, letterSpacing: 4, color: div.color, fontFamily: "'Cinzel', serif", fontWeight: 700, marginBottom: 8, borderBottom: `1px solid ${div.color}25`, paddingBottom: 4 }}>
+                            {div.label} DIVISION — {divAlerts.length} ACTIVE
+                          </div>
+                          {divAlerts.map(alert => {
+                            const cat = PROFIT_CATEGORIES.find(c => c.id === alert.cat);
+                            return (
+                              <div key={alert.id} style={{
+                                background: "rgba(18,12,8,0.8)", borderRadius: 12, padding: "14px 16px", marginBottom: 6,
+                                border: `1px solid ${cat.color}20`, position: "relative", overflow: "hidden",
+                              }}>
+                                <div style={{ position: "absolute", top: -15, right: -15, fontSize: 70, opacity: 0.03 }}>{catEmojis[alert.cat]}</div>
+                                <div style={{ display: "flex", alignItems: "flex-start", gap: 14, position: "relative", zIndex: 1 }}>
+                                  {/* Confidence ring */}
+                                  <PulseRing value={alert.confidence / 100} size={44} />
+                                  {/* Content */}
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                                      <span style={{ fontSize: 16 }}>{catEmojis[alert.cat]}</span>
+                                      <Badge text={cat.label} color={cat.color} />
+                                      <Badge text={`${alert.confidence}% CONF`} color={C.greenVibrant} />
+                                    </div>
+                                    <div style={{ fontFamily: "'Cinzel', serif", fontSize: 14, fontWeight: 700, color: C.textBright, lineHeight: 1.3, marginBottom: 4 }}>{alert.title}</div>
+                                    <div style={{ fontSize: 11, color: C.textDim, lineHeight: 1.4, marginBottom: 6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{alert.thesis}</div>
+                                    {/* Models used */}
+                                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 6 }}>
+                                      {alert.models.map((m, mi) => (
+                                        <span key={mi} style={{ fontSize: 8, padding: "2px 6px", borderRadius: 4, background: `${cat.color}10`, border: `1px solid ${cat.color}15`, color: cat.color, letterSpacing: 1 }}>{m}</span>
+                                      ))}
+                                    </div>
+                                    {/* Black Swan note */}
+                                    <div style={{ fontSize: 9, color: "rgba(255,152,0,0.7)", fontStyle: "italic" }}>🦢 {alert.blackSwan}</div>
+                                  </div>
+                                  {/* Right side — countdown + stake */}
+                                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
+                                    <Countdown72 closesAt={alert.closesAt} />
+                                    <div style={{ textAlign: "right" }}>
+                                      <div style={{ fontSize: 10, color: C.textDim }}>STAKE: <span style={{ color: C.goldBright, fontWeight: 700 }}>${alert.stake}</span></div>
+                                      <div style={{ fontSize: 10, color: C.textDim }}>TARGET: <span style={{ color: C.greenVibrant, fontWeight: 700 }}>${alert.targetReturn}</span></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* RESOLVED — win/loss ticker with analysis */}
+              <div style={{
+                padding: "10px 18px",
+                background: "linear-gradient(135deg, rgba(12,8,4,0.95) 0%, rgba(18,12,8,0.9) 100%)",
+                borderRadius: "0 0 14px 14px",
+                border: "1px solid rgba(197,179,88,0.1)", borderTop: "1px solid rgba(197,179,88,0.05)",
+                display: "flex", alignItems: "center", gap: 16, overflow: "hidden",
+              }}>
+                <span style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, color: C.goldDark, whiteSpace: "nowrap" }}>RESOLVED:</span>
+                <div style={{ display: "flex", gap: 8, overflow: "hidden" }}>
+                  {PROFIT_HISTORY.slice(0, 8).map(h => {
+                    const isWin = h.result === "WIN";
+                    const catEmoji = { nba: "🏀", nhl: "🏒", mlb: "⚾", stocks: "📈", crypto: "₿", forex: "💱" };
+                    const isAnomaly = h.analysis && h.analysis.includes("ANOMALY");
+                    const isPatch = h.analysis && h.analysis.includes("AWFUL");
+                    return (
+                      <div key={h.id} style={{
+                        display: "flex", alignItems: "center", gap: 5, padding: "3px 8px",
+                        borderRadius: 6, whiteSpace: "nowrap",
+                        background: isWin ? "rgba(0,230,118,0.06)" : isPatch ? "rgba(255,152,0,0.08)" : "rgba(239,83,80,0.06)",
+                        border: `1px solid ${isWin ? "rgba(0,230,118,0.15)" : isPatch ? "rgba(255,152,0,0.15)" : "rgba(239,83,80,0.15)"}`,
+                      }}>
+                        <span style={{ fontSize: 10 }}>{catEmoji[h.cat]}</span>
+                        <span style={{ fontSize: 9, color: isWin ? C.greenVibrant : C.red, fontWeight: 700 }}>{isWin ? "✓" : "✗"}</span>
+                        <span style={{ fontSize: 9, color: C.text, maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis" }}>{h.title}</span>
+                        <span style={{ fontSize: 9, color: isWin ? C.greenVibrant : C.red, fontWeight: 600 }}>{isWin ? "+" : "-"}${isWin ? h.payout : h.stake}</span>
+                        {isAnomaly && <span style={{ fontSize: 8 }} title="Anomaly — unforeseeable">🦢</span>}
+                        {isPatch && <span style={{ fontSize: 8 }} title="Model patched">🔧</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
             <div style={{ height: 24 }} />
             <SectionHead>FEATURED INTELLIGENCE</SectionHead>
             {/* HERO — Journal Style */}
-            <div style={{ background: ARTICLES[0].gradient, borderRadius: 16, padding: 32, marginBottom: 24, border: `1px solid rgba(197,179,88,0.15)`, position: "relative", overflow: "hidden", cursor: "pointer", animation: "fadeUp 0.6s ease both" }}>
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(8,5,3,0.97) 0%, rgba(8,5,3,0.6) 35%, rgba(8,5,3,0.2) 100%)" }} />
+            <div style={{ background: ARTICLES[0].thumb ? `url(${ARTICLES[0].thumb}) center/cover` : ARTICLES[0].gradient, borderRadius: 16, padding: 32, marginBottom: 24, border: `1px solid rgba(197,179,88,0.15)`, position: "relative", overflow: "hidden", cursor: "pointer", animation: "fadeUp 0.6s ease both" }}>
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(8,5,3,0.97) 0%, rgba(8,5,3,0.7) 35%, rgba(8,5,3,0.35) 100%)" }} />
               <div style={{ position: "relative", zIndex: 1 }}>
                 <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
                   <Badge text={ARTICLES[0].priority} color={C.red} />
@@ -839,16 +1056,47 @@ export default function EdenPulseDashboard() {
 
             <SectionHead>LATEST REPORTS</SectionHead>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              {ARTICLES.slice(1).map((a, i) => (
+              {ARTICLES.slice(1).map((a, i) => {
+                const catVisuals = {
+                  "Quantization": { icon: "⚡", emoji2: "🧠" },
+                  "Pipeline": { icon: "🔧", emoji2: "⚙️" },
+                  "Benchmark": { icon: "📊", emoji2: "🏆" },
+                  "Weekly Digest": { icon: "📰", emoji2: "🌐" },
+                  "ERE-1": { icon: "🎨", emoji2: "✨" },
+                  "Knowledge Base": { icon: "📚", emoji2: "🗂️" },
+                  "Security": { icon: "🛡️", emoji2: "🔒" },
+                  "Face Animation": { icon: "🎭", emoji2: "👤" },
+                };
+                const vis = catVisuals[a.category] || { icon: "📄", emoji2: "🔬" };
+                return (
                 <div key={a.id} className="card-hover" style={{
                   background: C.wellBright, border: `1px solid ${C.wellBorder}`, borderRadius: 14,
                   overflow: "hidden", cursor: "pointer", transition: "all 0.35s", animation: `fadeUp 0.5s ease ${(i+1)*0.06}s both`,
                   boxShadow: C.wellGlow,
                 }}>
-                  <div style={{ height: 105, background: a.gradient, position: "relative" }}>
-                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(18,12,8,0.65) 0%, transparent 55%)" }} />
-                    {a.feasibility && <div style={{ position: "absolute", top: 8, left: 8 }}><PulseRing value={a.feasibility/100} size={28} /></div>}
-                    {a.trending && <div style={{ position: "absolute", top: 8, right: 8 }}><Badge text="🔥" color={C.greenVibrant} /></div>}
+                  <div style={{ height: 115, background: a.thumb ? `url(${a.thumb}) center/cover` : a.gradient, position: "relative", overflow: "hidden" }}>
+                    {/* Gradient overlay on thumbnail */}
+                    <div style={{ position: "absolute", inset: 0, background: a.thumb ? "linear-gradient(to top, rgba(18,12,8,0.85) 0%, rgba(18,12,8,0.3) 40%, rgba(18,12,8,0.1) 100%)" : "linear-gradient(to top, rgba(18,12,8,0.65) 0%, transparent 55%)" }} />
+                    {/* Large themed visual icon */}
+                    <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -55%)", fontSize: 52, opacity: 0.2, filter: "blur(1px)" }}>{vis.icon}</div>
+                    <div style={{ position: "absolute", bottom: 14, right: 14, fontSize: 34, opacity: 0.15 }}>{vis.emoji2}</div>
+                    {/* Author faces floating on thumbnail */}
+                    <div style={{ position: "absolute", top: 8, right: 8, display: "flex" }}>
+                      {a.authors.slice(0, 3).map((aid, ai) => {
+                        const agent = ALL_TEAM.find(x => x.id === aid);
+                        return agent ? (
+                          <div key={aid} style={{
+                            width: 28, height: 28, borderRadius: "50%", overflow: "hidden",
+                            border: "2px solid rgba(8,5,3,0.8)", marginLeft: ai > 0 ? -8 : 0,
+                            zIndex: 3 - ai, boxShadow: "0 2px 8px rgba(0,0,0,0.5)",
+                          }}>
+                            <img src={agent.photo} alt={agent.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          </div>
+                        ) : null;
+                      })}
+                    </div>
+                    {a.feasibility && <div style={{ position: "absolute", top: 8, left: 8 }}><PulseRing value={a.feasibility/100} size={30} /></div>}
+                    {a.trending && <div style={{ position: "absolute", bottom: 36, right: 8 }}><Badge text="🔥 TRENDING" color={C.greenVibrant} /></div>}
                     <div style={{ position: "absolute", bottom: 8, left: 8, display: "flex", gap: 4 }}>
                       <Badge text={a.priority} color={{ critical: C.red, high: C.orange, medium: C.gold }[a.priority]} />
                       <Badge text={a.category} color={C.goldBright} />
@@ -861,7 +1109,7 @@ export default function EdenPulseDashboard() {
                     <CardByline authorIds={a.authors} time={a.time} readTime={a.readTime} cited={a.cited} />
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           </>}
 
@@ -1126,7 +1374,6 @@ export default function EdenPulseDashboard() {
           </div>
         </div>
       </div>
-    </div>
 
       {/* ═══ AUTONOMOUS RESEARCH CYCLES — Baked-in operational rhythm ═══ */}
       <div style={{ padding: "32px 28px", borderTop: `1px solid ${C.border}` }}>

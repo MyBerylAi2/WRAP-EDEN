@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: "/voice-agents", label: "Voice Agents" },
   { href: "/eve-4d", label: "EVE 4D" },
   { href: "/files", label: "Files" },
+  { href: "/alpha-26", label: "ALPHA-26" },
 ];
 
 export function NavBar() {

@@ -741,49 +741,60 @@ export default function EdenPulseDashboard() {
 
           {/* ═══ ALLUVIAL FEED ═══ */}
           {tab === "feed" && <>
-            {/* BREAKING INTELLIGENCE — White panel, dark green bold headings */}
+            {/* BREAKING INTELLIGENCE — Dark-to-light gradient, gold border */}
             <div style={{
-              background: "#FFFFFF", borderRadius: 16, padding: "20px 22px", marginBottom: 24,
-              border: "1px solid rgba(0,0,0,0.08)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.08)",
+              background: "linear-gradient(180deg, #080503 0%, #1a1510 15%, #2d2518 30%, #4a3d2e 50%, #8B7355 70%, #C5B358 85%, #F5F0E8 95%, #FFFFFF 100%)",
+              borderRadius: 16, padding: 3, marginBottom: 24,
+              boxShadow: "0 4px 30px rgba(197,179,88,0.25), 0 0 60px rgba(197,179,88,0.08)",
               animation: "fadeUp 0.4s ease both",
             }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, paddingBottom: 12, borderBottom: "2px solid #1B5E20" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#C62828", boxShadow: "0 0 8px rgba(198,40,40,0.6)", animation: "pulse 1.5s infinite" }} />
-                  <span style={{ fontFamily: "'Cinzel', serif", fontSize: 14, letterSpacing: 4, color: "#1B5E20", fontWeight: 700, textTransform: "uppercase" }}>BREAKING INTELLIGENCE</span>
+            <div style={{
+              background: "linear-gradient(180deg, rgba(8,5,3,0.97) 0%, rgba(18,12,8,0.95) 20%, rgba(40,30,18,0.85) 45%, rgba(255,255,255,0.6) 70%, #FFFFFF 90%)",
+              borderRadius: 14, padding: "22px 24px",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18, paddingBottom: 14, borderBottom: "2px solid #C5B358" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#C62828", boxShadow: "0 0 12px rgba(198,40,40,0.7)", animation: "pulse 1.5s infinite" }} />
+                  <span style={{
+                    fontFamily: "'Cinzel Decorative','Cinzel',serif", fontSize: 22, letterSpacing: 5, fontWeight: 900, textTransform: "uppercase",
+                    background: "linear-gradient(135deg, #F5E6A3 0%, #C5B358 30%, #D4AF37 60%, #8B6914 100%)",
+                    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                  }}>BREAKING INTELLIGENCE</span>
                 </div>
-                <span style={{ fontSize: 10, color: "#8C8C8C", fontFamily: "'Cinzel', serif", letterSpacing: 2 }}>LIVE FEED</span>
+                <span style={{ fontSize: 11, color: "#C5B358", fontFamily: "'Cinzel', serif", letterSpacing: 3, fontWeight: 600 }}>LIVE FEED</span>
               </div>
               {BREAKING.map((item, i) => {
                 const tagColors = { BREAKING: "#C62828", "LAYING PIPE": "#1B5E20", "UNDER INVESTIGATION": "#E65100", FORECAST: "#6A1B9A", ARCHIVED: "#00695C" };
                 const tagColor = tagColors[item.tag];
+                const isTopHalf = i < Math.ceil(BREAKING.length / 2);
                 return (
                   <div key={item.id} style={{
                     display: "flex", alignItems: "center", gap: 14, padding: "12px 14px",
-                    background: i === 0 ? "rgba(27,94,32,0.04)" : (i % 2 === 0 ? "rgba(0,0,0,0.015)" : "transparent"),
+                    background: i === 0 ? "rgba(197,179,88,0.08)" : (isTopHalf ? "rgba(245,230,163,0.04)" : (i % 2 === 0 ? "rgba(27,94,32,0.04)" : "rgba(0,0,0,0.02)")),
                     borderRadius: 10, marginBottom: i < BREAKING.length - 1 ? 4 : 0,
                     cursor: "pointer", transition: "all 0.25s",
                     borderLeft: i === 0 ? "3px solid #C62828" : "3px solid transparent",
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(27,94,32,0.06)"; e.currentTarget.style.borderLeftColor = tagColor; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = i === 0 ? "rgba(27,94,32,0.04)" : (i % 2 === 0 ? "rgba(0,0,0,0.015)" : "transparent"); e.currentTarget.style.borderLeftColor = i === 0 ? "#C62828" : "transparent"; }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(197,179,88,0.12)"; e.currentTarget.style.borderLeftColor = tagColor; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = i === 0 ? "rgba(197,179,88,0.08)" : (isTopHalf ? "rgba(245,230,163,0.04)" : (i % 2 === 0 ? "rgba(27,94,32,0.04)" : "rgba(0,0,0,0.02)")); e.currentTarget.style.borderLeftColor = i === 0 ? "#C62828" : "transparent"; }}
                   >
-                    {/* Tag badge — on white bg */}
+                    {/* Tag badge */}
                     <span style={{
                       padding: "3px 10px", borderRadius: 6, fontSize: 9, fontFamily: "'Cinzel', serif",
                       letterSpacing: 2, textTransform: "uppercase", whiteSpace: "nowrap",
                       background: `${tagColor}12`, border: `1px solid ${tagColor}30`, color: tagColor, fontWeight: 700,
                     }}>{item.tag === "BREAKING" ? `🔴 ${item.tag}` : item.tag}</span>
-                    {/* Title — DARK GREEN BOLD LARGER */}
+                    {/* Title — transitions from light text at top to dark green at bottom */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: "#1B5E20", fontFamily: "'Cinzel', serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.3 }}>{item.title}</div>
-                      <div style={{ fontSize: 10, color: "#8C8C8C", marginTop: 3 }}>{item.category} · {item.time} · {item.views} views</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: isTopHalf ? "#F5E6A3" : "#1B5E20", fontFamily: "'Cinzel', serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", lineHeight: 1.3, transition: "color 0.3s" }}>{item.title}</div>
+                      <div style={{ fontSize: 10, color: isTopHalf ? "rgba(197,179,88,0.6)" : "#8C8C8C", marginTop: 3 }}>{item.category} · {item.time} · {item.views} views</div>
                     </div>
                     <PulseRing value={item.spike} size={32} />
                     <AgentPhoto agentId={item.agent} size={28} />
                   </div>
                 );
               })}
+            </div>
             </div>
 
             <div style={{ height: 24 }} />

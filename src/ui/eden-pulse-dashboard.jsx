@@ -574,6 +574,7 @@ export default function EdenPulseDashboard() {
         @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.5 } }
         @keyframes fadeUp { from { opacity:0; transform:translateY(10px) } to { opacity:1; transform:translateY(0) } }
         @keyframes glow { 0%,100% { box-shadow:0 0 8px rgba(197,179,88,0.08) } 50% { box-shadow:0 0 20px rgba(197,179,88,0.18) } }
+        @keyframes sirenPulse { 0% { transform: scale(1) rotate(-8deg); filter: drop-shadow(0 0 6px rgba(0,230,118,0.5)) hue-rotate(0deg); } 100% { transform: scale(1.15) rotate(8deg); filter: drop-shadow(0 0 14px rgba(0,230,118,0.9)) hue-rotate(40deg); } }
         * { box-sizing:border-box; margin:0; padding:0 }
         ::-webkit-scrollbar { width:5px } ::-webkit-scrollbar-thumb { background:rgba(197,179,88,0.12); border-radius:3px }
         .card-hover:hover { border-color: rgba(197,179,88,0.28) !important; transform: translateY(-2px) }
@@ -597,6 +598,17 @@ export default function EdenPulseDashboard() {
         @keyframes tabFlash {
           0%, 100% { left: -100%; }
           50% { left: 100%; }
+        }
+        @keyframes sirenSpin {
+          0% { transform: rotate(-8deg); filter: brightness(1) drop-shadow(0 0 8px rgba(0,230,118,0.4)); }
+          25% { transform: rotate(8deg); filter: brightness(1.3) drop-shadow(0 0 16px rgba(0,230,118,0.7)); }
+          50% { transform: rotate(-8deg); filter: brightness(1) drop-shadow(0 0 8px rgba(0,230,118,0.4)); }
+          75% { transform: rotate(8deg); filter: brightness(1.4) drop-shadow(0 0 20px rgba(0,230,118,0.8)); }
+          100% { transform: rotate(-8deg); filter: brightness(1) drop-shadow(0 0 8px rgba(0,230,118,0.4)); }
+        }
+        @keyframes sirenGlow {
+          0%, 100% { box-shadow: 0 0 12px rgba(0,230,118,0.2), 0 0 24px rgba(0,230,118,0.1); }
+          50% { box-shadow: 0 0 20px rgba(0,230,118,0.5), 0 0 40px rgba(0,230,118,0.25), 0 0 60px rgba(0,230,118,0.1); }
         }
       `}</style>
 
@@ -815,6 +827,12 @@ export default function EdenPulseDashboard() {
                       background: "linear-gradient(135deg, #00E676 0%, #69F0AE 30%, #00E676 60%, #B9F6CA 100%)",
                       WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                     }}>PROFIT ALERTS</span>
+                    {/* Green Alert Siren */}
+                    <span style={{
+                      display: "inline-block", marginLeft: 12, fontSize: 20, 
+                      animation: "sirenPulse 1s ease-in-out infinite alternate",
+                      filter: "drop-shadow(0 0 8px rgba(0,230,118,0.6))",
+                    }}>🚨</span>
                     <div style={{ fontSize: 9, letterSpacing: 3, color: "rgba(197,179,88,0.5)", fontFamily: "'Cinzel', serif", marginTop: 2 }}>KELLY CRITERION · EV+ FILTERED · 3-GATE VERIFIED</div>
                   </div>
                 </div>

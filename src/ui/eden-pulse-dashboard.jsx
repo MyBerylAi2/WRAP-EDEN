@@ -140,48 +140,56 @@ const ARTICLES = [
     category: "Face Animation", authors: ["archivist", "analyst", "sentinel"], time: "Feb 22, 2026", readTime: "8 min", priority: "critical",
     tags: ["soul", "open-source", "lip-sync", "1M-samples", "face-anim"], feasibility: 92, trending: true, cited: 12,
     journal: "Eden Pulse Intelligence Report", volume: "Vol. 2, No. 47",
+    thumb: "/thumbnails/thumb_soul_v2.jpg",
     gradient: "linear-gradient(135deg, #1B5E20 0%, #2E7D32 40%, #C5B358 100%)" },
   { id: 2, title: "Why BitNet b1.58 Changes Everything for Consumer 4D Avatars: A 90-Day Forecast",
     subtitle: "70B LLM parameter-count on a single RTX 4090 with 15GB headroom for diffusion pipelines. Comprehensive adoption curve analysis with market impact projections.",
     category: "Quantization", authors: ["prophet", "synthesist"], time: "Feb 22, 2026", readTime: "12 min", priority: "high",
     tags: ["bitnet", "quantization", "consumer-gpu", "4090", "forecast"], feasibility: 78, trending: true, cited: 8,
     journal: "Eden Pulse Forecast Bulletin", volume: "Vol. 2, No. 46",
+    thumb: "/thumbnails/thumb_bitnet.jpg",
     gradient: "linear-gradient(135deg, #6A1B9A 0%, #AB47BC 40%, #C5B358 100%)" },
   { id: 3, title: "Pipeline Blueprint: The Sub-200ms Conversational Avatar Stack — Design, Testing, and Validation",
     subtitle: "Whisper-Turbo → BitNet-3B → Chatterbox → TELLER at 25fps. Full architecture blueprint with component-level latency breakdown and probability scoring.",
     category: "Pipeline", authors: ["synthesist", "analyst", "sentinel"], time: "Feb 21, 2026", readTime: "15 min", priority: "critical",
     tags: ["pipeline", "real-time", "avatar", "sub-200ms", "blueprint"], feasibility: 85, trending: false, cited: 15,
     journal: "Eden Pulse Technical Report", volume: "Vol. 2, No. 45",
+    thumb: "/thumbnails/thumb_pipeline.jpg",
     gradient: "linear-gradient(135deg, #006064 0%, #00E676 40%, #1B5E20 100%)" },
   { id: 4, title: "TELLER vs KDTalker vs MEMO: Definitive Benchmark Under Eden's 0.3 Deviation Rule",
     subtitle: "Systematic head-to-head comparison across LSE-D, LSE-C, SyncNet, CSIM, and FID metrics. Only one model survived the 'Real as Fuck' standard.",
     category: "Benchmark", authors: ["analyst", "sentinel"], time: "Feb 21, 2026", readTime: "10 min", priority: "high",
     tags: ["benchmark", "teller", "kdtalker", "memo", "0.3-rule"], feasibility: 91, trending: true, cited: 22,
     journal: "Eden Pulse Benchmark Series", volume: "Vol. 2, No. 44",
+    thumb: "/thumbnails/thumb_benchmark.jpg",
     gradient: "linear-gradient(135deg, #C62828 0%, #EF5350 40%, #FF9800 100%)" },
   { id: 5, title: "This Week in AI: 7 Models That Dropped You Need to Know — Weekly Intelligence Digest",
     subtitle: "From vision-language architectures to audio-driven animation engines — curated intelligence brief covering HuggingFace trending, arXiv drops, and GitHub releases.",
     category: "Weekly Digest", authors: ["journalist", "curator", "archivist"], time: "Feb 21, 2026", readTime: "6 min", priority: "medium",
     tags: ["weekly", "digest", "trending", "huggingface"], feasibility: null, trending: false, cited: 5,
     journal: "Eden Pulse Weekly", volume: "Issue 18",
+    thumb: "/thumbnails/thumb_weekly_digest.jpg",
     gradient: "linear-gradient(135deg, #E65100 0%, #FF9800 40%, #C5B358 100%)" },
   { id: 6, title: "LoRA Stacking for Melanin-Rich Skin Texture: Eden Protocol Outperforms CivitAI Top 10",
     subtitle: "Realistic Skin Texture LoRA + Eden Protocol achieves undetectable AI imagery across all major forensic detection tools. Full lab results with 0.3 Rule validation.",
     category: "ERE-1", authors: ["archivist", "sentinel"], time: "Feb 20, 2026", readTime: "9 min", priority: "high",
     tags: ["lora", "skin-texture", "melanin", "ere-1", "anti-detect"], feasibility: 96, trending: false, cited: 18,
     journal: "Eden Realism Engine Technical Note", volume: "ERE-TN-007",
+    thumb: "/thumbnails/thumb_lora_skin.jpg",
     gradient: "linear-gradient(135deg, #8B6914 0%, #C5B358 40%, #4CAF50 100%)" },
   { id: 7, title: "Paper Vault 2026: Complete Research Archive — Taxonomy, Indexing, and Search Architecture",
     subtitle: "1,847 papers organized across 156 tags with capability card cross-referencing. Google Drive bi-directional sync operational.",
     category: "Knowledge Base", authors: ["curator", "archivist"], time: "Feb 19, 2026", readTime: "5 min", priority: "medium",
     tags: ["archive", "papers", "vault", "taxonomy"], feasibility: null, trending: false, cited: 3,
     journal: "Eden Pulse Internal Memo", volume: "Memo 2026-019",
+    thumb: "/thumbnails/thumb_paper_vault.jpg",
     gradient: "linear-gradient(135deg, #00695C 0%, #26A69A 40%, #C5B358 100%)" },
   { id: 8, title: "SECURITY ADVISORY: MuseTalk v2.3.1 Silent Telemetry Leak — Full Risk Matrix and Remediation",
     subtitle: "Unauthorized data exfiltration detected in popular open-source fork. Complete threat analysis, affected versions, and immediate patch instructions.",
     category: "Security", authors: ["sentinel", "analyst", "director"], time: "Feb 18, 2026", readTime: "4 min", priority: "critical",
     tags: ["security", "musetalk", "data-leak", "advisory"], feasibility: null, trending: false, cited: 31,
     journal: "Eden Pulse Security Advisory", volume: "SEC-2026-003",
+    thumb: "/thumbnails/thumb_security.jpg",
     gradient: "linear-gradient(135deg, #880E4F 0%, #EC407A 40%, #C62828 100%)" },
 ];
 
@@ -964,8 +972,8 @@ export default function EdenPulseDashboard() {
             <div style={{ height: 24 }} />
             <SectionHead>FEATURED INTELLIGENCE</SectionHead>
             {/* HERO — Journal Style */}
-            <div style={{ background: ARTICLES[0].gradient, borderRadius: 16, padding: 32, marginBottom: 24, border: `1px solid rgba(197,179,88,0.15)`, position: "relative", overflow: "hidden", cursor: "pointer", animation: "fadeUp 0.6s ease both" }}>
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(8,5,3,0.97) 0%, rgba(8,5,3,0.6) 35%, rgba(8,5,3,0.2) 100%)" }} />
+            <div style={{ background: ARTICLES[0].thumb ? `url(${ARTICLES[0].thumb}) center/cover` : ARTICLES[0].gradient, borderRadius: 16, padding: 32, marginBottom: 24, border: `1px solid rgba(197,179,88,0.15)`, position: "relative", overflow: "hidden", cursor: "pointer", animation: "fadeUp 0.6s ease both" }}>
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(8,5,3,0.97) 0%, rgba(8,5,3,0.7) 35%, rgba(8,5,3,0.35) 100%)" }} />
               <div style={{ position: "relative", zIndex: 1 }}>
                 <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap", alignItems: "center" }}>
                   <Badge text={ARTICLES[0].priority} color={C.red} />
@@ -1032,8 +1040,9 @@ export default function EdenPulseDashboard() {
                   overflow: "hidden", cursor: "pointer", transition: "all 0.35s", animation: `fadeUp 0.5s ease ${(i+1)*0.06}s both`,
                   boxShadow: C.wellGlow,
                 }}>
-                  <div style={{ height: 115, background: a.gradient, position: "relative", overflow: "hidden" }}>
-                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(18,12,8,0.65) 0%, transparent 55%)" }} />
+                  <div style={{ height: 115, background: a.thumb ? `url(${a.thumb}) center/cover` : a.gradient, position: "relative", overflow: "hidden" }}>
+                    {/* Gradient overlay on thumbnail */}
+                    <div style={{ position: "absolute", inset: 0, background: a.thumb ? "linear-gradient(to top, rgba(18,12,8,0.85) 0%, rgba(18,12,8,0.3) 40%, rgba(18,12,8,0.1) 100%)" : "linear-gradient(to top, rgba(18,12,8,0.65) 0%, transparent 55%)" }} />
                     {/* Large themed visual icon */}
                     <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -55%)", fontSize: 52, opacity: 0.2, filter: "blur(1px)" }}>{vis.icon}</div>
                     <div style={{ position: "absolute", bottom: 14, right: 14, fontSize: 34, opacity: 0.15 }}>{vis.emoji2}</div>

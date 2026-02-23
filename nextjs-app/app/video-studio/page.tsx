@@ -19,6 +19,25 @@ export default function VideoStudioPage() {
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [enhancing, setEnhancing] = useState(false);
+
+  const handleGrokEnhance = async () => {
+    if (!prompt.trim()) return;
+    setEnhancing(true);
+    try {
+      const res = await fetch("/api/prompt-enhance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, tier: "ice", mediaType: "video" }),
+      });
+      const data = await res.json();
+      if (data.enhanced) {
+        setPrompt(data.enhanced);
+        setStatus("⚡ Prompt enhanced by Grok");
+      }
+    } catch { /* silent */ }
+    setEnhancing(false);
+  };
 
   const handleGenerate = async () => {
     if (!prompt.trim()) { setStatus("⚠️ Enter a prompt."); return; }
@@ -71,6 +90,13 @@ export default function VideoStudioPage() {
               </label>
               <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Describe your video scene..." rows={4} className="w-full resize-none" />
+              <button
+                onClick={handleGrokEnhance}
+                disabled={enhancing || !prompt.trim()}
+                className="mt-1.5 px-3 py-1 rounded text-xs font-mono tracking-wider border border-[rgba(197,179,88,0.2)] text-[#C5B358] hover:bg-[rgba(197,179,88,0.08)] transition-all disabled:opacity-30"
+              >
+                {enhancing ? "ENHANCING..." : "⚡ ENHANCE WITH GROK"}
+              </button>
             </div>
 
             <div>

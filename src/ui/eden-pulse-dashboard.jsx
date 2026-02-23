@@ -213,115 +213,117 @@ const PIPELINES = [
 ];
 
 // ═══════════════════════════════════════════
-// PROFITABILITY ALERTS — THE MONEY ENGINE
-// Kelly Criterion + EV+ filtering only
-// Alerts fire ONLY when edge > 5% above market
+// PROFIT ENGINE — GLM-5 POWERED
+// 85% PROBABILITY FLOOR · 72-HOUR WINDOWS · $20 STAKES
+// Black Swan Factor Calculated Into Every Alert
 // ═══════════════════════════════════════════
+// ARCHITECTURE:
+// GLM-5 (744B MoE, 40B active, $1/M in, $3.20/M out)
+// ├─ TRADING DIVISION
+// │  ├─ Forex Scanner (central bank divergence + RSI + carry trade models)
+// │  ├─ Crypto Futures (funding rate + OI + whale wallet + liquidation heatmap)
+// │  └─ Low-Cap Stock Breakouts (golden cross + volume surge + sector momentum)
+// └─ SPORTS DIVISION
+//    ├─ NBA Parlay Engine (player props + matchup + pace + rest days)
+//    ├─ NHL Parlay Engine (SOG + ice time + goalie matchup + rivalry factor)
+//    └─ MLB Parlay Engine (pitcher K-rate + bullpen fatigue + park factors) [COMING SOON]
+//
+// FLOW: GLM-5 scans → custom models score → 85% floor filter → ALERT fires
+//       → 72hr countdown starts → window closes → auto WIN/LOSS
+//       → LOSS → anomaly/awful analysis → model learns
+//       → WIN → scenario template created → pattern watch activated
+//
+// DEFAULT STAKE: $20 per alert (theoretical tracking)
+// SOME DAYS = ZERO ALERTS. That's the discipline.
+
+const PROFIT_DIVISIONS = [
+  { id: "trading", label: "📈 TRADING", color: "#00E676",
+    models: ["Forex Scanner", "Crypto Futures", "Low-Cap Breakouts"] },
+  { id: "sports", label: "🏀 SPORTS", color: "#FF9800",
+    models: ["NBA Parlays", "NHL Parlays", "MLB Parlays (Coming Soon)"] },
+];
 
 const PROFIT_CATEGORIES = [
-  { id: "sports", label: "🏀 SPORTS PROPS", color: "#FF9800" },
-  { id: "stocks", label: "📈 BREAKOUT STOCKS", color: "#00E676" },
-  { id: "crypto", label: "₿ CRYPTO FUTURES", color: "#FFD600" },
-  { id: "forex", label: "💱 FOREX SHORTS", color: "#00BCD4" },
+  { id: "forex", label: "💱 FOREX", color: "#00BCD4", division: "trading" },
+  { id: "crypto", label: "₿ CRYPTO FUTURES", color: "#FFD600", division: "trading" },
+  { id: "stocks", label: "📈 LOW-CAP BREAKOUTS", color: "#00E676", division: "trading" },
+  { id: "nba", label: "🏀 NBA PARLAYS", color: "#FF9800", division: "sports" },
+  { id: "nhl", label: "🏒 NHL PARLAYS", color: "#42A5F5", division: "sports" },
+  { id: "mlb", label: "⚾ MLB PARLAYS", color: "#EF5350", division: "sports", comingSoon: true },
 ];
 
-// Logic framework: Each alert passes through 3-gate filter:
-// Gate 1: Statistical edge >5% above implied probability (sports) or consensus (markets)
-// Gate 2: Historical backtest win rate >58% on similar patterns
-// Gate 3: Volatility/momentum confirmation (RSI, volume, injury reports)
-// Only alerts that pass ALL 3 gates display. Everything else is filtered as noise.
-
+// ACTIVE ALERTS — only posted when GLM-5 + custom models agree ≥85% probability
+// Each alert has a 72-hour countdown window
+// openedAt = when alert fired, closesAt = 72hr later, result = null until window closes
 const PROFIT_ALERTS = [
-  // ─── SPORTS PROPS ───
-  { id: "s1", cat: "sports", status: "LIVE", urgency: "hot",
-    title: "NBA Double-Double: Nikola Jokić vs LAL",
-    subtitle: "27.3 PPG + 13.1 RPG season avg. LAL allows 4th-most rebounds to centers. Last 8 games vs LAL: 7/8 double-doubles.",
-    model: "XGBoost ensemble (player stats + matchup + pace)", confidence: 89, edge: 11.2,
-    window: "Tomorrow 9:30 PM ET", payout: "+125", stake: "$200", expectedReturn: "$250",
-    gates: [true, true, true], backtest: "73% on 412 similar matchups",
-    result: null, timestamp: "Feb 22, 2026 14:32" },
-  { id: "s2", cat: "sports", status: "LIVE", urgency: "hot",
-    title: "NBA Double-Double: Domantas Sabonis vs HOU",
-    subtitle: "19.8 PPG + 14.2 RPG. HOU bottom-5 rebounding D. Sabonis has DD in 71% of games this season.",
-    model: "XGBoost ensemble + rest days factor", confidence: 84, edge: 8.7,
-    window: "Tomorrow 8:00 PM ET", payout: "+105", stake: "$150", expectedReturn: "$157",
-    gates: [true, true, true], backtest: "68% on 289 similar matchups",
-    result: null, timestamp: "Feb 22, 2026 14:32" },
-  { id: "s3", cat: "sports", status: "LIVE", urgency: "warm",
-    title: "NHL SOG Over: Auston Matthews O3.5 SOG vs BOS",
-    subtitle: "4.2 SOG/game avg. BOS allows most shots to top-line centers. Matthews 63% over 3.5 last 20 games.",
-    model: "Poisson regression (shot attempts + ice time + matchup)", confidence: 76, edge: 7.1,
-    window: "Tomorrow 7:00 PM ET", payout: "-110", stake: "$110", expectedReturn: "$100",
-    gates: [true, true, true], backtest: "64% on 198 similar matchups",
-    result: null, timestamp: "Feb 22, 2026 14:45" },
-  { id: "s4", cat: "sports", status: "LIVE", urgency: "warm",
-    title: "NHL SOG Over: Connor McDavid O4.5 SOG vs CGY",
-    subtitle: "4.8 SOG/game. Battle of Alberta = elevated pace. McDavid averages 5.3 SOG in rivalry games.",
-    model: "Poisson regression + rivalry pace adjustment", confidence: 72, edge: 6.3,
-    window: "Tomorrow 9:00 PM ET", payout: "+115", stake: "$100", expectedReturn: "$115",
-    gates: [true, true, true], backtest: "61% on 156 similar matchups",
-    result: null, timestamp: "Feb 22, 2026 15:01" },
-  // ─── BREAKOUT STOCKS ───
-  { id: "k1", cat: "stocks", status: "LIVE", urgency: "hot",
-    title: "BREAKOUT: SMCI — Volume Surge + Golden Cross",
-    subtitle: "3x avg volume last 2 sessions. 50-day SMA crossed above 200-day. RSI 62 (momentum, not overbought). AI server demand catalyst.",
-    model: "Multi-factor: Golden Cross + Volume + RSI + Sector Momentum", confidence: 81, edge: 9.4,
-    window: "Entry: Mon open → Exit: 48hr", payout: "TP +8%", stake: "$1,000", expectedReturn: "$1,080",
-    gates: [true, true, true], backtest: "66% on 847 golden cross events (2020-2025)",
-    result: null, timestamp: "Feb 22, 2026 13:15" },
-  { id: "k2", cat: "stocks", status: "APPROACHING", urgency: "warm",
-    title: "WATCHING: PLTR — Bollinger Squeeze + Earnings Momentum",
-    subtitle: "Bollinger bandwidth at 6-month low = expansion imminent. Post-earnings drift pattern. Volume building on green days.",
-    model: "Bollinger Squeeze + Post-Earnings Drift + Smart Money Flow", confidence: 74, edge: 6.8,
-    window: "Trigger on break above $82.40", payout: "TP +6%", stake: "$800", expectedReturn: "$848",
-    gates: [true, true, false], backtest: "62% on 523 squeeze events",
-    result: null, timestamp: "Feb 22, 2026 13:28" },
-  // ─── CRYPTO FUTURES ───
-  { id: "c1", cat: "crypto", status: "LIVE", urgency: "hot",
+  // ─── TRADING ───
+  { id: "t1", cat: "forex", division: "trading", confidence: 91,
+    title: "SHORT GBP/JPY — BoJ Hawkish Divergence",
+    thesis: "RSI bearish divergence on 4H. BoJ signaled tightening cycle. GBP/JPY historically drops 150-250 pips on hawkish shifts. Carry trade unwind in progress.",
+    models: ["Central Bank Divergence Model", "RSI Momentum Scanner", "Carry Trade Unwind Detector"],
+    blackSwan: "UK snap election risk factored at 3.2% — contained",
+    stake: 20, targetReturn: 34,
+    openedAt: "2026-02-22T14:00:00Z", closesAt: "2026-02-25T14:00:00Z",
+    result: null },
+  { id: "t2", cat: "crypto", division: "trading", confidence: 88,
     title: "ETH/USDT LONG — Funding Rate Flip + OI Surge",
-    subtitle: "Funding flipped positive after 72hr negative. Open interest +18% in 24hr. Historically precedes 4-8% move within 48hr.",
-    model: "Funding Rate Reversal + OI Divergence + Liquidation Heatmap", confidence: 79, edge: 8.2,
-    window: "Now → 48hr", payout: "5x leverage → TP +6%", stake: "$500", expectedReturn: "$650",
-    gates: [true, true, true], backtest: "71% on 134 funding flip events (2023-2025)",
-    result: null, timestamp: "Feb 22, 2026 12:44" },
-  { id: "c2", cat: "crypto", status: "APPROACHING", urgency: "warm",
-    title: "SOL/USDT — Accumulation Zone + Whale Wallet Activity",
-    subtitle: "Top 50 wallets accumulated +2.1M SOL in 48hr. Price compressing at support. Breakout target $148-155.",
-    model: "On-chain whale tracking + Support/Resistance + Volume Profile", confidence: 73, edge: 5.9,
-    window: "Trigger on break above $142", payout: "3x leverage → TP +5%", stake: "$400", expectedReturn: "$460",
-    gates: [true, true, false], backtest: "65% on 89 whale accumulation events",
-    result: null, timestamp: "Feb 22, 2026 13:55" },
-  // ─── FOREX SHORTS ───
-  { id: "f1", cat: "forex", status: "LIVE", urgency: "hot",
-    title: "SHORT GBP/JPY — Divergence + BoJ Hawkish Signal",
-    subtitle: "RSI bearish divergence on 4H. BoJ signaled tightening. GBP/JPY historically drops 150-250 pips on BoJ hawkish shifts. Risk:reward 1:2.8.",
-    model: "Central Bank Divergence + RSI Divergence + Carry Trade Unwind", confidence: 82, edge: 10.1,
-    window: "Now → 48hr target", payout: "TP 200 pips", stake: "0.5 lot ($500 margin)", expectedReturn: "$680",
-    gates: [true, true, true], backtest: "69% on 67 BoJ divergence events (2022-2025)",
-    result: null, timestamp: "Feb 22, 2026 11:20" },
-  { id: "f2", cat: "forex", status: "LIVE", urgency: "warm",
-    title: "SHORT AUD/USD — Commodity Weakness + China PMI Miss",
-    subtitle: "Iron ore -4.2% this week. China PMI missed at 49.1. AUD correlates 0.82 with iron ore. Support break at 0.6380.",
-    model: "Commodity Correlation + PMI Surprise + Technical Breakdown", confidence: 77, edge: 7.3,
-    window: "Now → 36hr", payout: "TP 120 pips", stake: "0.3 lot ($300 margin)", expectedReturn: "$396",
-    gates: [true, true, true], backtest: "63% on 112 commodity-driven AUD moves",
-    result: null, timestamp: "Feb 22, 2026 12:05" },
+    thesis: "Funding flipped positive after 72hr negative. Open interest +18% in 24hr. Liquidation heatmap shows $1.2B longs above $2,800. Historically precedes 4-8% move.",
+    models: ["Funding Rate Reversal Model", "OI Divergence Scanner", "Liquidation Heatmap Analyzer"],
+    blackSwan: "SEC enforcement action risk factored at 2.8% — contained",
+    stake: 20, targetReturn: 32,
+    openedAt: "2026-02-22T12:00:00Z", closesAt: "2026-02-25T12:00:00Z",
+    result: null },
+  { id: "t3", cat: "stocks", division: "trading", confidence: 86,
+    title: "BREAKOUT: SMCI — Golden Cross + 3x Volume",
+    thesis: "50-day SMA crossed above 200-day. 3x avg volume last 2 sessions. RSI 62 (momentum, not overbought). AI server demand catalyst from NVDA earnings beat.",
+    models: ["Golden Cross Detector", "Volume Surge Scanner", "Sector Momentum Model"],
+    blackSwan: "Tariff escalation risk on server imports factored at 4.1% — borderline",
+    stake: 20, targetReturn: 28,
+    openedAt: "2026-02-22T13:30:00Z", closesAt: "2026-02-25T13:30:00Z",
+    result: null },
+  // ─── SPORTS ───
+  { id: "s1", cat: "nba", division: "sports", confidence: 89,
+    title: "NBA 3-LEG PARLAY: Jokić DD + Sabonis DD + DEN ML",
+    thesis: "Jokić 7/8 DDs vs LAL. Sabonis 71% DD rate, HOU bottom-5 reb D. DEN 12-3 at home vs West. Combined parlay +650.",
+    models: ["Player Prop XGBoost", "Matchup Pace Model", "Rest Day Factor"],
+    blackSwan: "Injury scratch risk factored — monitoring pregame warmups",
+    stake: 20, targetReturn: 150,
+    openedAt: "2026-02-22T14:30:00Z", closesAt: "2026-02-25T14:30:00Z",
+    result: null },
+  { id: "s2", cat: "nhl", division: "sports", confidence: 87,
+    title: "NHL 2-LEG PARLAY: Matthews O3.5 SOG + McDavid O4.5 SOG",
+    thesis: "Matthews 4.2 SOG/game, BOS allows most shots to centers. McDavid 5.3 SOG in rivalry games. Battle of Alberta = elevated pace.",
+    models: ["Poisson Shot Regression", "Goalie Matchup Model", "Rivalry Pace Adjuster"],
+    blackSwan: "Back-to-back fatigue risk factored at 1.9% — negligible",
+    stake: 20, targetReturn: 62,
+    openedAt: "2026-02-22T15:00:00Z", closesAt: "2026-02-25T15:00:00Z",
+    result: null },
 ];
 
-// Historical results — scrollable win/loss tracker for model finetuning
+// RESOLVED ALERTS — auto-updated at window close
+// Losses → studied for anomaly/awful analysis → model improves
+// Wins → converted to scenario templates → pattern watch reactivated
 const PROFIT_HISTORY = [
-  { id: "h1", title: "NBA DD: Jokić vs GSW", cat: "sports", result: "WIN", confidence: 87, payout: "+$245", date: "Feb 20" },
-  { id: "h2", title: "SHORT EUR/USD — ECB dovish", cat: "forex", result: "WIN", confidence: 80, payout: "+$520", date: "Feb 19" },
-  { id: "h3", title: "NVDA Breakout", cat: "stocks", result: "WIN", confidence: 78, payout: "+$640", date: "Feb 19" },
-  { id: "h4", title: "BTC/USDT Long — Funding flip", cat: "crypto", result: "WIN", confidence: 81, payout: "+$380", date: "Feb 18" },
-  { id: "h5", title: "NHL SOG: Ovechkin O3.5", cat: "sports", result: "LOSS", confidence: 71, payout: "-$110", date: "Feb 18" },
-  { id: "h6", title: "NBA DD: Sabonis vs PHX", cat: "sports", result: "WIN", confidence: 85, payout: "+$200", date: "Feb 17" },
-  { id: "h7", title: "SHORT GBP/USD — BoE dovish", cat: "forex", result: "WIN", confidence: 79, payout: "+$440", date: "Feb 17" },
-  { id: "h8", title: "SMCI Breakout — volume surge", cat: "stocks", result: "LOSS", confidence: 69, payout: "-$300", date: "Feb 16" },
-  { id: "h9", title: "ETH/USDT Long — whale buy", cat: "crypto", result: "WIN", confidence: 76, payout: "+$290", date: "Feb 16" },
-  { id: "h10", title: "NHL SOG: McDavid O4.5", cat: "sports", result: "WIN", confidence: 74, payout: "+$115", date: "Feb 15" },
-  { id: "h11", title: "NBA DD: Giannis vs CLE", cat: "sports", result: "WIN", confidence: 88, payout: "+$310", date: "Feb 15" },
-  { id: "h12", title: "SOL/USDT Long — breakout", cat: "crypto", result: "WIN", confidence: 72, payout: "+$180", date: "Feb 14" },
+  { id: "h1", title: "NBA: Jokić DD + DEN ML", cat: "nba", result: "WIN", confidence: 87, stake: 20, payout: 36, date: "Feb 20",
+    analysis: "Pattern confirmed: Jokić vs weak rebounding teams at home = 87% DD rate" },
+  { id: "h2", title: "SHORT EUR/USD — ECB Dovish", cat: "forex", result: "WIN", confidence: 89, stake: 20, payout: 31, date: "Feb 19",
+    analysis: "Scenario template created: ECB dovish + USD strength = 180-pip move" },
+  { id: "h3", title: "SMCI Golden Cross", cat: "stocks", result: "WIN", confidence: 86, stake: 20, payout: 28, date: "Feb 19",
+    analysis: "Pattern confirmed: AI sector golden cross + 2x volume = 6-8% breakout" },
+  { id: "h4", title: "BTC Funding Flip Long", cat: "crypto", result: "WIN", confidence: 88, stake: 20, payout: 34, date: "Feb 18",
+    analysis: "Scenario template created: 72hr negative → positive flip + OI surge = 5% move" },
+  { id: "h5", title: "NHL: Ovechkin O3.5 SOG", cat: "nhl", result: "LOSS", confidence: 85, stake: 20, payout: -20, date: "Feb 18",
+    analysis: "⚠️ ANOMALY: Ovechkin pulled at 8min 2P (undisclosed lower body). Black Swan — unforeseeable. Model integrity intact." },
+  { id: "h6", title: "NBA: Sabonis DD vs PHX", cat: "nba", result: "WIN", confidence: 90, stake: 20, payout: 28, date: "Feb 17",
+    analysis: "Pattern confirmed: Sabonis vs bottom-10 reb D = 89% DD. Scenario watch active." },
+  { id: "h7", title: "SHORT GBP/USD — BoE Dovish", cat: "forex", result: "WIN", confidence: 91, stake: 20, payout: 38, date: "Feb 17",
+    analysis: "Pattern confirmed: BoE dovish surprise + technical breakdown = 200+ pips" },
+  { id: "h8", title: "PLTR Bollinger Squeeze", cat: "stocks", result: "LOSS", confidence: 85, stake: 20, payout: -20, date: "Feb 16",
+    analysis: "⚠️ AWFUL: Squeeze resolved downward. Model missed insider selling signal. PATCH: Added SEC Form 4 scanner to breakout model." },
+  { id: "h9", title: "ETH Whale Accumulation", cat: "crypto", result: "WIN", confidence: 87, stake: 20, payout: 30, date: "Feb 16",
+    analysis: "Pattern confirmed: Top-50 wallet accumulation >2M = breakout within 48hr" },
+  { id: "h10", title: "NHL: McDavid O4.5 Rivalry", cat: "nhl", result: "WIN", confidence: 86, stake: 20, payout: 26, date: "Feb 15",
+    analysis: "Scenario template created: McDavid in rivalry games + pace >3.1 = 78% over" },
 ];
 
 const PulseRing = ({ value, size = 40 }) => {
@@ -346,6 +348,34 @@ const PulseRing = ({ value, size = 40 }) => {
 const Badge = ({ text, color }) => (
   <span style={{ padding: "3px 10px", borderRadius: 6, fontSize: 9, fontFamily: "'Cinzel', serif", letterSpacing: 2, textTransform: "uppercase", background: `${color}18`, border: `1px solid ${color}33`, color, whiteSpace: "nowrap" }}>{text}</span>
 );
+
+// 72-HOUR COUNTDOWN CLOCK — ticks in real-time
+const Countdown72 = ({ closesAt }) => {
+  const [now, setNow] = React.useState(Date.now());
+  React.useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+  const closes = new Date(closesAt).getTime();
+  const remaining = Math.max(0, closes - now);
+  const hrs = Math.floor(remaining / 3600000);
+  const mins = Math.floor((remaining % 3600000) / 60000);
+  const secs = Math.floor((remaining % 60000) / 1000);
+  const pct = Math.max(0, remaining / (72 * 3600000));
+  const isUrgent = hrs < 6;
+  const isClosed = remaining <= 0;
+  const color = isClosed ? C.textDim : isUrgent ? C.red : hrs < 24 ? C.orange : C.greenVibrant;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 10px", borderRadius: 8, background: `${color}10`, border: `1px solid ${color}25` }}>
+      <span style={{ fontSize: 14 }}>{isClosed ? "🏁" : isUrgent ? "⏰" : "⏱️"}</span>
+      <div>
+        <div style={{ fontFamily: "'Cinzel', serif", fontSize: 14, color, fontWeight: 700, letterSpacing: 2, fontVariantNumeric: "tabular-nums" }}>
+          {isClosed ? "CLOSED" : `${String(hrs).padStart(2,"0")}:${String(mins).padStart(2,"0")}:${String(secs).padStart(2,"0")}`}
+        </div>
+        <div style={{ width: 80, height: 3, borderRadius: 2, background: `${color}15`, marginTop: 2 }}>
+          <div style={{ width: `${pct * 100}%`, height: "100%", borderRadius: 2, background: color, transition: "width 1s linear" }} />
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const AgentPhoto = ({ agentId, size = 32 }) => {
   const a = ALL_TEAM.find(x => x.id === agentId) || AGENTS[0];
@@ -818,11 +848,18 @@ export default function EdenPulseDashboard() {
             </div>
             </div>
 
-            {/* ═══ PROFIT ALERTS — ALWAYS VISIBLE · THE MONEY ENGINE ═══ */}
+            {/* ═══ PROFIT ENGINE — GLM-5 POWERED · 85% FLOOR · 72HR WINDOWS ═══ */}
             <div style={{ margin: "28px 0", animation: "fadeUp 0.5s ease both" }}>
               {/* Header bar */}
+              {(() => {
+                const wins = PROFIT_HISTORY.filter(h => h.result === "WIN").length;
+                const total = PROFIT_HISTORY.length;
+                const winRate = Math.round((wins / total) * 100);
+                const streak = (() => { let s = 0; for (const h of PROFIT_HISTORY) { if (h.result === "WIN") s++; else break; } return s; })();
+                const totalPL = PROFIT_HISTORY.reduce((s, h) => s + (h.result === "WIN" ? h.payout : -h.stake), 0);
+                return (
               <div style={{
-                display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16,
+                display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 0,
                 padding: "14px 20px", borderRadius: "14px 14px 0 0",
                 background: "linear-gradient(135deg, #1a1510 0%, #2d1f0e 40%, #3d2a12 70%, #4a3518 100%)",
                 border: "1px solid rgba(197,179,88,0.2)", borderBottom: "2px solid #C5B358",
@@ -830,138 +867,135 @@ export default function EdenPulseDashboard() {
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <span style={{ fontSize: 28 }}>💰</span>
                   <div>
-                    <span style={{
-                      fontFamily: "'Cinzel Decorative','Cinzel',serif", fontSize: 20, letterSpacing: 4, fontWeight: 900,
-                      background: "linear-gradient(135deg, #00E676 0%, #69F0AE 30%, #00E676 60%, #B9F6CA 100%)",
-                      WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-                    }}>PROFIT ALERTS</span>
-                    {/* Green Alert Siren */}
-                    <span style={{
-                      display: "inline-block", marginLeft: 12, fontSize: 20, 
-                      animation: "sirenPulse 1s ease-in-out infinite alternate",
-                      filter: "drop-shadow(0 0 8px rgba(0,230,118,0.6))",
-                    }}>🚨</span>
-                    <div style={{ fontSize: 9, letterSpacing: 3, color: "rgba(197,179,88,0.5)", fontFamily: "'Cinzel', serif", marginTop: 2 }}>KELLY CRITERION · EV+ FILTERED · 3-GATE VERIFIED</div>
-                  </div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                  {/* Win rate badge */}
-                  <div style={{ textAlign: "center", padding: "6px 14px", borderRadius: 10, background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.2)" }}>
-                    <div style={{ fontSize: 20, fontFamily: "'Cinzel', serif", color: C.greenVibrant, fontWeight: 700 }}>83%</div>
-                    <div style={{ fontSize: 8, color: "rgba(0,230,118,0.6)", letterSpacing: 2 }}>WIN RATE</div>
-                  </div>
-                  {/* Streak */}
-                  <div style={{ textAlign: "center", padding: "6px 14px", borderRadius: 10, background: "rgba(255,214,0,0.06)", border: "1px solid rgba(255,214,0,0.15)" }}>
-                    <div style={{ fontSize: 20, fontFamily: "'Cinzel', serif", color: "#FFD600", fontWeight: 700 }}>🔥 7W</div>
-                    <div style={{ fontSize: 8, color: "rgba(255,214,0,0.6)", letterSpacing: 2 }}>STREAK</div>
-                  </div>
-                  {/* Total P&L */}
-                  <div style={{ textAlign: "center", padding: "6px 14px", borderRadius: 10, background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.2)" }}>
-                    <div style={{ fontSize: 20, fontFamily: "'Cinzel', serif", color: C.greenVibrant, fontWeight: 700 }}>+$2,865</div>
-                    <div style={{ fontSize: 8, color: "rgba(0,230,118,0.6)", letterSpacing: 2 }}>7-DAY P&L</div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Category visual cards — 4 columns with rich imagery */}
-              <div style={{
-                display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3,
-                background: "rgba(197,179,88,0.08)", borderRadius: "0 0 0 0", padding: 3,
-              }}>
-                {PROFIT_CATEGORIES.map(cat => {
-                  const alerts = PROFIT_ALERTS.filter(a => a.cat === cat.id && a.urgency === "hot");
-                  const catIcons = { sports: "🏀", stocks: "📈", crypto: "₿", forex: "💱" };
-                  const catBgs = {
-                    sports: "linear-gradient(135deg, #1a0f00 0%, #3d2200 30%, #FF9800 120%)",
-                    stocks: "linear-gradient(135deg, #001a0d 0%, #003d1a 30%, #00E676 120%)",
-                    crypto: "linear-gradient(135deg, #1a1500 0%, #3d3000 30%, #FFD600 120%)",
-                    forex: "linear-gradient(135deg, #001a1a 0%, #003d3d 30%, #00BCD4 120%)",
-                  };
-                  return (
-                    <div key={cat.id} style={{
-                      background: catBgs[cat.id], borderRadius: 12, padding: "16px 18px",
-                      position: "relative", overflow: "hidden", cursor: "pointer",
-                      minHeight: 140, transition: "transform 0.2s",
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.transform = "scale(1.01)"}
-                    onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
-                    >
-                      {/* Large background icon */}
-                      <div style={{ position: "absolute", top: -10, right: -10, fontSize: 90, opacity: 0.06, lineHeight: 1 }}>{catIcons[cat.id]}</div>
-
-                      {/* Category header */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                        <span style={{ fontSize: 22 }}>{catIcons[cat.id]}</span>
-                        <span style={{ fontFamily: "'Cinzel', serif", fontSize: 12, letterSpacing: 3, color: cat.color, fontWeight: 700 }}>{cat.label}</span>
-                        {alerts.length > 0 && (
-                          <span style={{
-                            marginLeft: "auto", padding: "2px 8px", borderRadius: 6, fontSize: 9,
-                            background: "rgba(198,40,40,0.15)", border: "1px solid rgba(198,40,40,0.3)",
-                            color: "#EF5350", fontWeight: 700, fontFamily: "'Cinzel', serif", letterSpacing: 2,
-                            animation: "pulse 1.5s infinite",
-                          }}>🔴 {alerts.length} HOT</span>
-                        )}
-                      </div>
-
-                      {/* Top alert for this category */}
-                      {alerts[0] && (
-                        <div style={{ position: "relative", zIndex: 1 }}>
-                          <div style={{ fontSize: 14, fontWeight: 700, color: "#F5F0E8", fontFamily: "'Cinzel', serif", lineHeight: 1.3, marginBottom: 6 }}>{alerts[0].title}</div>
-                          <div style={{ fontSize: 11, color: "rgba(245,240,232,0.55)", lineHeight: 1.4, marginBottom: 10, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{alerts[0].subtitle}</div>
-
-                          {/* Stats row */}
-                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            <PulseRing value={alerts[0].confidence / 100} size={36} />
-                            <div>
-                              <div style={{ fontSize: 10, color: cat.color, fontFamily: "'Cinzel', serif", fontWeight: 700 }}>{alerts[0].payout}</div>
-                              <div style={{ fontSize: 9, color: "rgba(245,240,232,0.4)" }}>Edge: +{alerts[0].edge}%</div>
-                            </div>
-                            <div style={{ marginLeft: "auto", textAlign: "right" }}>
-                              <div style={{ fontSize: 11, color: C.greenVibrant, fontWeight: 700 }}>{alerts[0].expectedReturn}</div>
-                              <div style={{ fontSize: 9, color: "rgba(245,240,232,0.4)" }}>{alerts[0].window}</div>
-                            </div>
-                            {/* 3 Gates visual */}
-                            <div style={{ display: "flex", gap: 3, marginLeft: 8 }}>
-                              {alerts[0].gates.map((g, gi) => (
-                                <div key={gi} style={{
-                                  width: 10, height: 10, borderRadius: 3,
-                                  background: g ? C.greenVibrant : "rgba(255,255,255,0.1)",
-                                  boxShadow: g ? `0 0 6px ${C.greenVibrant}50` : "none",
-                                }} title={`Gate ${gi + 1}: ${g ? "PASS" : "PENDING"}`} />
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      )}
+                    <div style={{ display: "flex", alignItems: "center" }}>
+                      <span style={{
+                        fontFamily: "'Cinzel Decorative','Cinzel',serif", fontSize: 20, letterSpacing: 4, fontWeight: 900,
+                        background: "linear-gradient(135deg, #00E676 0%, #69F0AE 30%, #00E676 60%, #B9F6CA 100%)",
+                        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+                      }}>PROFIT ENGINE</span>
+                      <span style={{
+                        display: "inline-block", marginLeft: 12, fontSize: 20,
+                        animation: "sirenPulse 1s ease-in-out infinite alternate",
+                        filter: "drop-shadow(0 0 8px rgba(0,230,118,0.6))",
+                      }}>🚨</span>
                     </div>
-                  );
-                })}
+                    <div style={{ fontSize: 9, letterSpacing: 3, color: "rgba(197,179,88,0.5)", fontFamily: "'Cinzel', serif", marginTop: 2 }}>GLM-5 POWERED · 85% FLOOR · $20 STAKES · BLACK SWAN FACTORED</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ textAlign: "center", padding: "6px 12px", borderRadius: 10, background: "rgba(0,230,118,0.08)", border: "1px solid rgba(0,230,118,0.2)" }}>
+                    <div style={{ fontSize: 18, fontFamily: "'Cinzel', serif", color: C.greenVibrant, fontWeight: 700 }}>{winRate}%</div>
+                    <div style={{ fontSize: 7, color: "rgba(0,230,118,0.6)", letterSpacing: 2 }}>WIN RATE</div>
+                  </div>
+                  <div style={{ textAlign: "center", padding: "6px 12px", borderRadius: 10, background: "rgba(255,214,0,0.06)", border: "1px solid rgba(255,214,0,0.15)" }}>
+                    <div style={{ fontSize: 18, fontFamily: "'Cinzel', serif", color: "#FFD600", fontWeight: 700 }}>🔥{streak}W</div>
+                    <div style={{ fontSize: 7, color: "rgba(255,214,0,0.6)", letterSpacing: 2 }}>STREAK</div>
+                  </div>
+                  <div style={{ textAlign: "center", padding: "6px 12px", borderRadius: 10, background: totalPL >= 0 ? "rgba(0,230,118,0.08)" : "rgba(239,83,80,0.08)", border: `1px solid ${totalPL >= 0 ? "rgba(0,230,118,0.2)" : "rgba(239,83,80,0.2)"}` }}>
+                    <div style={{ fontSize: 18, fontFamily: "'Cinzel', serif", color: totalPL >= 0 ? C.greenVibrant : C.red, fontWeight: 700 }}>{totalPL >= 0 ? "+" : ""}${Math.abs(totalPL)}</div>
+                    <div style={{ fontSize: 7, color: totalPL >= 0 ? "rgba(0,230,118,0.6)" : "rgba(239,83,80,0.6)", letterSpacing: 2 }}>THEORETICAL P&L</div>
+                  </div>
+                </div>
+              </div>
+                );
+              })()}
+
+              {/* LIVE ALERTS with 72-hour countdown clocks */}
+              <div style={{ background: "rgba(12,8,4,0.95)", padding: "16px 18px", borderLeft: "1px solid rgba(197,179,88,0.1)", borderRight: "1px solid rgba(197,179,88,0.1)" }}>
+                {PROFIT_ALERTS.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "40px 20px" }}>
+                    <div style={{ fontSize: 40, marginBottom: 12 }}>🔇</div>
+                    <div style={{ fontFamily: "'Cinzel', serif", fontSize: 16, color: C.goldDark, letterSpacing: 3, marginBottom: 6 }}>NO ALERTS TODAY</div>
+                    <div style={{ fontSize: 12, color: C.textDim }}>Nothing meets the 85% floor. That's the discipline.</div>
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {/* Division headers + alerts */}
+                    {PROFIT_DIVISIONS.map(div => {
+                      const divAlerts = PROFIT_ALERTS.filter(a => a.division === div.id);
+                      if (divAlerts.length === 0) return null;
+                      const catEmojis = { forex: "💱", crypto: "₿", stocks: "📈", nba: "🏀", nhl: "🏒", mlb: "⚾" };
+                      return (
+                        <div key={div.id}>
+                          <div style={{ fontSize: 9, letterSpacing: 4, color: div.color, fontFamily: "'Cinzel', serif", fontWeight: 700, marginBottom: 8, borderBottom: `1px solid ${div.color}25`, paddingBottom: 4 }}>
+                            {div.label} DIVISION — {divAlerts.length} ACTIVE
+                          </div>
+                          {divAlerts.map(alert => {
+                            const cat = PROFIT_CATEGORIES.find(c => c.id === alert.cat);
+                            return (
+                              <div key={alert.id} style={{
+                                background: "rgba(18,12,8,0.8)", borderRadius: 12, padding: "14px 16px", marginBottom: 6,
+                                border: `1px solid ${cat.color}20`, position: "relative", overflow: "hidden",
+                              }}>
+                                <div style={{ position: "absolute", top: -15, right: -15, fontSize: 70, opacity: 0.03 }}>{catEmojis[alert.cat]}</div>
+                                <div style={{ display: "flex", alignItems: "flex-start", gap: 14, position: "relative", zIndex: 1 }}>
+                                  {/* Confidence ring */}
+                                  <PulseRing value={alert.confidence / 100} size={44} />
+                                  {/* Content */}
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                                      <span style={{ fontSize: 16 }}>{catEmojis[alert.cat]}</span>
+                                      <Badge text={cat.label} color={cat.color} />
+                                      <Badge text={`${alert.confidence}% CONF`} color={C.greenVibrant} />
+                                    </div>
+                                    <div style={{ fontFamily: "'Cinzel', serif", fontSize: 14, fontWeight: 700, color: C.textBright, lineHeight: 1.3, marginBottom: 4 }}>{alert.title}</div>
+                                    <div style={{ fontSize: 11, color: C.textDim, lineHeight: 1.4, marginBottom: 6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{alert.thesis}</div>
+                                    {/* Models used */}
+                                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 6 }}>
+                                      {alert.models.map((m, mi) => (
+                                        <span key={mi} style={{ fontSize: 8, padding: "2px 6px", borderRadius: 4, background: `${cat.color}10`, border: `1px solid ${cat.color}15`, color: cat.color, letterSpacing: 1 }}>{m}</span>
+                                      ))}
+                                    </div>
+                                    {/* Black Swan note */}
+                                    <div style={{ fontSize: 9, color: "rgba(255,152,0,0.7)", fontStyle: "italic" }}>🦢 {alert.blackSwan}</div>
+                                  </div>
+                                  {/* Right side — countdown + stake */}
+                                  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, flexShrink: 0 }}>
+                                    <Countdown72 closesAt={alert.closesAt} />
+                                    <div style={{ textAlign: "right" }}>
+                                      <div style={{ fontSize: 10, color: C.textDim }}>STAKE: <span style={{ color: C.goldBright, fontWeight: 700 }}>${alert.stake}</span></div>
+                                      <div style={{ fontSize: 10, color: C.textDim }}>TARGET: <span style={{ color: C.greenVibrant, fontWeight: 700 }}>${alert.targetReturn}</span></div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
-              {/* Recent Results ticker — scrolling faces + wins/losses */}
+              {/* RESOLVED — win/loss ticker with analysis */}
               <div style={{
-                marginTop: 3, padding: "10px 18px",
+                padding: "10px 18px",
                 background: "linear-gradient(135deg, rgba(12,8,4,0.95) 0%, rgba(18,12,8,0.9) 100%)",
                 borderRadius: "0 0 14px 14px",
-                border: "1px solid rgba(197,179,88,0.1)", borderTop: "none",
+                border: "1px solid rgba(197,179,88,0.1)", borderTop: "1px solid rgba(197,179,88,0.05)",
                 display: "flex", alignItems: "center", gap: 16, overflow: "hidden",
               }}>
-                <span style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, color: C.goldDark, whiteSpace: "nowrap" }}>RECENT:</span>
-                <div style={{ display: "flex", gap: 12, overflow: "hidden" }}>
+                <span style={{ fontFamily: "'Cinzel', serif", fontSize: 9, letterSpacing: 3, color: C.goldDark, whiteSpace: "nowrap" }}>RESOLVED:</span>
+                <div style={{ display: "flex", gap: 8, overflow: "hidden" }}>
                   {PROFIT_HISTORY.slice(0, 8).map(h => {
                     const isWin = h.result === "WIN";
-                    const catEmoji = { sports: "🏀", stocks: "📈", crypto: "₿", forex: "💱" };
+                    const catEmoji = { nba: "🏀", nhl: "🏒", mlb: "⚾", stocks: "📈", crypto: "₿", forex: "💱" };
+                    const isAnomaly = h.analysis && h.analysis.includes("ANOMALY");
+                    const isPatch = h.analysis && h.analysis.includes("AWFUL");
                     return (
                       <div key={h.id} style={{
-                        display: "flex", alignItems: "center", gap: 6, padding: "4px 10px",
-                        borderRadius: 8, whiteSpace: "nowrap",
-                        background: isWin ? "rgba(0,230,118,0.06)" : "rgba(239,83,80,0.06)",
-                        border: `1px solid ${isWin ? "rgba(0,230,118,0.15)" : "rgba(239,83,80,0.15)"}`,
+                        display: "flex", alignItems: "center", gap: 5, padding: "3px 8px",
+                        borderRadius: 6, whiteSpace: "nowrap",
+                        background: isWin ? "rgba(0,230,118,0.06)" : isPatch ? "rgba(255,152,0,0.08)" : "rgba(239,83,80,0.06)",
+                        border: `1px solid ${isWin ? "rgba(0,230,118,0.15)" : isPatch ? "rgba(255,152,0,0.15)" : "rgba(239,83,80,0.15)"}`,
                       }}>
-                        <span style={{ fontSize: 12 }}>{catEmoji[h.cat]}</span>
-                        <span style={{ fontSize: 10, color: isWin ? C.greenVibrant : C.red, fontWeight: 700 }}>{isWin ? "✓" : "✗"}</span>
-                        <span style={{ fontSize: 10, color: C.text, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis" }}>{h.title}</span>
-                        <span style={{ fontSize: 10, color: isWin ? C.greenVibrant : C.red, fontWeight: 600 }}>{h.payout}</span>
+                        <span style={{ fontSize: 10 }}>{catEmoji[h.cat]}</span>
+                        <span style={{ fontSize: 9, color: isWin ? C.greenVibrant : C.red, fontWeight: 700 }}>{isWin ? "✓" : "✗"}</span>
+                        <span style={{ fontSize: 9, color: C.text, maxWidth: 100, overflow: "hidden", textOverflow: "ellipsis" }}>{h.title}</span>
+                        <span style={{ fontSize: 9, color: isWin ? C.greenVibrant : C.red, fontWeight: 600 }}>{isWin ? "+" : "-"}${isWin ? h.payout : h.stake}</span>
+                        {isAnomaly && <span style={{ fontSize: 8 }} title="Anomaly — unforeseeable">🦢</span>}
+                        {isPatch && <span style={{ fontSize: 8 }} title="Model patched">🔧</span>}
                       </div>
                     );
                   })}

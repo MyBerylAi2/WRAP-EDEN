@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
 // ═══════════════════════════════════════════════════════════════════
-// EDEN ALPHA-26 GENERATION API
-// Bridges our Next.js app to the AIBRUH/eden-diffusion-studio Space
-// The Space has its own massive settings panel — we pass params through
+// EDEN ALPHA-26 GENERATION API — HuggingFace Router + Fallbacks
+// Primary: HF Inference API (router.huggingface.co) — production grade
+// Fallback: Pollinations.ai — always available
+// Applies Eden ALPHA-26 photorealism standards to every prompt
 // ═══════════════════════════════════════════════════════════════════
 
-const SPACE_URL = "https://aibruh-eden-diffusion-studio.hf.space";
 const HF_TOKEN = process.env.HF_TOKEN || "";
 
-// EDEN ALPHA-26 DEFAULTS (from knowledge lake C01/C10)
 const EDEN_DEFAULTS = {
   sampler: "DPM++ 2M Karras",
   steps: 40,
@@ -20,7 +19,7 @@ const EDEN_DEFAULTS = {
   skin_boost: "natural skin texture, visible pores, vellus hair, subsurface scattering, skin imperfections, matte skin finish, powder-set complexion",
 };
 
-// Timeout wrapper
+// ─── Timeout wrapper ───
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms / 1000}s`)), ms);
@@ -28,191 +27,145 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
   });
 }
 
-// Discover available endpoints from the Space
-async function discoverEndpoints(): Promise<string[]> {
+// ═══ MODEL CASCADE ═══
+// Ordered by quality. FLUX.1-dev is higher quality but slower.
+// FLUX.1-schnell is fast (4 steps). Both via HF Router API.
+const MODELS = [
+  { id: "black-forest-labs/FLUX.1-schnell", name: "FLUX.1 Schnell", timeout: 90000 },
+  { id: "black-forest-labs/FLUX.1-dev", name: "FLUX.1 Dev", timeout: 180000 },
+  { id: "stabilityai/stable-diffusion-xl-base-1.0", name: "SDXL Base", timeout: 120000 },
+];
+
+// ─── HuggingFace Router API (production inference) ───
+async function generateViaHFRouter(
+  modelId: string, prompt: string, width: number, height: number, timeoutMs: number
+): Promise<{ imageBase64: string } | { error: string }> {
+  if (!HF_TOKEN) return { error: "No HF_TOKEN configured" };
+
   try {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (HF_TOKEN) headers["Authorization"] = `Bearer ${HF_TOKEN}`;
-
     const res = await withTimeout(
-      fetch(`${SPACE_URL}/gradio_api/info`, { headers }),
-      10000, "discover"
+      fetch(`https://router.huggingface.co/hf-inference/models/${modelId}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${HF_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: { width, height },
+        }),
+      }),
+      timeoutMs,
+      modelId.split("/")[1]
     );
-    if (!res.ok) return [];
-    const info = await res.json();
-    return Object.keys(info.named_endpoints || {}).map(k => k.replace("/", ""));
-  } catch {
-    return [];
+
+    if (!res.ok) {
+      const text = await res.text();
+      return { error: `${res.status}: ${text.slice(0, 200)}` };
+    }
+
+    const contentType = res.headers.get("content-type") || "";
+    if (contentType.includes("image")) {
+      const buffer = await res.arrayBuffer();
+      const base64 = Buffer.from(buffer).toString("base64");
+      const ext = contentType.includes("png") ? "png" : "jpeg";
+      return { imageBase64: `data:image/${ext};base64,${base64}` };
+    }
+
+    // Some models return JSON with image URL
+    try {
+      const data = await res.json();
+      if (data.image) return { imageBase64: data.image };
+      if (Array.isArray(data) && data[0]?.image) return { imageBase64: data[0].image };
+    } catch { /* not JSON */ }
+
+    return { error: "Response was not an image" };
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Unknown error" };
   }
 }
 
-// Call Gradio Space endpoint
-async function callSpace(endpoint: string, data: unknown[], timeoutMs = 300000) {
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (HF_TOKEN) headers["Authorization"] = `Bearer ${HF_TOKEN}`;
-
-  // Submit job
-  const submitRes = await withTimeout(
-    fetch(`${SPACE_URL}/gradio_api/call/${endpoint}`, {
-      method: "POST", headers, body: JSON.stringify({ data }),
-    }),
-    15000, `${endpoint} submit`
-  );
-
-  if (!submitRes.ok) {
-    const text = await submitRes.text();
-    return { error: `Submit failed (${submitRes.status}): ${text.slice(0, 300)}` };
-  }
-
-  const { event_id } = await submitRes.json();
-  if (!event_id) return { error: "No event_id returned" };
-
-  // Poll SSE for result
-  const resultRes = await withTimeout(
-    fetch(`${SPACE_URL}/gradio_api/call/${endpoint}/${event_id}`, {
-      headers: HF_TOKEN ? { Authorization: `Bearer ${HF_TOKEN}` } : {},
-    }),
-    timeoutMs, `${endpoint} generate`
-  );
-
-  const text = await resultRes.text();
-  const lines = text.split("\n");
-
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i].startsWith("event: complete")) {
-      const dataLine = lines[i + 1];
-      if (dataLine?.startsWith("data: ")) {
-        try {
-          const parsed = JSON.parse(dataLine.slice(6));
-          if (Array.isArray(parsed)) return { data: parsed };
-        } catch { /* continue */ }
-      }
-    }
-    if (lines[i].startsWith("event: error")) {
-      const dataLine = lines[i + 1];
-      return { error: dataLine?.slice(6)?.trim() || "Space returned error" };
-    }
-  }
-
-  return { error: "No result from Space" };
-}
-
-// Extract image URL from result
-function extractImageUrl(data: unknown[]): string | null {
-  for (const item of data) {
-    if (item && typeof item === "object" && !Array.isArray(item)) {
-      const obj = item as Record<string, unknown>;
-      const url = (obj.url || obj.path) as string | undefined;
-      if (url) return url.startsWith("http") ? url : `${SPACE_URL}/gradio_api/file=${url}`;
-      // Gallery format
-      if (Array.isArray(obj.value)) {
-        for (const v of obj.value) {
-          if (v && typeof v === "object") {
-            const inner = v as Record<string, unknown>;
-            const imgObj = inner.image as Record<string, unknown> | undefined;
-            const innerUrl = (inner.url || imgObj?.url || inner.path) as string | undefined;
-            if (innerUrl) return innerUrl.startsWith("http") ? innerUrl : `${SPACE_URL}/gradio_api/file=${innerUrl}`;
-          }
-        }
-      }
-    }
-    if (typeof item === "string" && (item.endsWith(".png") || item.endsWith(".jpg") || item.endsWith(".webp") || item.includes("/file="))) {
-      return item.startsWith("http") ? item : `${SPACE_URL}/gradio_api/file=${item}`;
-    }
-  }
+// ─── Pollinations fallback ───
+async function pollinationsFallback(prompt: string, width: number, height: number, seed: number): Promise<string | null> {
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&nologo=true`;
+  try {
+    const res = await withTimeout(fetch(url), 45000, "pollinations");
+    if (res.ok && res.headers.get("content-type")?.includes("image")) return url;
+  } catch { /* fall through */ }
   return null;
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const {
-      prompt,
-      negative_prompt,
-      sampler,
-      steps,
-      cfg_scale,
-      width,
-      height,
-      seed,
-      endpoint, // optional — override endpoint name
-    } = body;
+    const { prompt, negative_prompt, steps, cfg_scale, width, height, seed } = body;
 
-    // Apply Eden standards to prompt
+    // Apply EDEN ALPHA-26 quality standards
     const cleanPrompt = (prompt || "")
       .replace(/\b(glossy|shiny|oily|glistening|polished)\b/gi, "matte")
       .replace(/\b(airbrushed|poreless|smooth skin|flawless skin)\b/gi, "natural textured skin");
 
     const fullPrompt = `${cleanPrompt}, ${EDEN_DEFAULTS.skin_boost}, photorealistic, raw photo`;
-    const fullNegative = `${negative_prompt || ""}, ${EDEN_DEFAULTS.negative_prompt}`.replace(/^,\s*/, "");
+    const w = width || EDEN_DEFAULTS.width;
+    const h = height || EDEN_DEFAULTS.height;
+    const finalSeed = (!seed || seed < 0) ? Math.floor(Math.random() * 999999) : seed;
 
-    console.log(`[alpha26] Prompt: ${fullPrompt.slice(0, 200)}`);
-    console.log(`[alpha26] Settings: ${sampler || EDEN_DEFAULTS.sampler}, ${steps || EDEN_DEFAULTS.steps} steps, CFG ${cfg_scale || EDEN_DEFAULTS.cfg_scale}`);
+    console.log(`[alpha26] Prompt: ${fullPrompt.slice(0, 150)}...`);
+    console.log(`[alpha26] Size: ${w}x${h}, Seed: ${finalSeed}`);
 
-    // Discover endpoints if needed
-    const endpoints = await discoverEndpoints();
-    console.log(`[alpha26] Available endpoints: ${endpoints.join(", ") || "none (Space may be starting)"}`);
-
-    // Try known Gradio endpoint names
-    const tryEndpoints = endpoint ? [endpoint] : [
-      "generate", "txt2img", "run", "predict", "submit",
-      ...endpoints.filter(e => !["api", "info"].includes(e)),
-    ];
-
-    // Build params — adapt to common Gradio txt2img patterns
-    const paramSets = [
-      // Pattern 1: Forge/A1111 style (prompt, negative, steps, sampler, cfg, seed, width, height)
-      [fullPrompt, fullNegative, steps || EDEN_DEFAULTS.steps, sampler || EDEN_DEFAULTS.sampler,
-       cfg_scale || EDEN_DEFAULTS.cfg_scale, seed || -1, width || EDEN_DEFAULTS.width, height || EDEN_DEFAULTS.height],
-      // Pattern 2: Simple (prompt, negative, width, height, steps, cfg, seed)
-      [fullPrompt, fullNegative, width || EDEN_DEFAULTS.width, height || EDEN_DEFAULTS.height,
-       steps || EDEN_DEFAULTS.steps, cfg_scale || EDEN_DEFAULTS.cfg_scale, seed || -1],
-      // Pattern 3: Minimal (prompt only)
-      [fullPrompt],
-    ];
-
+    // ═══ CASCADE: HF Router models ═══
     const errors: string[] = [];
-    for (const ep of tryEndpoints) {
-      for (const params of paramSets) {
-        console.log(`[alpha26] Trying ${ep} with ${params.length} params...`);
-        try {
-          const result = await callSpace(ep, params, 300000);
 
-          if ("error" in result) {
-            errors.push(`${ep}: ${result.error}`);
-            continue;
-          }
+    for (const model of MODELS) {
+      console.log(`[alpha26] Trying ${model.name}...`);
+      const result = await generateViaHFRouter(model.id, fullPrompt, w, h, model.timeout);
 
-          console.log(`[alpha26] ${ep} raw:`, JSON.stringify(result.data).slice(0, 500));
-          const imageUrl = extractImageUrl(result.data);
-          if (imageUrl) {
-            return NextResponse.json({
-              image: imageUrl,
-              seed: seed || -1,
-              backend: "EDEN ALPHA-26",
-              endpoint: ep,
-              settings: {
-                prompt: fullPrompt.slice(0, 300),
-                negative: fullNegative.slice(0, 200),
-                sampler: sampler || EDEN_DEFAULTS.sampler,
-                steps: steps || EDEN_DEFAULTS.steps,
-                cfg_scale: cfg_scale || EDEN_DEFAULTS.cfg_scale,
-                width: width || EDEN_DEFAULTS.width,
-                height: height || EDEN_DEFAULTS.height,
-              },
-            });
-          }
-          errors.push(`${ep}: returned no image`);
-        } catch (e) {
-          errors.push(`${ep}: ${e instanceof Error ? e.message : String(e)}`);
-        }
+      if ("imageBase64" in result) {
+        console.log(`[alpha26] SUCCESS via ${model.name}`);
+        return NextResponse.json({
+          image: result.imageBase64,
+          seed: finalSeed,
+          backend: `ALPHA-26 via ${model.name}`,
+          endpoint: "hf-router",
+          settings: {
+            prompt: fullPrompt.slice(0, 300),
+            negative: (negative_prompt || EDEN_DEFAULTS.negative_prompt).slice(0, 200),
+            sampler: EDEN_DEFAULTS.sampler,
+            steps: steps || EDEN_DEFAULTS.steps,
+            cfg_scale: cfg_scale || EDEN_DEFAULTS.cfg_scale,
+            width: w,
+            height: h,
+          },
+        });
       }
+
+      console.log(`[alpha26] ${model.name} failed: ${result.error}`);
+      errors.push(`${model.name}: ${result.error}`);
+    }
+
+    // ═══ FALLBACK: Pollinations ═══
+    console.log("[alpha26] HF models exhausted — trying Pollinations...");
+    const polImg = await pollinationsFallback(fullPrompt, w, h, finalSeed);
+    if (polImg) {
+      return NextResponse.json({
+        image: polImg,
+        seed: finalSeed,
+        backend: "ALPHA-26 via Pollinations",
+        endpoint: "pollinations",
+        settings: {
+          prompt: fullPrompt.slice(0, 300),
+          negative: EDEN_DEFAULTS.negative_prompt.slice(0, 200),
+          sampler: "N/A",
+          steps: steps || EDEN_DEFAULTS.steps,
+          cfg_scale: cfg_scale || EDEN_DEFAULTS.cfg_scale,
+          width: w,
+          height: h,
+        },
+      });
     }
 
     return NextResponse.json({
-      error: `ALPHA-26 Space: ${errors.slice(0, 3).join(" | ")}`,
-      spaceUrl: SPACE_URL,
-      endpoints: endpoints,
+      error: `All backends failed: ${errors.slice(0, 3).join(" | ")}`,
     }, { status: 500 });
 
   } catch (e: unknown) {
@@ -221,17 +174,12 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET — check Space status
+// GET — status check
 export async function GET() {
-  try {
-    const endpoints = await discoverEndpoints();
-    return NextResponse.json({
-      status: endpoints.length > 0 ? "ready" : "starting",
-      endpoints,
-      spaceUrl: SPACE_URL,
-      defaults: EDEN_DEFAULTS,
-    });
-  } catch {
-    return NextResponse.json({ status: "offline", endpoints: [] });
-  }
+  return NextResponse.json({
+    status: HF_TOKEN ? "ready" : "no-token",
+    backends: MODELS.map(m => m.name).concat(["Pollinations"]),
+    defaults: EDEN_DEFAULTS,
+    engine: "HuggingFace Router API (production)",
+  });
 }

@@ -7,12 +7,14 @@ const NAV_ITEMS = [
   { href: "/", label: "🔱 Eden" },
   { href: "/image-studio", label: "Image Studio" },
   { href: "/video-studio", label: "Video Studio" },
+  { href: "/film-room", label: "Film Room" },
   { href: "/producer", label: "Producer" },
   { href: "/artist", label: "Artist" },
   { href: "/lulu", label: "Lulu's Hall" },
   { href: "/voice-agents", label: "Voice Agents" },
   { href: "/eve-4d", label: "EVE 4D" },
   { href: "/files", label: "Files" },
+  { href: "/eden-pulse", label: "Eden Pulse" },
   { href: "/alpha-26", label: "ALPHA-26" },
 ];
 

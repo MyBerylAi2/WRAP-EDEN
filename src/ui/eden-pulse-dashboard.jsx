@@ -1126,7 +1126,6 @@ export default function EdenPulseDashboard() {
           </div>
         </div>
       </div>
-    </div>
 
       {/* ═══ AUTONOMOUS RESEARCH CYCLES — Baked-in operational rhythm ═══ */}
       <div style={{ padding: "32px 28px", borderTop: `1px solid ${C.border}` }}>

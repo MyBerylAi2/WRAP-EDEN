@@ -33,7 +33,7 @@ const C = {
 const DIRECTOR = {
   id: "director", name: "Dr. Wendy Okonkwo", title: "DIRECTOR",
   role: "Director of Eden Pulse", specialty: "Department oversight, research strategy, pipeline governance, investor genesis notes, cross-agent coordination",
-  color: C.gold, photo: "/portraits/wendy_okonkwo_director.png",
+  color: C.gold, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/wendy_okonkwo_director.png",
   model: "Claude API (Opus)", phd: "AI Research Strategy, Carnegie Mellon",
   status: "active", uptime: "99.9%", last_scan: "always on",
   stat1: { label: "Directives Issued", value: "412" },
@@ -46,7 +46,7 @@ const AGENTS = [
   {
     id: "archivist", name: "Dr. Amara Okafor", title: "THE ARCHIVIST",
     role: "Excavator of Truth", specialty: "Paper extraction, model card analysis, quantization specs, safetensors metadata, arxiv deep-dive, capability card generation",
-    color: C.gold, photo: "/portraits/amara_okafor_archivist.png",
+    color: C.gold, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/amara_okafor_archivist.png",
     model: "Qwen/Qwen2.5-3B-Instruct", phd: "Computational Linguistics, MIT",
     status: "active", uptime: "99.7%", last_scan: "12 min ago",
     stat1: { label: "Papers Processed", value: "847" },
@@ -57,7 +57,7 @@ const AGENTS = [
   {
     id: "analyst", name: "Dr. Suki Tanaka", title: "THE ANALYST",
     role: "Engineer of Logic", specialty: "Compatibility graphs, VRAM feasibility, risk matrices, failure mode analysis, cross-model alignment testing",
-    color: C.cyan, photo: "/portraits/suki_tanaka_analyst.png",
+    color: C.cyan, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/suki_tanaka_analyst.png",
     model: "microsoft/Phi-3.5-mini-instruct", phd: "Systems Engineering, Stanford",
     status: "active", uptime: "99.4%", last_scan: "8 min ago",
     stat1: { label: "Compatibility Tests", value: "1,203" },
@@ -68,7 +68,7 @@ const AGENTS = [
   {
     id: "prophet", name: "Dr. Nia Mensah", title: "THE PROPHET",
     role: "The Future-Seer", specialty: "Trend prediction, adoption curves, GPU cost forecasting, hype cycle positioning, market impact analysis",
-    color: C.purple, photo: "/portraits/nia_mensah_prophet.png",
+    color: C.purple, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/nia_mensah_prophet.png",
     model: "Qwen/Qwen2.5-3B-Instruct", phd: "Predictive Analytics, Oxford",
     status: "active", uptime: "99.1%", last_scan: "22 min ago",
     stat1: { label: "Predictions Made", value: "156" },
@@ -79,7 +79,7 @@ const AGENTS = [
   {
     id: "synthesist", name: "Dr. Zara Petrov", title: "THE SYNTHESIST",
     role: "The Inventor", specialty: "Pipeline blueprints, model merges, hybrid architectures, probability scoring, component optimization",
-    color: C.greenVibrant, photo: "/portraits/zara_petrov_synthesist.png",
+    color: C.greenVibrant, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/zara_petrov_synthesist.png",
     model: "Qwen/Qwen2.5-Coder-3B-Instruct", phd: "Multimodal AI Systems, ETH Zurich",
     status: "active", uptime: "99.8%", last_scan: "5 min ago",
     stat1: { label: "Pipelines Created", value: "89" },
@@ -90,7 +90,7 @@ const AGENTS = [
   {
     id: "journalist", name: "Dr. Lena Adeyemi", title: "THE JOURNALIST",
     role: "Voice of Eden", specialty: "Intelligence reports, article writing, triage payloads, master prompts, stakeholder communications, weekly digests",
-    color: C.orange, photo: "/portraits/lena_adeyemi_journalist.png",
+    color: C.orange, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/lena_adeyemi_journalist.png",
     model: "Qwen/Qwen2.5-3B-Instruct", phd: "Science Communication, Columbia",
     status: "active", uptime: "99.5%", last_scan: "3 min ago",
     stat1: { label: "Articles Written", value: "234" },
@@ -101,7 +101,7 @@ const AGENTS = [
   {
     id: "curator", name: "Dr. Mei-Lin Chen", title: "THE CURATOR",
     role: "Keeper of Knowledge", specialty: "Knowledge base management, paper vault organization, Google Drive sync, taxonomy and tagging, research archive maintenance",
-    color: C.teal, photo: "/portraits/mei_lin_chen_curator.png",
+    color: C.teal, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/mei_lin_chen_curator.png",
     model: "Qwen/Qwen2.5-3B-Instruct", phd: "Information Science, UC Berkeley",
     status: "active", uptime: "99.6%", last_scan: "15 min ago",
     stat1: { label: "Papers Archived", value: "1,847" },
@@ -112,7 +112,7 @@ const AGENTS = [
   {
     id: "sentinel", name: "Dr. Priya Sharma", title: "THE SENTINEL",
     role: "Guardian of Quality", specialty: "0.3 Deviation Rule enforcement, anti-AI detection, security scanning, data leak monitoring, benchmark verification",
-    color: C.pink, photo: "/portraits/priya_sharma_sentinel.png",
+    color: C.pink, photo: "https://raw.githubusercontent.com/MyBerylAi2/WRAP-EDEN/main/nextjs-app/public/portraits/priya_sharma_sentinel.png",
     model: "microsoft/Phi-3.5-mini-instruct", phd: "Cybersecurity & AI Safety, IIT Delhi",
     status: "active", uptime: "99.3%", last_scan: "2 min ago",
     stat1: { label: "Quality Checks", value: "2,103" },
